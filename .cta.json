@@ -1,0 +1,13 @@
+{
+  "framework": "react",
+  "typescript": true,
+  "projectName": "aesthetic-portfolio-os",
+  "mode": "file-router",
+  "tailwind": true,
+  "packageManager": "yarn",
+  "toolchain": "none",
+  "variableValues": {},
+  "git": true,
+  "version": 1,
+  "existingAddOns": []
+}
