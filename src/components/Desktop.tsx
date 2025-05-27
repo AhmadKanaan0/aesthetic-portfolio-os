@@ -16,11 +16,13 @@ import BlogIcon from "../assets/Blog.png";
 import About from "../assets/about.png";
 import ResumeIcon from "../assets/resume.png";
 import GreetingGif from "../assets/greeting.gif";
+import KuruKuru from "../assets/KuruKuru.gif";
 import WaterCd from "../assets/water-cd.jpg";
 import CutePuppy from "../assets/cute-puppy.jpg";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { AudioProvider } from "./audio-context";
+import { CuteSuspenseFallback } from "./suspense-fallback";
 const AboutMe = React.lazy(() => import("./pages/about-me"));
 const Resume = React.lazy(() => import("./pages/resume"));
 const Projects = React.lazy(() => import("./pages/projects"));
@@ -340,8 +342,8 @@ export default function Desktop() {
               isMobile={!isDesktop}
               isMinimized={win.minimized}
             >
-              <React.Suspense fallback={<div>Loading...</div>}>
-                {win.component}
+              <React.Suspense fallback={<CuteSuspenseFallback />}>
+                  {win.component}
               </React.Suspense>
             </AppWindow>
           ))}
