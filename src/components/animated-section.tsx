@@ -1,7 +1,5 @@
-"use client"
-
 import { type ReactNode, useRef, useEffect, useState } from "react"
-import { motion, useInView, type Variant, useReducedMotion } from "motion/react"
+import { motion, useInView, type Variant, useReducedMotion, type Variants } from "motion/react"
 
 type AnimationVariant =
   | "fadeIn"
@@ -205,14 +203,14 @@ export function AnimatedSection({
     return variants[variant]
   }
 
-  const getChildVariants = () => {
+  const getChildVariants = (): Variants => {
     if (skipAnimation) {
       return {
         hidden: { opacity: 0 },
         visible: { opacity: 1, transition: { duration: 0.3 } },
       }
     }
-
+  
     if (variant === "stagger") {
       return {
         hidden: { opacity: 0, y: 20 },
@@ -227,7 +225,12 @@ export function AnimatedSection({
         },
       }
     }
-    return {}
+    
+    // Return a default variants object when not in stagger mode
+    return {
+      hidden: { opacity: 1 }, // Default to visible state
+      visible: { opacity: 1 },
+    }
   }
 
   return (

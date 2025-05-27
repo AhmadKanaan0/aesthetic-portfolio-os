@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 
 import { DndContext } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
@@ -8,12 +8,6 @@ import { MobileIcon } from "./MobileIcon";
 import { Taskbar } from "./Taskbar";
 import MenuBar from "./MenuBar";
 import MusicPlayerWidget from "./MusicPlayerWidget";
-import AboutMe from "./pages/about-me";
-import Resume from "./pages/resume";
-import Projects from "./pages/projects";
-import Blog from "./pages/blog";
-import Links from "./pages/links";
-import Contact from "./pages/contact";
 import Wallpaper from "../assets/wallpaper.jpg";
 import Project from "../assets/project.png";
 import LinkIcon from "../assets/Links.png";
@@ -27,6 +21,12 @@ import CutePuppy from "../assets/cute-puppy.jpg";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { AudioProvider } from "./audio-context";
+const AboutMe = React.lazy(() => import("./pages/about-me"));
+const Resume = React.lazy(() => import("./pages/resume"));
+const Projects = React.lazy(() => import("./pages/projects"));
+const Blog = React.lazy(() => import("./pages/blog"));
+const Links = React.lazy(() => import("./pages/links"));
+const Contact = React.lazy(() => import("./pages/contact"));
 
 export default function Desktop() {
   type WindowData = {
@@ -340,7 +340,9 @@ export default function Desktop() {
               isMobile={!isDesktop}
               isMinimized={win.minimized}
             >
-              {win.component}
+              <React.Suspense fallback={<div>Loading...</div>}>
+                {win.component}
+              </React.Suspense>
             </AppWindow>
           ))}
         </AnimatePresence>
