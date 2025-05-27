@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import KuruKuru from "../assets/kurukuru.gif";
+import KuruKuru from "../assets/KuruKuru.gif";
 
 export function CuteSuspenseFallback() {
     return (
@@ -9,7 +9,6 @@ export function CuteSuspenseFallback() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {/* "Kuru kuru" text above */}
         <motion.p
         className="text-3xl font-bold mb-2"
         initial={{ opacity: 0, y: -10 }}
@@ -38,7 +37,6 @@ export function CuteSuspenseFallback() {
         Kuru kuru~
       </motion.p>
   
-        {/* Static GIF */}
         <div className="w-100 h-100">
           <img
             src={KuruKuru}
