@@ -76,7 +76,7 @@ export default function Projects() {
     <div className="space-y-8 max-w-5xl mx-auto">
       <AnimatedSection variant="fadeIn" duration={0.6} className="text-center">
         <h1 className="text-3xl font-bold mb-2">My Projects</h1>
-        <p className="text-muted-foreground">A showcase of my best work and side projects</p>
+        <p className="text-gray-700 dark:text-gray-300">A showcase of my best work and side projects</p>
       </AnimatedSection>
 
       <AnimatedSection variant="scale" delay={0.1} duration={0.7} className="relative" threshold={0.3}>

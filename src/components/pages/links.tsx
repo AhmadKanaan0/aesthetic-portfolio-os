@@ -62,7 +62,7 @@ export default function Links() {
     <div className="space-y-8 max-w-3xl mx-auto">
       <AnimatedSection variant="scale" duration={0.7} className="text-center">
         <h1 className="text-3xl font-bold mb-2">Connect With Me</h1>
-        <p className="text-muted-foreground">Find me across the web and get in touch</p>
+        <p className="text-gray-700 dark:text-gray-300">Find me across the web and get in touch</p>
       </AnimatedSection>
 
       <AnimatedSection variant="stagger" delay={0.1} staggerChildren={0.1}>

@@ -101,7 +101,7 @@ export default function Blog() {
         <div className="flex flex-col gap-4 md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-1">Blog</h1>
-            <p className="text-muted-foreground">Thoughts, tutorials, and insights on web development</p>
+            <p className="text-gray-700 dark:text-gray-300">Thoughts, tutorials, and insights on web development</p>
           </div>
           <div className="flex items-center w-full md:w-auto">
             <div className="relative w-full md:w-64">

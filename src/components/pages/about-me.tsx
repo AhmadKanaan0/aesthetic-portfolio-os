@@ -43,7 +43,7 @@ export default function AboutMe() {
           <AvatarFallback>AK</AvatarFallback>
         </Avatar>
         <h1 className="text-3xl font-bold mb-2 dark:text-white">Ahmad Kanaan</h1>
-        <p className="text-muted-foreground mb-4">Full-Stack Developer with 4 years of experience</p>
+        <p className="text-gray-700 dark:text-gray-300 mb-4">Full-Stack Developer with 4 years of experience</p>
         <div className="flex flex-wrap justify-center gap-2">
           <Badge variant="secondary">Web Development</Badge>
           <Badge variant="secondary">Web Design</Badge>
@@ -55,13 +55,13 @@ export default function AboutMe() {
 
       <AnimatedSection variant="slideUp" delay={0.1}>
         <h2 className="text-2xl font-bold mb-4 dark:text-white">About Me</h2>
-        <p className="text-muted-foreground mb-4">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           I'm a passionate full-stack developer with 4 years of experience building modern web applications. I
           specialize in creating responsive, user-friendly interfaces with React and building robust backend systems
           with Node.js. My approach combines technical expertise with creative problem-solving to deliver exceptional
           digital experiences.
         </p>
-        <p className="text-muted-foreground">
+        <p className="text-gray-700 dark:text-gray-300">
           When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or
           sharing my knowledge through blog posts and community events.
         </p>

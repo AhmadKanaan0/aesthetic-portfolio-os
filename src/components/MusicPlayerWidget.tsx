@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, scale } from "motion/react";
 import sanrio from "../assets/sanrio.png";
 import Forward from "../assets/Forward.png";
 import Previous from "../assets/Previous.png";
@@ -44,10 +44,35 @@ export default function MusicPlayerWidget({
     setVolume,
     setIsLoading,
   } = useContext(AudioContext);
-
+  const prefersReducedMotion = useReducedMotion();
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-
+  const iconVariants = {
+    hidden: { opacity: 0, scale: 0 },
+    visible: (i: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        delay: 0.9 + i * 0.05,
+        type: "spring",
+        stiffness: 200,
+        damping: 20,
+      },
+    }),
+    hover: prefersReducedMotion
+      ? {}
+      : {
+          scale: 1.1,
+          transition: { duration: 0.2 },
+        },
+    tap: prefersReducedMotion
+      ? {}
+      : {
+          scale: 0.95,
+          transition: { duration: 0.1 },
+        },
+  };
   useEffect(() => {
     const playAudio = async () => {
       if (!audioRef.current) return;
@@ -180,15 +205,19 @@ export default function MusicPlayerWidget({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}
       >
-        <Button
-          variant="ghost"
+        <motion.button
           className="w-20 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
           onClick={() => setIsExpanded(true)}
+          variants={iconVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          whileTap="tap"
           disabled={isLoading}
         >
           <img src={MusicPlayerImage} alt="Music Player" />
           <motion.div
-            className="absolute top-[77%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full overflow-hidden border-2 border-white/30"
+            className="absolute top-[60.5%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full overflow-hidden border-2 border-white/30"
             animate={isPlaying ? { rotate: 360 } : { rotate: 0 }}
             transition={
               isPlaying
@@ -206,7 +235,7 @@ export default function MusicPlayerWidget({
               className="w-full h-full object-cover"
             />
           </motion.div>
-        </Button>
+        </motion.button>
       </motion.div>
     );
   }
@@ -221,7 +250,7 @@ export default function MusicPlayerWidget({
         transition={{ type: "spring", stiffness: 200 }}
         style={{
           width: showPlaylist ? "480px" : "380px",
-          height: "260px",
+          height: "300px",
           backgroundImage: `url(${MusicWallpaper})`,
         }}
       >
@@ -245,26 +274,34 @@ export default function MusicPlayerWidget({
                 Now Playing
               </h3>
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
+                <motion.button
                   className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                   onClick={() => setShowPlaylist(!showPlaylist)}
+                  variants={iconVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   <img src={PlaylistIcon} alt="Playlist Icon" />
-                  <div className="absolute top-[5%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                  <div className="absolute top-[21%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                     <List className="h-4 w-4" />
                   </div>
-                </Button>
-                <Button
-                  variant="ghost"
+                </motion.button>
+                <motion.button
                   className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                   onClick={handleDesktopClose}
+                  variants={iconVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   <img src={CinamonExit} alt="Cinamon Exit" />
-                  <div className="absolute top-[60%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                  <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                     <X className="h-4 w-4" />
                   </div>
-                </Button>
+                </motion.button>
               </div>
             </div>
 
@@ -314,47 +351,59 @@ export default function MusicPlayerWidget({
             </div>
 
             <div className="flex items-center justify-center gap-4 mb-4">
-              <Button
-                variant="ghost"
+              <motion.button
                 className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                 onClick={handlePrevious}
+                variants={iconVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                whileTap="tap"
                 disabled={isLoading}
               >
                 <img src={Previous} alt="previous" />
                 <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                  <SkipBack className="h-6 w-6" />
+                  <SkipBack className="h-4 w-4" />
                 </div>
-              </Button>
+              </motion.button>
 
-              <Button
-                variant="ghost"
+              <motion.button
                 className="w-18 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                 onClick={handlePlayPause}
+                variants={iconVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                whileTap="tap"
                 disabled={isLoading}
               >
                 <img src={sanrio} alt="sanrio" />
                 <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                   {isLoading ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : isPlaying ? (
-                    <Pause className="h-6 w-6" />
+                    <Pause className="h-4 w-4" />
                   ) : (
-                    <Play className="h-6 w-6" />
+                    <Play className="h-4 w-4" />
                   )}
                 </div>
-              </Button>
+              </motion.button>
 
-              <Button
-                variant="ghost"
+              <motion.button
                 className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                 onClick={handleNext}
+                variants={iconVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                whileTap="tap"
                 disabled={isLoading}
               >
                 <img src={Forward} alt="forward" />
                 <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                  <SkipForward className="h-6 w-6" />
+                  <SkipForward className="h-4 w-4" />
                 </div>
-              </Button>
+              </motion.button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -400,7 +449,7 @@ export default function MusicPlayerWidget({
                 <h4 className="font-bold text-gray-800 dark:text-white mb-4">
                   Playlist
                 </h4>
-                <div className="space-y-2 overflow-y-scroll px-2 h-[200px]">
+                <div className="space-y-2 overflow-y-scroll px-2 py-2 h-[240px]">
                   {playlist.map((track) => (
                     <motion.div
                       key={track.id}
@@ -445,7 +494,7 @@ export default function MusicPlayerWidget({
   return (
     <div className="flex flex-col items-center justify-center">
       <motion.div
-        className="w-full h-[166px] rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl bg-cover bg-center"
+        className="w-full h-[170px] rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl bg-cover bg-center"
         style={{ backgroundImage: `url(${MusicWallpaper})` }}
         layout
       >
@@ -490,59 +539,75 @@ export default function MusicPlayerWidget({
 
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                    <motion.button
+                      className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                       onClick={handlePrevious}
+                      variants={iconVariants}
+                      initial="hidden"
+                      animate="visible"
+                      whileHover="hover"
+                      whileTap="tap"
                       disabled={isLoading}
                     >
                       <img src={Previous} alt="previous" />
                       <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                        <SkipBack className="h-6 w-6" />
+                        <SkipBack className="h-3 w-3" />
                       </div>
-                    </Button>
+                    </motion.button>
 
-                    <Button
-                      variant="ghost"
-                      className="w-18 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                    <motion.button
+                      className="w-16 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                       onClick={handlePlayPause}
+                      variants={iconVariants}
+                      initial="hidden"
+                      animate="visible"
+                      whileHover="hover"
+                      whileTap="tap"
                       disabled={isLoading}
                     >
                       <img src={sanrio} alt="sanrio" />
                       <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                         {isLoading ? (
-                          <Loader2 className="h-6 w-6 animate-spin" />
+                          <Loader2 className="h-3 w-3 animate-spin" />
                         ) : isPlaying ? (
-                          <Pause className="h-6 w-6" />
+                          <Pause className="h-3 w-3" />
                         ) : (
-                          <Play className="h-6 w-6" />
+                          <Play className="h-3 w-3" />
                         )}
                       </div>
-                    </Button>
+                    </motion.button>
 
-                    <Button
-                      variant="ghost"
-                      className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                    <motion.button
+                      className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                       onClick={handleNext}
+                      variants={iconVariants}
+                      initial="hidden"
+                      animate="visible"
+                      whileHover="hover"
+                      whileTap="tap"
                       disabled={isLoading}
                     >
                       <img src={Forward} alt="forward" />
                       <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                        <SkipForward className="h-6 w-6" />
+                        <SkipForward className="h-3 w-3" />
                       </div>
-                    </Button>
+                    </motion.button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                  <motion.button
+                    className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                     onClick={() => setShowPlaylist(true)}
+                    variants={iconVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover="hover"
+                    whileTap="tap"
                     disabled={isLoading}
                   >
                     <img src={PlaylistIcon} alt="Playlist Icon" />
-                    <div className="absolute top-[5%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                      <List className="h-4 w-4" />
+                    <div className="absolute top-[20%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                      <List className="h-3 w-3" />
                     </div>
-                  </Button>
+                  </motion.button>
                 </div>
 
                 <div className="w-full">
@@ -583,22 +648,26 @@ export default function MusicPlayerWidget({
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white">
                   Playlist
                 </h3>
-                <Button
-                  variant="ghost"
-                  className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                <motion.button
+                  className="w-8 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                   onClick={() => setShowPlaylist(false)}
+                  variants={iconVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   <img src={CinamonExit} alt="Cinamon Exit" />
-                  <div className="absolute top-[60%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                    <X className="h-4 w-4" />
+                  <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                    <X className="h-3 w-3" />
                   </div>
-                </Button>
+                </motion.button>
               </div>
 
               {/* Horizontal scrolling playlist */}
               <div className="flex-1 overflow-hidden">
                 <div
-                  className="flex gap-3 overflow-x-auto p-2 py-3 h-full"
+                  className="flex gap-3 overflow-x-auto p-2 py-2 h-full"
                   style={{ scrollbarWidth: "thin" }}
                 >
                   {playlist.map((track) => (
@@ -617,7 +686,7 @@ export default function MusicPlayerWidget({
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <div className="w-14 h-14 aspect-square rounded-lg overflow-hidden">
+                      <div className="w-12 h-12 aspect-square rounded-lg overflow-hidden">
                         <img
                           src={track.cover || "/placeholder.svg"}
                           alt={track.title}

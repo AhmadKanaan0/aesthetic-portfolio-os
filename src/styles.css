@@ -285,14 +285,14 @@ code {
   padding: 20px;
   height: calc(100% - 49px);
   overflow: auto;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.3);
   color: var(--text-primary);
   transition: all 0.3s ease;
   overscroll-behavior: contain;
-  box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
+  box-shadow: inset 0 0 25px rgba(59, 130, 246, 0.2);
 }
 .dark .window-content {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 0 25px rgba(59, 130, 246, 0.15);
 }
 /* Mobile Glass Window Styles */
@@ -369,15 +369,15 @@ code {
   padding: 20px;
   height: calc(100% - 49px);
   overflow: auto;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
   transition: all 0.3s ease;
   overscroll-behavior: contain;
-  box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
+  box-shadow: inset 0 0 25px rgba(59, 130, 246, 0.2);
 }
 
 .dark .window-content-mobile {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 0 25px rgba(59, 130, 246, 0.15);
 }
 /* Window Control Buttons */
