@@ -16,7 +16,6 @@ import BlogIcon from "../assets/Blog.png";
 import About from "../assets/about.png";
 import ResumeIcon from "../assets/resume.png";
 import GreetingGif from "../assets/greeting.gif";
-import KuruKuru from "../assets/KuruKuru.gif";
 import WaterCd from "../assets/water-cd.jpg";
 import CutePuppy from "../assets/cute-puppy.jpg";
 import { useMediaQuery } from "@/hooks/use-media-query";
