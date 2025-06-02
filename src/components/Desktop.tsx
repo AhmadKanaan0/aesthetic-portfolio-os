@@ -241,8 +241,8 @@ export default function Desktop() {
             />
           </div>
         ) : (
-          <div className="absolute inset-0 flex flex-col gap-4 p-4">
-            <div className="flex flex-col gap-4">
+          <div className="absolute inset-0 flex flex-col justify-between gap-8 p-4">
+            <div className="flex flex-col gap-4 justify-between h-full">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
                   {desktopApps.slice(0, 4).map((app, index) => (
