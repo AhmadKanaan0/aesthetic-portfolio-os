@@ -4,6 +4,7 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useReducedMotion } from "motion/react"
+import { useAppSound } from "./sound-context"
 
 interface TaskbarProps {
   apps: {
@@ -22,6 +23,7 @@ interface TaskbarProps {
 
 export function Taskbar({ apps, openWindows, onAppClick, className = "" }: TaskbarProps) {
   const prefersReducedMotion = useReducedMotion()
+  const { playClickSound, playHoverSound } = useAppSound()
 
   const taskbarVariants = {
     hidden: { y: 50, opacity: 0 },
@@ -78,6 +80,15 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
     },
   }
 
+  const handleAppClick = (label: string) => {
+    playClickSound()
+    onAppClick(label)
+  }
+
+  const handleMouseEnter = () => {
+    playHoverSound()
+  }
+
   return (
     <motion.div
       variants={taskbarVariants}
@@ -99,7 +110,8 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
               <TooltipTrigger asChild>
                 <motion.div
                   className="relative flex flex-col items-center cursor-pointer group p-1"
-                  onClick={() => onAppClick(app.label)}
+                  onClick={() => handleAppClick(app.label)}
+                  onMouseEnter={handleMouseEnter}
                   variants={iconVariants}
                   custom={index}
                   initial="hidden"

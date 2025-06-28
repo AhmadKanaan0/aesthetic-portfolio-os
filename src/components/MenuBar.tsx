@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { ModeToggle } from "./mode-toggle"
+import { SoundSettings } from "./sound-settings"
 
 export default function MenuBar() {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -21,6 +22,7 @@ export default function MenuBar() {
         </div>
       </div>
       <div className="flex items-center gap-3">
+        <SoundSettings />
         <ModeToggle />
         <span>{format(currentTime, "EEE d MMM h:mm a")}</span>
       </div>

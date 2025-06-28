@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { Maximize, Minus, X, Square } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
+import { useAppSound } from "./sound-context";
 
 let globalZ = 100;
 
@@ -51,6 +52,13 @@ export function AppWindow({
   const [prevPosition, setPrevPosition] = useState(position);
   const rndRef = useRef<Rnd>(null);
   const prefersReducedMotion = useReducedMotion();
+  const { 
+    playWindowOpenSound, 
+    playWindowCloseSound, 
+    playMinimizeSound, 
+    playMaximizeSound,
+    playClickSound 
+  } = useAppSound();
 
   useEffect(() => {
     const centerX = window.innerWidth / 2 - size.width / 2;
@@ -60,8 +68,11 @@ export function AppWindow({
       y: Math.max(10, Math.min(centerY, window.innerHeight - size.height - 10)),
     });
 
-    setTimeout(() => setIsVisible(true), 50);
-  }, [size.width, size.height]);
+    setTimeout(() => {
+      setIsVisible(true);
+      playWindowOpenSound();
+    }, 50);
+  }, [size.width, size.height, playWindowOpenSound]);
 
   useEffect(() => {
     if (isMobile) {
@@ -77,13 +88,29 @@ export function AppWindow({
     if (!isMaximized) {
       setPrevSize(size);
       setPrevPosition(position);
-
       setIsMaximized(true);
+      playMaximizeSound();
     } else {
       setSize(prevSize);
       setPosition(prevPosition);
       setIsMaximized(false);
+      playMaximizeSound();
     }
+  };
+
+  const handleClose = () => {
+    playWindowCloseSound();
+    onClose?.();
+  };
+
+  const handleMinimize = () => {
+    playMinimizeSound();
+    onMinimize?.();
+  };
+
+  const handleButtonClick = (action: () => void) => {
+    playClickSound();
+    action();
   };
 
   useEffect(() => {
@@ -192,7 +219,7 @@ export function AppWindow({
               <span className="font-semibold text-sm truncate">{title}</span>
               <div className="flex gap-1 shrink-0">
                 <motion.button
-                  onClick={onMinimize}
+                  onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -200,7 +227,7 @@ export function AppWindow({
                   <Minus size={14} />
                 </motion.button>
                 <motion.button
-                  onClick={onClose}
+                  onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -278,7 +305,7 @@ export function AppWindow({
               <span className="font-semibold text-sm truncate">{title}</span>
               <div className="flex gap-1 shrink-0">
                 <motion.button
-                  onClick={onMinimize}
+                  onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -286,7 +313,7 @@ export function AppWindow({
                   <Minus size={14} />
                 </motion.button>
                 <motion.button
-                  onClick={toggleMaximize}
+                  onClick={() => handleButtonClick(toggleMaximize)}
                   className="window-button"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -294,7 +321,7 @@ export function AppWindow({
                   {isMaximized ? <Square size={14} /> : <Maximize size={14} />}
                 </motion.button>
                 <motion.button
-                  onClick={onClose}
+                  onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}

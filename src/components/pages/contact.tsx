@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Send, Linkedin, Github, Twitter } from "lucide-react"
 import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
+import { useAppSound } from "@/components/sound-context"
 import emailjs from '@emailjs/browser'
 
 export default function Contact() {
@@ -20,6 +21,7 @@ export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const { playSuccessSound, playErrorSound, playClickSound } = useAppSound()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -49,6 +51,7 @@ export default function Contact() {
       )
 
       setIsSubmitted(true)
+      playSuccessSound()
       setFormState({
         name: "",
         email: "",
@@ -58,6 +61,7 @@ export default function Contact() {
     } catch (err) {
       console.error("Failed to send email:", err)
       setError("Failed to send message. Please try again later.")
+      playErrorSound()
     } finally {
       setIsSubmitting(false)
     }
@@ -123,6 +127,7 @@ export default function Contact() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-muted-foreground hover:text-primary truncate block"
+                      onClick={playClickSound}
                     >
                       {info.value}
                     </a>
@@ -143,6 +148,7 @@ export default function Contact() {
                   rel="noopener noreferrer"
                   className="bg-muted hover:bg-muted/80 p-2 rounded-full transition-colors"
                   aria-label={social.name}
+                  onClick={playClickSound}
                 >
                   {social.icon}
                 </a>
@@ -219,7 +225,12 @@ export default function Contact() {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isSubmitting}
+                    onClick={playClickSound}
+                  >
                     {isSubmitting ? (
                       <>
                         <span className="animate-spin mr-2">⏳</span>

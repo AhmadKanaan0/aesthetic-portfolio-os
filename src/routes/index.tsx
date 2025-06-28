@@ -5,18 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SoundProvider, useAppSound } from "@/components/sound-context";
 import Wallpaper from "../assets/lockscreen.jpg";
 
 export const Route = createFileRoute("/")({
   component: App,
 });
 
-function App() {
+function LoginScreen() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showLogin, setShowLogin] = useState(false);
   const [password, setPassword] = useState("");
   const [isWrongPassword, setIsWrongPassword] = useState(false);
   const navigate = useNavigate();
+  const { playClickSound, playErrorSound, playSuccessSound } = useAppSound();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -46,6 +48,7 @@ function App() {
 
   const handleScreenClick = () => {
     if (!showLogin) {
+      playClickSound();
       setShowLogin(true);
     }
   };
@@ -53,14 +56,24 @@ function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === "haru") {
+      playSuccessSound();
       navigate({ to: "/desktop" });
     } else {
+      playErrorSound();
       setIsWrongPassword(true);
       setTimeout(() => {
         setIsWrongPassword(false);
       }, 500);
     }
   };
+
+  const handleCancel = () => {
+    playClickSound();
+    setShowLogin(false);
+    setPassword("");
+    setIsWrongPassword(false);
+  };
+
   return (
     <>
       <style>{`
@@ -149,6 +162,7 @@ function App() {
                   type="submit"
                   size="icon"
                   className="h-8 w-8 cursor-pointer bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
+                  onClick={playClickSound}
                 >
                   <ArrowRight className="h-4 w-4" />
                   <span className="sr-only">Unlock</span>
@@ -164,7 +178,7 @@ function App() {
             variant="ghost"
             size="icon"
             className="mt-4 cursor-pointer text-white bg-blue-500/30 hover:bg-blue-500/50 backdrop-blur-sm rounded-full"
-            onClick={() => setShowLogin(false)}
+            onClick={handleCancel}
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Cancel</span>
@@ -172,5 +186,13 @@ function App() {
         </div>
       </div>
     </>
+  );
+}
+
+function App() {
+  return (
+    <SoundProvider>
+      <LoginScreen />
+    </SoundProvider>
   );
 }

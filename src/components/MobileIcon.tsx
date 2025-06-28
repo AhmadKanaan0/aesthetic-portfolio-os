@@ -1,6 +1,7 @@
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useDraggable } from "@dnd-kit/core";
 import { motion, useReducedMotion } from "motion/react";
+import { useAppSound } from "./sound-context";
 
 export function MobileIcon({
   id,
@@ -15,6 +16,7 @@ export function MobileIcon({
 }) {
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useMediaQuery("(max-width: 650px)");
+  const { playClickSound, playHoverSound } = useAppSound();
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
     disabled: isMobile,
@@ -22,7 +24,12 @@ export function MobileIcon({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    playClickSound();
     onClick();
+  };
+
+  const handleMouseEnter = () => {
+    playHoverSound();
   };
 
   const iconVariants = {
@@ -51,6 +58,7 @@ export function MobileIcon({
       {...attributes}
       {...listeners}
       onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
       style={{
         transform: transform
           ? `translate(${transform.x}px, ${transform.y}px)`

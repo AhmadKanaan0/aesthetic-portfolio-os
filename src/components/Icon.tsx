@@ -1,5 +1,6 @@
 import { useDraggable } from "@dnd-kit/core"
 import { motion, useReducedMotion } from "motion/react"
+import { useAppSound } from "./sound-context"
 
 export function DesktopIcon({
   id,
@@ -9,6 +10,7 @@ export function DesktopIcon({
 }: { id: string; label: string; icon: string; onDoubleClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id })
   const prefersReducedMotion = useReducedMotion()
+  const { playClickSound, playHoverSound } = useAppSound()
 
   const iconVariants = {
     initial: { scale: 0.8, opacity: 0, y: 10 },
@@ -27,12 +29,22 @@ export function DesktopIcon({
         },
   }
 
+  const handleDoubleClick = () => {
+    playClickSound()
+    onDoubleClick()
+  }
+
+  const handleMouseEnter = () => {
+    playHoverSound()
+  }
+
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      onDoubleClick={onDoubleClick}
+      onDoubleClick={handleDoubleClick}
+      onMouseEnter={handleMouseEnter}
       style={{ transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
       className="desktop-icon flex flex-col items-center justify-center w-16 sm:w-18 md:w-20 cursor-pointer select-none mb-2 pointer-events-auto transition-transform"
     >
