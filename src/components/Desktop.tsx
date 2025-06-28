@@ -23,6 +23,11 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { AudioProvider } from "./audio-context";
 import { SoundProvider } from "./sound-context";
 import { CuteSuspenseFallback } from "./suspense-fallback";
+import { ErrorBoundary } from "./error-boundary";
+import { PerformanceMonitor } from "./performance-monitor";
+import { SEOHead } from "./seo-head";
+
+// Lazy load components with error boundaries
 const AboutMe = React.lazy(() => import("./pages/about-me"));
 const Resume = React.lazy(() => import("./pages/resume"));
 const Projects = React.lazy(() => import("./pages/projects"));
@@ -60,22 +65,16 @@ export default function Desktop() {
   const [openWindows, setOpenWindows] = useState<WindowData[]>([]);
 
   const getComponentForWindow = (name: string) => {
-    switch (name) {
-      case "About me":
-        return <AboutMe />;
-      case "Resume":
-        return <Resume />;
-      case "Projects":
-        return <Projects />;
-      case "Blog":
-        return <Blog />;
-      case "Links":
-        return <Links />;
-      case "Contact me":
-        return <Contact />;
-      default:
-        return <div>Content for {name}</div>;
-    }
+    const componentMap = {
+      "About me": <AboutMe />,
+      "Resume": <Resume />,
+      "Projects": <Projects />,
+      "Blog": <Blog />,
+      "Links": <Links />,
+      "Contact me": <Contact />,
+    };
+    
+    return componentMap[name as keyof typeof componentMap] || <div>Content for {name}</div>;
   };
 
   const openWindow = (name: string) => {
@@ -166,192 +165,204 @@ export default function Desktop() {
   };
 
   return (
-    <SoundProvider>
-      <AudioProvider>
-        <DndContext>
-          <div
-            className="w-screen h-screen overflow-hidden bg-cover bg-center"
-            style={{ backgroundImage: `url(${Wallpaper})` }}
-          >
-            {isDesktop && <MenuBar />}
+    <>
+      <SEOHead 
+        title="Ahmad Kanaan - Full-Stack Developer Portfolio"
+        description="Experienced full-stack developer specializing in React, Node.js, and modern web technologies. View my projects, blog, and get in touch."
+        type="website"
+      />
+      <SoundProvider>
+        <AudioProvider>
+          <ErrorBoundary>
+            <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
+            <DndContext>
+              <div
+                className="w-screen h-screen overflow-hidden bg-cover bg-center"
+                style={{ backgroundImage: `url(${Wallpaper})` }}
+              >
+                {isDesktop && <MenuBar />}
 
-            {isDesktop && (
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-                <motion.div
-                  className="flex flex-col items-center"
-                  variants={
-                    prefersReducedMotion ? reducedMotionVariants : greetingVariants
-                  }
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <motion.img
-                    src={GreetingGif}
-                    alt="Cute greeting"
-                    className="w-24 h-24 mb-2 animate-float"
-                    whileHover={
-                      prefersReducedMotion ? {} : { scale: 1.1, rotate: 5 }
-                    }
-                    style={{
-                      willChange: "transform",
-                      backfaceVisibility: "hidden",
-                    }}
-                  />
-                  <motion.h1
-                    className="text-2xl font-bold text-white drop-shadow-md"
-                    animate={prefersReducedMotion ? {} : { opacity: [0.7, 1, 0.7] }}
-                    transition={{
-                      duration: 3,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    {greeting}!
-                  </motion.h1>
-                </motion.div>
-              </div>
-            )}
-
-            {isDesktop ? (
-              <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-6">
-                <div className="flex flex-col flex-wrap gap-4 content-start flex-1 overflow-auto pointer-events-none">
-                  {desktopApps.map((app, index) => (
+                {isDesktop && (
+                  <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center pointer-events-none">
                     <motion.div
-                      key={app.id}
+                      className="flex flex-col items-center"
                       variants={
-                        prefersReducedMotion ? reducedMotionVariants : iconVariants
+                        prefersReducedMotion ? reducedMotionVariants : greetingVariants
                       }
                       initial="hidden"
                       animate="visible"
-                      custom={index}
                     >
-                      <DesktopIcon
-                        id={app.id}
-                        label={app.label}
-                        icon={app.icon}
-                        onDoubleClick={() => openWindow(app.label)}
+                      <motion.img
+                        src={GreetingGif}
+                        alt="Cute greeting"
+                        className="w-24 h-24 mb-2 animate-float"
+                        whileHover={
+                          prefersReducedMotion ? {} : { scale: 1.1, rotate: 5 }
+                        }
+                        style={{
+                          willChange: "transform",
+                          backfaceVisibility: "hidden",
+                        }}
                       />
+                      <motion.h1
+                        className="text-2xl font-bold text-white drop-shadow-md"
+                        animate={prefersReducedMotion ? {} : { opacity: [0.7, 1, 0.7] }}
+                        transition={{
+                          duration: 3,
+                          repeat: Number.POSITIVE_INFINITY,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        {greeting}!
+                      </motion.h1>
                     </motion.div>
-                  ))}
-                </div>
-                <MusicPlayerWidget isDesktop={true} />
-                <Taskbar
-                  apps={desktopApps}
-                  openWindows={openWindows}
-                  onAppClick={handleAppClick}
-                  className="mt-auto"
-                />
-              </div>
-            ) : (
-              <div className="absolute inset-0 flex flex-col justify-between overflow-hidden gap-8 p-4">
-                <div className="flex flex-col gap-4 justify-between h-full">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
-                      {desktopApps.slice(0, 4).map((app, index) => (
+                  </div>
+                )}
+
+                {isDesktop ? (
+                  <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-6">
+                    <div className="flex flex-col flex-wrap gap-4 content-start flex-1 overflow-auto pointer-events-none">
+                      {desktopApps.map((app, index) => (
                         <motion.div
                           key={app.id}
                           variants={
-                            prefersReducedMotion
-                              ? reducedMotionVariants
-                              : mobileIconVariants
+                            prefersReducedMotion ? reducedMotionVariants : iconVariants
                           }
                           initial="hidden"
                           animate="visible"
                           custom={index}
                         >
-                          <MobileIcon
+                          <DesktopIcon
                             id={app.id}
                             label={app.label}
                             icon={app.icon}
-                            onClick={() => openWindow(app.label)}
+                            onDoubleClick={() => openWindow(app.label)}
                           />
                         </motion.div>
                       ))}
                     </div>
-                    <motion.div
-                      className="flex justify-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                    >
-                      <img
-                        src={WaterCd}
-                        className="rounded-2xl h-[160px] animate-float"
-                        style={{
-                          willChange: "transform",
-                          backfaceVisibility: "hidden",
-                        }}
-                      />
-                    </motion.div>
+                    <MusicPlayerWidget isDesktop={true} />
+                    <Taskbar
+                      apps={desktopApps}
+                      openWindows={openWindows}
+                      onAppClick={handleAppClick}
+                      className="mt-auto"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <motion.div
-                      className="flex justify-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.5 }}
-                    >
-                      <img
-                        src={CutePuppy}
-                        className="rounded-2xl h-[160px] animate-float"
-                        style={{
-                          willChange: "transform",
-                          backfaceVisibility: "hidden",
-                        }}
-                      />
-                    </motion.div>
-                    <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
-                      {desktopApps.slice(4, 6).map((app, index) => (
+                ) : (
+                  <div className="absolute inset-0 flex flex-col justify-between overflow-hidden gap-8 p-4">
+                    <div className="flex flex-col gap-4 justify-between h-full">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
+                          {desktopApps.slice(0, 4).map((app, index) => (
+                            <motion.div
+                              key={app.id}
+                              variants={
+                                prefersReducedMotion
+                                  ? reducedMotionVariants
+                                  : mobileIconVariants
+                              }
+                              initial="hidden"
+                              animate="visible"
+                              custom={index}
+                            >
+                              <MobileIcon
+                                id={app.id}
+                                label={app.label}
+                                icon={app.icon}
+                                onClick={() => openWindow(app.label)}
+                              />
+                            </motion.div>
+                          ))}
+                        </div>
                         <motion.div
-                          key={app.id}
-                          variants={
-                            prefersReducedMotion
-                              ? reducedMotionVariants
-                              : mobileIconVariants
-                          }
-                          initial="hidden"
-                          animate="visible"
-                          custom={index + 4}
+                          className="flex justify-center"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.5, delay: 0.4 }}
                         >
-                          <MobileIcon
-                            id={app.id}
-                            label={app.label}
-                            icon={app.icon}
-                            onClick={() => openWindow(app.label)}
+                          <img
+                            src={WaterCd}
+                            className="rounded-2xl h-[160px] animate-float"
+                            style={{
+                              willChange: "transform",
+                              backfaceVisibility: "hidden",
+                            }}
                           />
                         </motion.div>
-                      ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <motion.div
+                          className="flex justify-center"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.5, delay: 0.5 }}
+                        >
+                          <img
+                            src={CutePuppy}
+                            className="rounded-2xl h-[160px] animate-float"
+                            style={{
+                              willChange: "transform",
+                              backfaceVisibility: "hidden",
+                            }}
+                          />
+                        </motion.div>
+                        <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
+                          {desktopApps.slice(4, 6).map((app, index) => (
+                            <motion.div
+                              key={app.id}
+                              variants={
+                                prefersReducedMotion
+                                  ? reducedMotionVariants
+                                  : mobileIconVariants
+                              }
+                              initial="hidden"
+                              animate="visible"
+                              custom={index + 4}
+                            >
+                              <MobileIcon
+                                id={app.id}
+                                label={app.label}
+                                icon={app.icon}
+                                onClick={() => openWindow(app.label)}
+                              />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                      <MusicPlayerWidget isDesktop={false} />
                     </div>
+                    <Taskbar
+                      apps={desktopApps}
+                      openWindows={openWindows}
+                      onAppClick={handleAppClick}
+                      className="mt-auto"
+                    />
                   </div>
-                  <MusicPlayerWidget isDesktop={false} />
-                </div>
-                <Taskbar
-                  apps={desktopApps}
-                  openWindows={openWindows}
-                  onAppClick={handleAppClick}
-                  className="mt-auto"
-                />
+                )}
+                <AnimatePresence mode="wait">
+                  {openWindows.map((win) => (
+                    <AppWindow
+                      key={win.name}
+                      title={win.name}
+                      onClose={() => closeWindow(win.name)}
+                      onMinimize={() => minimizeWindow(win.name)}
+                      isMobile={!isDesktop}
+                      isMinimized={win.minimized}
+                    >
+                      <ErrorBoundary>
+                        <React.Suspense fallback={<CuteSuspenseFallback />}>
+                          {win.component}
+                        </React.Suspense>
+                      </ErrorBoundary>
+                    </AppWindow>
+                  ))}
+                </AnimatePresence>
               </div>
-            )}
-            <AnimatePresence mode="wait">
-              {openWindows.map((win) => (
-                <AppWindow
-                  key={win.name}
-                  title={win.name}
-                  onClose={() => closeWindow(win.name)}
-                  onMinimize={() => minimizeWindow(win.name)}
-                  isMobile={!isDesktop}
-                  isMinimized={win.minimized}
-                >
-                  <React.Suspense fallback={<CuteSuspenseFallback />}>
-                      {win.component}
-                  </React.Suspense>
-                </AppWindow>
-              ))}
-            </AnimatePresence>
-          </div>
-        </DndContext>
-      </AudioProvider>
-    </SoundProvider>
+            </DndContext>
+          </ErrorBoundary>
+        </AudioProvider>
+      </SoundProvider>
+    </>
   );
 }
