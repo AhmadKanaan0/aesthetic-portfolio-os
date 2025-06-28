@@ -22,6 +22,7 @@ import MusicPlayerImage from "../assets/MusicPlayerImage.png";
 import PlaylistIcon from "../assets/PlaylistIcon.png";
 import CinamonExit from "../assets/CinamonExit.png";
 import { AudioContext } from "./audio-context";
+import { useAppSound } from "./sound-context";
 import { playlist, type Track } from "@/types/types";
 
 interface MusicPlayerProps {
@@ -44,9 +45,13 @@ export default function MusicPlayerWidget({
     setVolume,
     setIsLoading,
   } = useContext(AudioContext);
+  
+  const { playClickSound, playMenuSound, playPowerUpSound } = useAppSound();
+  
   const prefersReducedMotion = useReducedMotion();
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  
   const iconVariants = {
     hidden: { opacity: 0, scale: 0 },
     visible: (i: number) => ({
@@ -73,6 +78,7 @@ export default function MusicPlayerWidget({
           transition: { duration: 0.1 },
         },
   };
+  
   useEffect(() => {
     const playAudio = async () => {
       if (!audioRef.current) return;
@@ -115,9 +121,11 @@ export default function MusicPlayerWidget({
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
+        playClickSound();
       } else {
         await audioRef.current.play();
         setIsPlaying(true);
+        playPowerUpSound(); // Special sound for play
       }
     } catch (error) {
       console.error("Playback error:", error);
@@ -127,6 +135,7 @@ export default function MusicPlayerWidget({
   const changeTrack = (track: Track) => {
     setCurrentTrack(track);
     setProgress(0);
+    playMenuSound();
   };
 
   const handleNext = () => {
@@ -160,11 +169,23 @@ export default function MusicPlayerWidget({
     const newTime = (audioRef.current.duration * value[0]) / 100;
     audioRef.current.currentTime = newTime;
     setProgress(value[0]);
+    playClickSound();
   };
 
   const handleDesktopClose = () => {
     setIsExpanded(false);
     setShowPlaylist(false);
+    playClickSound();
+  };
+
+  const handleExpandClick = () => {
+    setIsExpanded(true);
+    playMenuSound();
+  };
+
+  const handlePlaylistToggle = () => {
+    setShowPlaylist(!showPlaylist);
+    playMenuSound();
   };
 
   useEffect(() => {
@@ -207,7 +228,7 @@ export default function MusicPlayerWidget({
       >
         <motion.button
           className="w-20 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-          onClick={() => setIsExpanded(true)}
+          onClick={handleExpandClick}
           variants={iconVariants}
           initial="hidden"
           animate="visible"
@@ -276,7 +297,7 @@ export default function MusicPlayerWidget({
               <div className="flex gap-2">
                 <motion.button
                   className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                  onClick={() => setShowPlaylist(!showPlaylist)}
+                  onClick={handlePlaylistToggle}
                   variants={iconVariants}
                   initial="hidden"
                   animate="visible"
@@ -353,7 +374,10 @@ export default function MusicPlayerWidget({
             <div className="flex items-center justify-center gap-4 mb-4">
               <motion.button
                 className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                onClick={handlePrevious}
+                onClick={() => {
+                  handlePrevious();
+                  playClickSound();
+                }}
                 variants={iconVariants}
                 initial="hidden"
                 animate="visible"
@@ -391,7 +415,10 @@ export default function MusicPlayerWidget({
 
               <motion.button
                 className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                onClick={handleNext}
+                onClick={() => {
+                  handleNext();
+                  playClickSound();
+                }}
                 variants={iconVariants}
                 initial="hidden"
                 animate="visible"
@@ -413,7 +440,10 @@ export default function MusicPlayerWidget({
                 max={100}
                 step={1}
                 className="cursor-pointer w-full flex-1"
-                onValueChange={(value) => setVolume(value[0])}
+                onValueChange={(value) => {
+                  setVolume(value[0]);
+                  playClickSound();
+                }}
                 disabled={isLoading}
                 trackClassName="bg-[#ccf2fc]"
                 rangeClassName="bg-[#74defc]"
@@ -541,7 +571,10 @@ export default function MusicPlayerWidget({
                   <div className="flex items-center space-x-2">
                     <motion.button
                       className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                      onClick={handlePrevious}
+                      onClick={() => {
+                        handlePrevious();
+                        playClickSound();
+                      }}
                       variants={iconVariants}
                       initial="hidden"
                       animate="visible"
@@ -579,7 +612,10 @@ export default function MusicPlayerWidget({
 
                     <motion.button
                       className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                      onClick={handleNext}
+                      onClick={() => {
+                        handleNext();
+                        playClickSound();
+                      }}
                       variants={iconVariants}
                       initial="hidden"
                       animate="visible"
@@ -595,7 +631,7 @@ export default function MusicPlayerWidget({
                   </div>
                   <motion.button
                     className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                    onClick={() => setShowPlaylist(true)}
+                    onClick={handlePlaylistToggle}
                     variants={iconVariants}
                     initial="hidden"
                     animate="visible"
@@ -650,7 +686,10 @@ export default function MusicPlayerWidget({
                 </h3>
                 <motion.button
                   className="w-8 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                  onClick={() => setShowPlaylist(false)}
+                  onClick={() => {
+                    setShowPlaylist(false);
+                    playClickSound();
+                  }}
                   variants={iconVariants}
                   initial="hidden"
                   animate="visible"
