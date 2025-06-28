@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { useSound } from '@/hooks/use-sound'
 
 interface SoundContextType {
   playClickSound: () => void
@@ -18,16 +17,131 @@ interface SoundContextType {
 
 const SoundContext = createContext<SoundContextType | undefined>(undefined)
 
-// Sound URLs - using web-based sound effects
-const SOUNDS = {
-  click: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  hover: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  windowOpen: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  windowClose: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  minimize: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  maximize: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  error: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-  success: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
+// Audio context for generating sounds
+let audioContext: AudioContext | null = null
+
+const getAudioContext = () => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+  }
+  return audioContext
+}
+
+// Sound generation functions
+const generateTone = (frequency: number, duration: number, volume: number = 0.3, type: OscillatorType = 'sine') => {
+  try {
+    const ctx = getAudioContext()
+    
+    // Resume context if suspended (required for user interaction)
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    
+    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime)
+    oscillator.type = type
+    
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration)
+    
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + duration)
+  } catch (error) {
+    console.log('Audio generation failed:', error)
+  }
+}
+
+const generateClickSound = (volume: number) => {
+  generateTone(800, 0.1, volume * 0.3, 'square')
+}
+
+const generateHoverSound = (volume: number) => {
+  generateTone(600, 0.05, volume * 0.2, 'sine')
+}
+
+const generateWindowOpenSound = (volume: number) => {
+  // Ascending tone
+  try {
+    const ctx = getAudioContext()
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    
+    oscillator.frequency.setValueAtTime(400, ctx.currentTime)
+    oscillator.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.3)
+    oscillator.type = 'sine'
+    
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(volume * 0.4, ctx.currentTime + 0.05)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+    
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.3)
+  } catch (error) {
+    console.log('Audio generation failed:', error)
+  }
+}
+
+const generateWindowCloseSound = (volume: number) => {
+  // Descending tone
+  try {
+    const ctx = getAudioContext()
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+    oscillator.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.2)
+    oscillator.type = 'sine'
+    
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(volume * 0.4, ctx.currentTime + 0.02)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+    
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.2)
+  } catch (error) {
+    console.log('Audio generation failed:', error)
+  }
+}
+
+const generateMinimizeSound = (volume: number) => {
+  generateTone(500, 0.15, volume * 0.3, 'triangle')
+}
+
+const generateMaximizeSound = (volume: number) => {
+  generateTone(700, 0.15, volume * 0.3, 'triangle')
+}
+
+const generateErrorSound = (volume: number) => {
+  // Double beep for error
+  generateTone(300, 0.1, volume * 0.4, 'square')
+  setTimeout(() => generateTone(300, 0.1, volume * 0.4, 'square'), 150)
+}
+
+const generateSuccessSound = (volume: number) => {
+  // Pleasant ascending chime
+  generateTone(523, 0.1, volume * 0.3, 'sine') // C5
+  setTimeout(() => generateTone(659, 0.1, volume * 0.3, 'sine'), 100) // E5
+  setTimeout(() => generateTone(784, 0.15, volume * 0.3, 'sine'), 200) // G5
 }
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
@@ -38,18 +152,25 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   
   const [volume, setVolume] = useState(() => {
     const saved = localStorage.getItem('portfolio-sound-volume')
-    return saved !== null ? JSON.parse(saved) : 0.3
+    return saved !== null ? JSON.parse(saved) : 0.5
   })
 
-  // Create sound hooks
-  const { play: playClick } = useSound(SOUNDS.click, { volume: volume * 0.8 })
-  const { play: playHover } = useSound(SOUNDS.hover, { volume: volume * 0.4 })
-  const { play: playWindowOpen } = useSound(SOUNDS.windowOpen, { volume: volume * 0.6 })
-  const { play: playWindowClose } = useSound(SOUNDS.windowClose, { volume: volume * 0.6 })
-  const { play: playMinimize } = useSound(SOUNDS.minimize, { volume: volume * 0.5 })
-  const { play: playMaximize } = useSound(SOUNDS.maximize, { volume: volume * 0.5 })
-  const { play: playError } = useSound(SOUNDS.error, { volume: volume * 0.7 })
-  const { play: playSuccess } = useSound(SOUNDS.success, { volume: volume * 0.6 })
+  // Initialize audio context on first user interaction
+  useEffect(() => {
+    const initAudio = () => {
+      getAudioContext()
+      document.removeEventListener('click', initAudio)
+      document.removeEventListener('keydown', initAudio)
+    }
+    
+    document.addEventListener('click', initAudio)
+    document.addEventListener('keydown', initAudio)
+    
+    return () => {
+      document.removeEventListener('click', initAudio)
+      document.removeEventListener('keydown', initAudio)
+    }
+  }, [])
 
   // Save preferences to localStorage
   useEffect(() => {
@@ -60,15 +181,15 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('portfolio-sound-volume', JSON.stringify(volume))
   }, [volume])
 
-  // Wrapped sound functions that check if sound is enabled
-  const playClickSound = () => isSoundEnabled && playClick()
-  const playHoverSound = () => isSoundEnabled && playHover()
-  const playWindowOpenSound = () => isSoundEnabled && playWindowOpen()
-  const playWindowCloseSound = () => isSoundEnabled && playWindowClose()
-  const playMinimizeSound = () => isSoundEnabled && playMinimize()
-  const playMaximizeSound = () => isSoundEnabled && playMaximize()
-  const playErrorSound = () => isSoundEnabled && playError()
-  const playSuccessSound = () => isSoundEnabled && playSuccess()
+  // Sound functions that check if sound is enabled
+  const playClickSound = () => isSoundEnabled && generateClickSound(volume)
+  const playHoverSound = () => isSoundEnabled && generateHoverSound(volume)
+  const playWindowOpenSound = () => isSoundEnabled && generateWindowOpenSound(volume)
+  const playWindowCloseSound = () => isSoundEnabled && generateWindowCloseSound(volume)
+  const playMinimizeSound = () => isSoundEnabled && generateMinimizeSound(volume)
+  const playMaximizeSound = () => isSoundEnabled && generateMaximizeSound(volume)
+  const playErrorSound = () => isSoundEnabled && generateErrorSound(volume)
+  const playSuccessSound = () => isSoundEnabled && generateSuccessSound(volume)
 
   return (
     <SoundContext.Provider
