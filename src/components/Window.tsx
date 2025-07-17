@@ -3,7 +3,8 @@ import type React from "react";
 import { Rnd } from "react-rnd";
 import { useEffect, useState, useRef } from "react";
 import { Maximize, Minus, X, Square } from "lucide-react";
-import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
 import { useAppSound } from "./sound-context";
 
@@ -51,7 +52,7 @@ export function AppWindow({
   const [prevSize, setPrevSize] = useState(size);
   const [prevPosition, setPrevPosition] = useState(position);
   const rndRef = useRef<Rnd>(null);
-  const prefersReducedMotion = useReducedMotion();
+  const windowRef = useRef<HTMLDivElement>(null);
   const { 
     playWindowOpenSound, 
     playWindowCloseSound, 
@@ -100,7 +101,30 @@ export function AppWindow({
 
   const handleClose = () => {
     playWindowCloseSound();
-    onClose?.();
+    
+    // Exit animation
+    if (windowRef.current) {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      
+      if (prefersReducedMotion) {
+        gsap.to(windowRef.current, {
+          opacity: 0,
+          duration: 0.2,
+          onComplete: () => onClose?.()
+        });
+      } else {
+        gsap.to(windowRef.current, {
+          opacity: 0,
+          scale: 0.9,
+          y: isMobile ? 20 : 0,
+          duration: 0.2,
+          ease: "power2.in",
+          onComplete: () => onClose?.()
+        });
+      }
+    } else {
+      onClose?.();
+    }
   };
 
   const handleMinimize = () => {
@@ -143,71 +167,48 @@ export function AppWindow({
   const contentRef = useRef<HTMLDivElement>(null);
   const { width: contentWidth } = useResizeObserver(contentRef);
 
-  const mobileWindowVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
-        type: "spring",
-        damping: 20,
-      },
-    },
-    exit: {
-      opacity: 0,
-      y: 20,
-      transition: {
-        duration: 0.2,
-        ease: "easeIn",
-      },
-    },
-  };
+  // GSAP entrance animation
+  useGSAP(() => {
+    if (!isVisible || !windowRef.current) return;
 
-  const desktopWindowVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
-        type: "spring",
-        damping: 20,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.9,
-      transition: {
-        duration: 0.2,
-        ease: "easeIn",
-      },
-    },
-  };
-
-  const reducedMotionVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
-    exit: { opacity: 0, transition: { duration: 0.2 } },
-  };
-
-  const variants = prefersReducedMotion
-    ? reducedMotionVariants
-    : isMobile
-      ? mobileWindowVariants
-      : desktopWindowVariants;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (prefersReducedMotion) {
+      gsap.fromTo(windowRef.current, 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.3 }
+      );
+    } else {
+      if (isMobile) {
+        gsap.fromTo(windowRef.current, 
+          { opacity: 0, y: 20 }, 
+          { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.3, 
+            ease: "back.out(1.7)" 
+          }
+        );
+      } else {
+        gsap.fromTo(windowRef.current, 
+          { opacity: 0, scale: 0.9 }, 
+          { 
+            opacity: 1, 
+            scale: 1, 
+            duration: 0.3, 
+            ease: "back.out(1.7)" 
+          }
+        );
+      }
+    }
+  }, [isVisible, isMobile]);
 
   if (isMobile) {
     return (
-      <AnimatePresence mode="wait">
+      <>
         {!isMinimized && (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={variants}
+          <div
+            ref={windowRef}
             className="fixed inset-0 z-50 flex flex-col window-mobile"
             style={{
               zIndex,
@@ -218,22 +219,66 @@ export function AppWindow({
             <div className="window-header-mobile">
               <span className="font-semibold text-sm truncate">{title}</span>
               <div className="flex gap-1 shrink-0">
-                <motion.button
+                <button
                   onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  onMouseEnter={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
                 >
                   <Minus size={14} />
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                   onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  onMouseEnter={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
                 >
                   <X size={14} />
-                </motion.button>
+                </button>
               </div>
             </div>
             <div
@@ -243,20 +288,17 @@ export function AppWindow({
             >
               {children}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
     );
   }
 
   return (
-    <AnimatePresence mode="wait">
+    <>
       {!isMinimized && (
-        <motion.div
-          initial="hidden"
-          animate={isVisible ? "visible" : "hidden"}
-          exit="exit"
-          variants={variants}
+        <div
+          ref={windowRef}
           className="absolute"
           style={{
             zIndex,
@@ -304,30 +346,96 @@ export function AppWindow({
             <div className="window-drag-handle">
               <span className="font-semibold text-sm truncate">{title}</span>
               <div className="flex gap-1 shrink-0">
-                <motion.button
+                <button
                   onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  onMouseEnter={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
                 >
                   <Minus size={14} />
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                   onClick={() => handleButtonClick(toggleMaximize)}
                   className="window-button"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  onMouseEnter={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
                 >
                   {isMaximized ? <Square size={14} /> : <Maximize size={14} />}
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                   onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  onMouseEnter={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    if (!prefersReducedMotion) {
+                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
+                    }
+                  }}
                 >
                   <X size={14} />
-                </motion.button>
+                </button>
               </div>
             </div>
             <div
@@ -338,8 +446,8 @@ export function AppWindow({
               {children}
             </div>
           </Rnd>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

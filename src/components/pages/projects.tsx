@@ -1,15 +1,15 @@
 import { useState, useRef } from "react"
-import { useAnimation } from "framer-motion"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Github, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react"
 import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
+import { gsap } from "gsap"
+import { useGSAP } from "@gsap/react"
 
 export default function Projects() {
   const [activeProject, setActiveProject] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
-  const controls = useAnimation()
 
   const projects = [
     {
@@ -72,6 +72,24 @@ export default function Projects() {
     setActiveProject((prev) => (prev - 1 + projects.length) % projects.length)
   }
 
+  useGSAP(() => {
+    if (carouselRef.current) {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      
+      if (prefersReducedMotion) {
+        gsap.set(carouselRef.current, {
+          x: -activeProject * 100 + "%"
+        });
+      } else {
+        gsap.to(carouselRef.current, {
+          x: -activeProject * 100 + "%",
+          duration: 0.5,
+          ease: "power2.out"
+        });
+      }
+    }
+  }, [activeProject]);
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <AnimatedSection variant="fadeIn" duration={0.6} className="text-center">
@@ -80,10 +98,11 @@ export default function Projects() {
       </AnimatedSection>
 
       <AnimatedSection variant="scale" delay={0.1} duration={0.7} className="relative" threshold={0.3}>
-        <div ref={carouselRef} className="overflow-hidden">
+        <div className="overflow-hidden">
           <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${activeProject * 100}%)` }}
+            ref={carouselRef}
+            className="flex"
+            style={{ width: `${projects.length * 100}%` }}
           >
             {projects.map((project) => (
               <div key={project.id} className="min-w-full">

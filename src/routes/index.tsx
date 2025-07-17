@@ -1,11 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SoundProvider, useAppSound } from "@/components/sound-context";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import Wallpaper from "../assets/lockscreen.jpg";
 
 export const Route = createFileRoute("/")({
@@ -19,6 +21,13 @@ function LoginScreen() {
   const [isWrongPassword, setIsWrongPassword] = useState(false);
   const navigate = useNavigate();
   const { playClickSound, playErrorSound, playSuccessSound } = useAppSound();
+  
+  const timeRef = useRef<HTMLHeadingElement>(null);
+  const dateRef = useRef<HTMLParagraphElement>(null);
+  const hintRef = useRef<HTMLParagraphElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const loginCardRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -74,116 +83,194 @@ function LoginScreen() {
     setIsWrongPassword(false);
   };
 
+  // GSAP Animations
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Initial time display animation
+    if (timeRef.current && dateRef.current && hintRef.current && !showLogin) {
+      if (prefersReducedMotion) {
+        gsap.fromTo([timeRef.current, dateRef.current, hintRef.current], 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.5, stagger: 0.1 }
+        );
+      } else {
+        gsap.fromTo([timeRef.current, dateRef.current, hintRef.current], 
+          { opacity: 0, y: 20 }, 
+          { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.8, 
+            stagger: 0.2, 
+            ease: "back.out(1.7)" 
+          }
+        );
+
+        // Pulsing hint animation
+        gsap.to(hintRef.current, {
+          opacity: 0.5,
+          duration: 2,
+          ease: "power2.inOut",
+          yoyo: true,
+          repeat: -1
+        });
+      }
+    }
+
+    // Login overlay animation
+    if (showLogin && overlayRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(overlayRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3 }
+        );
+      } else {
+        gsap.fromTo(overlayRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.5, ease: "power2.out" }
+        );
+      }
+
+      // Hide time display
+      if (timeRef.current && dateRef.current && hintRef.current) {
+        if (prefersReducedMotion) {
+          gsap.to([timeRef.current, dateRef.current, hintRef.current], 
+            { opacity: 0, duration: 0.3 }
+          );
+        } else {
+          gsap.to([timeRef.current, dateRef.current, hintRef.current], 
+            { opacity: 0, scale: 0.9, duration: 0.5, ease: "power2.out" }
+          );
+        }
+      }
+    }
+
+    // Login card animation
+    if (showLogin && loginCardRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(loginCardRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3, delay: 0.2 }
+        );
+      } else {
+        gsap.fromTo(loginCardRef.current, 
+          { opacity: 0, scale: 0.8, y: 20 }, 
+          { 
+            opacity: 1, 
+            scale: 1, 
+            y: 0, 
+            duration: 0.5, 
+            delay: 0.2, 
+            ease: "back.out(1.7)" 
+          }
+        );
+      }
+    }
+
+    // Wrong password shake animation
+    if (isWrongPassword && inputRef.current && !prefersReducedMotion) {
+      gsap.to(inputRef.current, {
+        x: [-8, 8, -8, 8, 0],
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    }
+
+  }, [showLogin, isWrongPassword]);
+
   return (
     <>
-      <style>{`
-        @keyframes shake {
-          0% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-8px);
-          }
-          50% {
-            transform: translateX(8px);
-          }
-          75% {
-            transform: translateX(-8px);
-          }
-          100% {
-            transform: translateX(0);
-          }
-        }
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
       <div
         className="relative flex flex-col items-center justify-center w-full min-h-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${Wallpaper})` }}
         onClick={handleScreenClick}
       >
         {/* Time display */}
-        <div
-          className={cn(
-            "flex flex-col items-center transition-all duration-500 ease-in-out",
-            showLogin ? "opacity-0 scale-90" : "opacity-100 scale-100"
-          )}
-        >
-          <h1 className="text-6xl font-bold text-blue-800 mb-2">
+        <div className="flex flex-col items-center">
+          <h1 
+            ref={timeRef}
+            className="text-6xl font-bold text-blue-800 mb-2"
+          >
             {formatTime(currentTime)}
           </h1>
-          <p className="text-lg text-blue-600 mb-6">
+          <p 
+            ref={dateRef}
+            className="text-lg text-blue-600 mb-6"
+          >
             {formatDate(currentTime)}
           </p>
-          <p className="text-sm text-blue-500/80 animate-pulse">
+          <p 
+            ref={hintRef}
+            className="text-sm text-blue-500/80"
+          >
             Click anywhere to unlock
           </p>
         </div>
 
         {/* Login overlay */}
-        <div
-          className={cn(
-            "absolute inset-0 flex flex-col items-center justify-center backdrop-blur-md transition-all duration-500 ease-in-out",
-            showLogin
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="w-64 p-6 bg-white/20 backdrop-blur-lg rounded-3xl shadow-lg border border-white/30 flex flex-col items-center">
-            <Avatar className="w-20 h-20 mb-4 border-4 border-blue-200/50">
-              <AvatarImage
-                src="/placeholder.svg?height=80&width=80"
-                alt="User"
-              />
-              <AvatarFallback className="bg-blue-200 text-blue-700 text-xl">
-                ME
-              </AvatarFallback>
-            </Avatar>
-
-            <form
-              onSubmit={handleSubmit}
-              className="w-full flex flex-col justify-center space-y-4"
-            >
-              <div className="flex items-center gap-2">
-                <Input
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e: any) => setPassword(e.target.value)}
-                  className={cn(
-                    "pr-12 bg-white/30 border-blue-200/50 focus:border-blue-400 rounded-xl placeholder-blue-500/70",
-                    isWrongPassword && "animate-shake"
-                  )}
-                  autoFocus
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  className="h-8 w-8 cursor-pointer bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
-                  onClick={playClickSound}
-                >
-                  <ArrowRight className="h-4 w-4" />
-                  <span className="sr-only">Unlock</span>
-                </Button>
-              </div>
-              <p className="text-xs text-blue-600/80 text-center">
-                Hint: The password is &apos;haru&apos;
-              </p>
-            </form>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mt-4 cursor-pointer text-white bg-blue-500/30 hover:bg-blue-500/50 backdrop-blur-sm rounded-full"
-            onClick={handleCancel}
+        {showLogin && (
+          <div
+            ref={overlayRef}
+            className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-md"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="h-5 w-5" />
-            <span className="sr-only">Cancel</span>
-          </Button>
-        </div>
+            <div 
+              ref={loginCardRef}
+              className="w-64 p-6 bg-white/20 backdrop-blur-lg rounded-3xl shadow-lg border border-white/30 flex flex-col items-center"
+            >
+              <Avatar className="w-20 h-20 mb-4 border-4 border-blue-200/50">
+                <AvatarImage
+                  src="/placeholder.svg?height=80&width=80"
+                  alt="User"
+                />
+                <AvatarFallback className="bg-blue-200 text-blue-700 text-xl">
+                  ME
+                </AvatarFallback>
+              </Avatar>
+
+              <form
+                onSubmit={handleSubmit}
+                className="w-full flex flex-col justify-center space-y-4"
+              >
+                <div className="flex items-center gap-2">
+                  <Input
+                    ref={inputRef}
+                    type="password"
+                    placeholder="Enter password"
+                    value={password}
+                    onChange={(e: any) => setPassword(e.target.value)}
+                    className={cn(
+                      "pr-12 bg-white/30 border-blue-200/50 focus:border-blue-400 rounded-xl placeholder-blue-500/70"
+                    )}
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="h-8 w-8 cursor-pointer bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
+                    onClick={playClickSound}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    <span className="sr-only">Unlock</span>
+                  </Button>
+                </div>
+                <p className="text-xs text-blue-600/80 text-center">
+                  Hint: The password is &apos;haru&apos;
+                </p>
+              </form>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mt-4 cursor-pointer text-white bg-blue-500/30 hover:bg-blue-500/50 backdrop-blur-sm rounded-full"
+              onClick={handleCancel}
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Cancel</span>
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );

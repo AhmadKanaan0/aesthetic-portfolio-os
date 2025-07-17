@@ -1,9 +1,10 @@
 "use client"
 
 import type React from "react"
-import { motion } from "framer-motion"
+import { gsap } from "gsap"
+import { useGSAP } from "@gsap/react"
+import { useRef } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useReducedMotion } from "motion/react"
 import { useAppSound } from "./sound-context"
 
 interface TaskbarProps {
@@ -22,63 +23,10 @@ interface TaskbarProps {
 }
 
 export function Taskbar({ apps, openWindows, onAppClick, className = "" }: TaskbarProps) {
-  const prefersReducedMotion = useReducedMotion()
   const { playClickSound, playHoverSound } = useAppSound()
-
-  const taskbarVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        delay: 0.8,
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-      },
-    },
-  }
-
-  const iconVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        delay: 0.9 + i * 0.05,
-        type: "spring",
-        stiffness: 200,
-        damping: 20,
-      },
-    }),
-    hover: prefersReducedMotion
-      ? {}
-      : {
-          scale: 1.1,
-          transition: { duration: 0.2 },
-        },
-    tap: prefersReducedMotion
-      ? {}
-      : {
-          scale: 0.95,
-          transition: { duration: 0.1 },
-        },
-  }
-
-  const dotVariants = {
-    hidden: { scale: 0 },
-    visible: {
-      scale: 1,
-      transition: {
-        duration: 0.2,
-        type: "spring",
-        stiffness: 300,
-        damping: 15,
-      },
-    },
-  }
+  const taskbarRef = useRef<HTMLDivElement>(null)
+  const iconsRef = useRef<HTMLDivElement[]>([])
+  const dotsRef = useRef<HTMLDivElement[]>([])
 
   const handleAppClick = (label: string) => {
     playClickSound()
@@ -89,11 +37,119 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
     playHoverSound()
   }
 
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    // Taskbar entrance animation
+    if (taskbarRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(taskbarRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3, delay: 0.8 }
+        );
+      } else {
+        gsap.fromTo(taskbarRef.current, 
+          { y: 50, opacity: 0 }, 
+          { 
+            y: 0, 
+            opacity: 1, 
+            duration: 0.5, 
+            delay: 0.8, 
+            ease: "back.out(1.7)" 
+          }
+        );
+      }
+    }
+
+    // Icons entrance animation
+    iconsRef.current.forEach((icon, index) => {
+      if (icon) {
+        if (prefersReducedMotion) {
+          gsap.fromTo(icon, 
+            { opacity: 0 }, 
+            { opacity: 1, duration: 0.3, delay: 0.9 + index * 0.05 }
+          );
+        } else {
+          gsap.fromTo(icon, 
+            { opacity: 0, y: 20 }, 
+            { 
+              opacity: 1, 
+              y: 0, 
+              duration: 0.3, 
+              delay: 0.9 + index * 0.05, 
+              ease: "back.out(1.7)" 
+            }
+          );
+        }
+      }
+    });
+
+    // Dots entrance animation
+    dotsRef.current.forEach((dot) => {
+      if (dot) {
+        if (prefersReducedMotion) {
+          gsap.fromTo(dot, 
+            { scale: 0 }, 
+            { scale: 1, duration: 0.2, ease: "power2.out" }
+          );
+        } else {
+          gsap.fromTo(dot, 
+            { scale: 0 }, 
+            { scale: 1, duration: 0.2, ease: "back.out(1.7)" }
+          );
+        }
+      }
+    });
+
+  }, []);
+
+  const handleIconHover = (index: number) => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const icon = iconsRef.current[index];
+    if (icon) {
+      gsap.to(icon, {
+        scale: 1.1,
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
+  };
+
+  const handleIconLeave = (index: number) => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const icon = iconsRef.current[index];
+    if (icon) {
+      gsap.to(icon, {
+        scale: 1,
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
+  };
+
+  const handleIconClick = (index: number) => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const icon = iconsRef.current[index];
+    if (icon) {
+      gsap.to(icon, {
+        scale: 0.95,
+        duration: 0.1,
+        ease: "power2.out",
+        yoyo: true,
+        repeat: 1
+      });
+    }
+  };
+
   return (
-    <motion.div
-      variants={taskbarVariants}
-      initial="hidden"
-      animate="visible"
+    <div
+      ref={taskbarRef}
       className={`taskbar ${className}`}
       style={{
         willChange: "transform, opacity",
@@ -108,16 +164,20 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
           return (
             <Tooltip key={app.id}>
               <TooltipTrigger asChild>
-                <motion.div
+                <div
+                  ref={(el) => {
+                    if (el) iconsRef.current[index] = el;
+                  }}
                   className="relative flex flex-col items-center cursor-pointer group p-1"
-                  onClick={() => handleAppClick(app.label)}
-                  onMouseEnter={handleMouseEnter}
-                  variants={iconVariants}
-                  custom={index}
-                  initial="hidden"
-                  animate="visible"
-                  whileHover="hover"
-                  whileTap="tap"
+                  onClick={() => {
+                    handleAppClick(app.label);
+                    handleIconClick(index);
+                  }}
+                  onMouseEnter={() => {
+                    handleMouseEnter();
+                    handleIconHover(index);
+                  }}
+                  onMouseLeave={() => handleIconLeave(index)}
                   style={{
                     willChange: "transform, opacity",
                     backfaceVisibility: "hidden",
@@ -131,14 +191,14 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
                     />
                   </div>
                   {isRunning && (
-                    <motion.div
+                    <div
+                      ref={(el) => {
+                        if (el) dotsRef.current[index] = el;
+                      }}
                       className="taskbar-indicator"
-                      variants={dotVariants}
-                      initial="hidden"
-                      animate="visible"
                     />
                   )}
-                </motion.div>
+                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{app.label}</p>
@@ -147,6 +207,6 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
           )
         })}
       </TooltipProvider>
-    </motion.div>
+    </div>
   )
 }

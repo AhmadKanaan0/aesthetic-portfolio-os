@@ -11,20 +11,20 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as DesktopImport } from './routes/desktop'
 import { Route as IndexImport } from './routes/index'
+import { Route as DesktopImport } from './routes/desktop'
 
 // Create/Update Routes
-
-const DesktopRoute = DesktopImport.update({
-  id: '/desktop',
-  path: '/desktop',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DesktopRoute = DesktopImport.update({
+  id: '/desktop',
+  path: '/desktop',
   getParentRoute: () => rootRoute,
 } as any)
 

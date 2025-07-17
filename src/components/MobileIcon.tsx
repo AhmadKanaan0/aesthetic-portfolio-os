@@ -1,6 +1,8 @@
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useDraggable } from "@dnd-kit/core";
-import { motion, useReducedMotion } from "motion/react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import { useRef } from "react";
 import { useAppSound } from "./sound-context";
 
 export function MobileIcon({
@@ -14,13 +16,15 @@ export function MobileIcon({
   icon: string;
   onClick: () => void;
 }) {
-  const prefersReducedMotion = useReducedMotion();
   const isMobile = useMediaQuery("(max-width: 650px)");
   const { playClickSound, playHoverSound } = useAppSound();
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
     disabled: isMobile,
   });
+  
+  const iconRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -30,27 +34,97 @@ export function MobileIcon({
 
   const handleMouseEnter = () => {
     playHoverSound();
+    
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    if (iconRef.current) {
+      gsap.to(iconRef.current, {
+        scale: 1.1,
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
+
+    if (textRef.current) {
+      gsap.to(textRef.current, {
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
   };
 
-  const iconVariants = {
-    initial: { scale: 0.8, opacity: 0 },
-    animate: { scale: 1, opacity: 1 },
-    hover: prefersReducedMotion
-      ? {}
-      : { scale: 1.1, transition: { duration: 0.2 } },
-    tap: prefersReducedMotion
-      ? {}
-      : { scale: 0.9, transition: { duration: 0.1 } },
+  const handleMouseLeave = () => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    if (iconRef.current) {
+      gsap.to(iconRef.current, {
+        scale: 1,
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
+
+    if (textRef.current) {
+      gsap.to(textRef.current, {
+        backgroundColor: "transparent",
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
   };
 
-  const textVariants = {
-    hover: prefersReducedMotion
-      ? {}
-      : {
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
-          transition: { duration: 0.2 },
-        },
+  const handleMouseDown = () => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    if (iconRef.current) {
+      gsap.to(iconRef.current, {
+        scale: 0.9,
+        duration: 0.1,
+        ease: "power2.out"
+      });
+    }
   };
+
+  const handleMouseUp = () => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    if (iconRef.current) {
+      gsap.to(iconRef.current, {
+        scale: 1.1,
+        duration: 0.1,
+        ease: "power2.out"
+      });
+    }
+  };
+
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (iconRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(iconRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3 }
+        );
+      } else {
+        gsap.fromTo(iconRef.current, 
+          { scale: 0.8, opacity: 0 }, 
+          { 
+            scale: 1, 
+            opacity: 1, 
+            duration: 0.3, 
+            delay: Math.random() * 0.2,
+            ease: "back.out(1.7)" 
+          }
+        );
+      }
+    }
+  }, []);
 
   return (
     <div
@@ -59,6 +133,9 @@ export function MobileIcon({
       {...listeners}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       style={{
         transform: transform
           ? `translate(${transform.x}px, ${transform.y}px)`
@@ -66,19 +143,9 @@ export function MobileIcon({
       }}
       className="desktop-icon flex flex-col items-center justify-center w-14 sm:w-18 md:w-20 cursor-pointer select-none transition-transform hover:scale-105"
     >
-      <motion.div
+      <div
+        ref={iconRef}
         className="w-10 h-10 flex items-center justify-center"
-        variants={iconVariants}
-        initial="initial"
-        animate="animate"
-        whileHover="hover"
-        whileTap="tap"
-        transition={{
-          type: "spring",
-          stiffness: 400,
-          damping: 17,
-          delay: Math.random() * 0.2,
-        }}
       >
         <img
           src={icon || "/placeholder.svg"}
@@ -89,14 +156,13 @@ export function MobileIcon({
             backfaceVisibility: "hidden",
           }}
         />
-      </motion.div>
-      <motion.span
+      </div>
+      <span
+        ref={textRef}
         className="desktop-icon-text text-xs md:text-sm"
-        variants={textVariants}
-        whileHover="hover"
       >
         {label}
-      </motion.span>
+      </span>
     </div>
   );
 }

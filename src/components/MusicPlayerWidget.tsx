@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import {
   SkipBack,
   Play,
@@ -12,7 +12,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence, useReducedMotion, scale } from "motion/react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import sanrio from "../assets/sanrio.png";
 import Forward from "../assets/Forward.png";
 import Previous from "../assets/Previous.png";
@@ -48,36 +49,13 @@ export default function MusicPlayerWidget({
   
   const { playClickSound, playMenuSound, playPowerUpSound } = useAppSound();
   
-  const prefersReducedMotion = useReducedMotion();
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const iconVariants = {
-    hidden: { opacity: 0, scale: 0 },
-    visible: (i: number) => ({
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.3,
-        delay: 0.9 + i * 0.05,
-        type: "spring",
-        stiffness: 200,
-        damping: 20,
-      },
-    }),
-    hover: prefersReducedMotion
-      ? {}
-      : {
-          scale: 1.1,
-          transition: { duration: 0.2 },
-        },
-    tap: prefersReducedMotion
-      ? {}
-      : {
-          scale: 0.95,
-          transition: { duration: 0.1 },
-        },
-  };
+  const playerRef = useRef<HTMLDivElement>(null);
+  const playlistRef = useRef<HTMLDivElement>(null);
+  const albumCoverRef = useRef<HTMLImageElement>(null);
+  const buttonsRef = useRef<HTMLButtonElement[]>([]);
   
   useEffect(() => {
     const playAudio = async () => {
@@ -125,7 +103,7 @@ export default function MusicPlayerWidget({
       } else {
         await audioRef.current.play();
         setIsPlaying(true);
-        playPowerUpSound(); // Special sound for play
+        playPowerUpSound();
       }
     } catch (error) {
       console.error("Playback error:", error);
@@ -218,57 +196,176 @@ export default function MusicPlayerWidget({
     };
   }, []);
 
+  // GSAP Animations
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Album cover rotation animation
+    if (albumCoverRef.current && isPlaying && !isLoading) {
+      if (!prefersReducedMotion) {
+        gsap.to(albumCoverRef.current, {
+          rotation: 360,
+          duration: 3,
+          repeat: -1,
+          ease: "none"
+        });
+      }
+    } else if (albumCoverRef.current) {
+      gsap.killTweensOf(albumCoverRef.current);
+    }
+
+    // Buttons entrance animation
+    buttonsRef.current.forEach((button, index) => {
+      if (button) {
+        if (prefersReducedMotion) {
+          gsap.fromTo(button, 
+            { opacity: 0 }, 
+            { opacity: 1, duration: 0.3, delay: 0.9 + index * 0.05 }
+          );
+        } else {
+          gsap.fromTo(button, 
+            { opacity: 0, scale: 0 }, 
+            { 
+              opacity: 1, 
+              scale: 1, 
+              duration: 0.3, 
+              delay: 0.9 + index * 0.05, 
+              ease: "back.out(1.7)" 
+            }
+          );
+        }
+      }
+    });
+
+    // Player entrance animation
+    if (playerRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(playerRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3, delay: 1 }
+        );
+      } else {
+        gsap.fromTo(playerRef.current, 
+          { scale: 0, opacity: 0 }, 
+          { 
+            scale: 1, 
+            opacity: 1, 
+            duration: 0.5, 
+            delay: 1, 
+            ease: "back.out(1.7)" 
+          }
+        );
+      }
+    }
+
+    // Playlist animation
+    if (showPlaylist && playlistRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(playlistRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3 }
+        );
+      } else {
+        gsap.fromTo(playlistRef.current, 
+          { x: 100, opacity: 0, scale: 0.95 }, 
+          { 
+            x: 0, 
+            opacity: 1, 
+            scale: 1, 
+            duration: 0.3, 
+            ease: "back.out(1.7)" 
+          }
+        );
+      }
+    }
+
+  }, [isPlaying, isLoading, showPlaylist]);
+
+  const handleButtonHover = (index: number) => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const button = buttonsRef.current[index];
+    if (button) {
+      gsap.to(button, {
+        scale: 1.1,
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
+  };
+
+  const handleButtonLeave = (index: number) => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const button = buttonsRef.current[index];
+    if (button) {
+      gsap.to(button, {
+        scale: 1,
+        duration: 0.2,
+        ease: "power2.out"
+      });
+    }
+  };
+
+  const handleButtonClick = (index: number) => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const button = buttonsRef.current[index];
+    if (button) {
+      gsap.to(button, {
+        scale: 0.95,
+        duration: 0.1,
+        ease: "power2.out",
+        yoyo: true,
+        repeat: 1
+      });
+    }
+  };
+
   if (isDesktop && !isExpanded) {
     return (
-      <motion.div
+      <div
+        ref={playerRef}
         className="fixed bottom-6 right-6 z-50"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 1, type: "spring", stiffness: 200 }}
       >
-        <motion.button
+        <button
+          ref={(el) => {
+            if (el) buttonsRef.current[0] = el;
+          }}
           className="w-20 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-          onClick={handleExpandClick}
-          variants={iconVariants}
-          initial="hidden"
-          animate="visible"
-          whileHover="hover"
-          whileTap="tap"
+          onClick={() => {
+            handleExpandClick();
+            handleButtonClick(0);
+          }}
+          onMouseEnter={() => handleButtonHover(0)}
+          onMouseLeave={() => handleButtonLeave(0)}
           disabled={isLoading}
         >
           <img src={MusicPlayerImage} alt="Music Player" />
-          <motion.div
+          <div
+            ref={albumCoverRef}
             className="absolute top-[60.5%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full overflow-hidden border-2 border-white/30"
-            animate={isPlaying ? { rotate: 360 } : { rotate: 0 }}
-            transition={
-              isPlaying
-                ? {
-                    duration: 3,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "linear",
-                  }
-                : { duration: 0.5 }
-            }
           >
             <img
               src={currentTrack.cover || "/placeholder.svg"}
               alt={currentTrack.title}
               className="w-full h-full object-cover"
             />
-          </motion.div>
-        </motion.button>
-      </motion.div>
+          </div>
+        </button>
+      </div>
     );
   }
 
   // Desktop expanded panel
   if (isDesktop && isExpanded) {
     return (
-      <motion.div
+      <div
+        ref={playerRef}
         className="fixed bottom-6 right-6 z-50 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 overflow-hidden bg-cover bg-center"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 200 }}
         style={{
           width: showPlaylist ? "480px" : "380px",
           height: "300px",
@@ -277,17 +374,11 @@ export default function MusicPlayerWidget({
       >
         <div className="flex h-full w-full">
           {/* Main Player */}
-          <motion.div
+          <div
             className="flex-1 p-6 flex flex-col"
-            animate={{
-              x: showPlaylist ? -50 : 0,
+            style={{
+              transform: showPlaylist ? "translateX(-50px)" : "translateX(0)",
               opacity: showPlaylist ? 0.8 : 1,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 35,
-              duration: 0.3,
             }}
           >
             <div className="flex justify-between items-center mb-4">
@@ -295,49 +386,54 @@ export default function MusicPlayerWidget({
                 Now Playing
               </h3>
               <div className="flex gap-2">
-                <motion.button
+                <button
+                  ref={(el) => {
+                    if (el) buttonsRef.current[1] = el;
+                  }}
                   className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                  onClick={handlePlaylistToggle}
-                  variants={iconVariants}
-                  initial="hidden"
-                  animate="visible"
-                  whileHover="hover"
-                  whileTap="tap"
+                  onClick={() => {
+                    handlePlaylistToggle();
+                    handleButtonClick(1);
+                  }}
+                  onMouseEnter={() => handleButtonHover(1)}
+                  onMouseLeave={() => handleButtonLeave(1)}
                 >
                   <img src={PlaylistIcon} alt="Playlist Icon" />
                   <div className="absolute top-[21%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                     <List className="h-4 w-4" />
                   </div>
-                </motion.button>
-                <motion.button
+                </button>
+                <button
+                  ref={(el) => {
+                    if (el) buttonsRef.current[2] = el;
+                  }}
                   className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                  onClick={handleDesktopClose}
-                  variants={iconVariants}
-                  initial="hidden"
-                  animate="visible"
-                  whileHover="hover"
-                  whileTap="tap"
+                  onClick={() => {
+                    handleDesktopClose();
+                    handleButtonClick(2);
+                  }}
+                  onMouseEnter={() => handleButtonHover(2)}
+                  onMouseLeave={() => handleButtonLeave(2)}
                 >
                   <img src={CinamonExit} alt="Cinamon Exit" />
                   <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                     <X className="h-4 w-4" />
                   </div>
-                </motion.button>
+                </button>
               </div>
             </div>
 
             <div className="flex gap-4 mb-4">
-              <motion.div
+              <div
+                ref={albumCoverRef}
                 className="w-20 h-20 rounded-xl overflow-hidden shadow-lg"
-                animate={isPlaying ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               >
                 <img
                   src={currentTrack.cover || "/placeholder.svg"}
                   alt={currentTrack.title}
                   className="w-full h-full object-cover"
                 />
-              </motion.div>
+              </div>
               <div className="flex-1">
                 <h4 className="font-bold text-gray-800 dark:text-white truncate">
                   {currentTrack.title}
@@ -372,33 +468,37 @@ export default function MusicPlayerWidget({
             </div>
 
             <div className="flex items-center justify-center gap-4 mb-4">
-              <motion.button
+              <button
+                ref={(el) => {
+                  if (el) buttonsRef.current[3] = el;
+                }}
                 className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                 onClick={() => {
                   handlePrevious();
                   playClickSound();
+                  handleButtonClick(3);
                 }}
-                variants={iconVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                whileTap="tap"
+                onMouseEnter={() => handleButtonHover(3)}
+                onMouseLeave={() => handleButtonLeave(3)}
                 disabled={isLoading}
               >
                 <img src={Previous} alt="previous" />
                 <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                   <SkipBack className="h-4 w-4" />
                 </div>
-              </motion.button>
+              </button>
 
-              <motion.button
+              <button
+                ref={(el) => {
+                  if (el) buttonsRef.current[4] = el;
+                }}
                 className="w-18 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                onClick={handlePlayPause}
-                variants={iconVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                whileTap="tap"
+                onClick={() => {
+                  handlePlayPause();
+                  handleButtonClick(4);
+                }}
+                onMouseEnter={() => handleButtonHover(4)}
+                onMouseLeave={() => handleButtonLeave(4)}
                 disabled={isLoading}
               >
                 <img src={sanrio} alt="sanrio" />
@@ -411,26 +511,27 @@ export default function MusicPlayerWidget({
                     <Play className="h-4 w-4" />
                   )}
                 </div>
-              </motion.button>
+              </button>
 
-              <motion.button
+              <button
+                ref={(el) => {
+                  if (el) buttonsRef.current[5] = el;
+                }}
                 className="w-12 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
                 onClick={() => {
                   handleNext();
                   playClickSound();
+                  handleButtonClick(5);
                 }}
-                variants={iconVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                whileTap="tap"
+                onMouseEnter={() => handleButtonHover(5)}
+                onMouseLeave={() => handleButtonLeave(5)}
                 disabled={isLoading}
               >
                 <img src={Forward} alt="forward" />
                 <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
                   <SkipForward className="h-4 w-4" />
                 </div>
-              </motion.button>
+              </button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -459,298 +560,320 @@ export default function MusicPlayerWidget({
                 {volume}
               </span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Playlist Panel */}
-          <AnimatePresence mode="wait">
-            {showPlaylist && (
-              <motion.div
-                className="w-80 bg-gray-50 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4"
-                initial={{ x: 100, opacity: 0, scale: 0.95 }}
-                animate={{ x: 0, opacity: 1, scale: 1 }}
-                exit={{ x: 100, opacity: 0, scale: 0.95 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 35,
-                  duration: 0.3,
-                }}
-              >
-                <h4 className="font-bold text-gray-800 dark:text-white mb-4">
-                  Playlist
-                </h4>
-                <div className="space-y-2 overflow-y-scroll px-2 py-2 h-[240px]">
-                  {playlist.map((track) => (
-                    <motion.div
-                      key={track.id}
-                      className={cn(
-                        "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors",
-                        currentTrack.id === track.id
-                          ? "bg-blue-100 dark:bg-blue-900/30"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                      )}
-                      onClick={() => changeTrack(track)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <img
-                        src={track.cover || "/placeholder.svg"}
-                        alt={track.title}
-                        className="w-10 h-10 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
-                          {track.title}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                          {track.artist}
-                        </p>
-                      </div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {track.duration}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {showPlaylist && (
+            <div
+              ref={playlistRef}
+              className="w-80 bg-gray-50 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4"
+            >
+              <h4 className="font-bold text-gray-800 dark:text-white mb-4">
+                Playlist
+              </h4>
+              <div className="space-y-2 overflow-y-scroll px-2 py-2 h-[240px]">
+                {playlist.map((track) => (
+                  <div
+                    key={track.id}
+                    className={cn(
+                      "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors",
+                      currentTrack.id === track.id
+                        ? "bg-blue-100 dark:bg-blue-900/30"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                    )}
+                    onClick={() => changeTrack(track)}
+                    onMouseEnter={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 1.02, duration: 0.1 });
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                      }
+                    }}
+                    onMouseDown={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 0.98, duration: 0.1 });
+                      }
+                    }}
+                    onMouseUp={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 1.02, duration: 0.1 });
+                      }
+                    }}
+                  >
+                    <img
+                      src={track.cover || "/placeholder.svg"}
+                      alt={track.title}
+                      className="w-10 h-10 rounded-lg object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
+                        {track.title}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                        {track.artist}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {track.duration}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   // Mobile/Widget version with horizontal scrolling playlist
   return (
     <div className="flex flex-col items-center justify-center">
-      <motion.div
+      <div
+        ref={playerRef}
         className="w-full h-[170px] rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl bg-cover bg-center"
         style={{ backgroundImage: `url(${MusicWallpaper})` }}
-        layout
       >
-        <AnimatePresence mode="wait">
-          {!showPlaylist ? (
-            <motion.div
-              key="player"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="p-4 gap-4 flex flex-row items-center h-full"
+        {!showPlaylist ? (
+          <div className="p-4 gap-4 flex flex-row items-center h-full">
+            <div
+              ref={albumCoverRef}
+              className={cn(
+                "w-32 h-32 rounded-2xl overflow-hidden shadow-md transform transition-transform",
+                isLoading ? "opacity-80" : "opacity-100"
+              )}
             >
-              <motion.div
-                className={cn(
-                  "w-32 h-32 rounded-2xl overflow-hidden shadow-md transform transition-transform",
-                  isLoading ? "opacity-80" : "opacity-100"
-                )}
-                animate={
-                  isPlaying && !isLoading
-                    ? { scale: [1, 1.05, 1] }
-                    : { scale: 1 }
-                }
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              >
-                <img
-                  src={currentTrack.cover || "/placeholder.svg"}
-                  alt={`${currentTrack.title} album cover`}
-                  className="object-cover w-full h-full"
-                />
-              </motion.div>
+              <img
+                src={currentTrack.cover || "/placeholder.svg"}
+                alt={`${currentTrack.title} album cover`}
+                className="object-cover w-full h-full"
+              />
+            </div>
 
-              <div className="flex flex-col flex-1 gap-3 h-full justify-between">
-                <div className="w-full flex flex-col items-start">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white truncate w-full">
-                    {currentTrack.title}
-                  </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 truncate w-full">
-                    {currentTrack.artist}
-                  </p>
-                </div>
+            <div className="flex flex-col flex-1 gap-3 h-full justify-between">
+              <div className="w-full flex flex-col items-start">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white truncate w-full">
+                  {currentTrack.title}
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300 truncate w-full">
+                  {currentTrack.artist}
+                </p>
+              </div>
 
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center space-x-2">
-                    <motion.button
-                      className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                      onClick={() => {
-                        handlePrevious();
-                        playClickSound();
-                      }}
-                      variants={iconVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover="hover"
-                      whileTap="tap"
-                      disabled={isLoading}
-                    >
-                      <img src={Previous} alt="previous" />
-                      <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                        <SkipBack className="h-3 w-3" />
-                      </div>
-                    </motion.button>
-
-                    <motion.button
-                      className="w-16 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                      onClick={handlePlayPause}
-                      variants={iconVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover="hover"
-                      whileTap="tap"
-                      disabled={isLoading}
-                    >
-                      <img src={sanrio} alt="sanrio" />
-                      <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                        {isLoading ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : isPlaying ? (
-                          <Pause className="h-3 w-3" />
-                        ) : (
-                          <Play className="h-3 w-3" />
-                        )}
-                      </div>
-                    </motion.button>
-
-                    <motion.button
-                      className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                      onClick={() => {
-                        handleNext();
-                        playClickSound();
-                      }}
-                      variants={iconVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover="hover"
-                      whileTap="tap"
-                      disabled={isLoading}
-                    >
-                      <img src={Forward} alt="forward" />
-                      <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                        <SkipForward className="h-3 w-3" />
-                      </div>
-                    </motion.button>
-                  </div>
-                  <motion.button
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center space-x-2">
+                  <button
+                    ref={(el) => {
+                      if (el) buttonsRef.current[6] = el;
+                    }}
                     className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                    onClick={handlePlaylistToggle}
-                    variants={iconVariants}
-                    initial="hidden"
-                    animate="visible"
-                    whileHover="hover"
-                    whileTap="tap"
+                    onClick={() => {
+                      handlePrevious();
+                      playClickSound();
+                      handleButtonClick(6);
+                    }}
+                    onMouseEnter={() => handleButtonHover(6)}
+                    onMouseLeave={() => handleButtonLeave(6)}
                     disabled={isLoading}
                   >
-                    <img src={PlaylistIcon} alt="Playlist Icon" />
-                    <div className="absolute top-[20%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                      <List className="h-3 w-3" />
+                    <img src={Previous} alt="previous" />
+                    <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                      <SkipBack className="h-3 w-3" />
                     </div>
-                  </motion.button>
-                </div>
+                  </button>
 
-                <div className="w-full">
-                  <Slider
-                    value={[progress]}
-                    max={100}
-                    step={0.1}
-                    className="cursor-pointer w-full"
-                    onValueChange={handleSeek}
+                  <button
+                    ref={(el) => {
+                      if (el) buttonsRef.current[7] = el;
+                    }}
+                    className="w-16 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                    onClick={() => {
+                      handlePlayPause();
+                      handleButtonClick(7);
+                    }}
+                    onMouseEnter={() => handleButtonHover(7)}
+                    onMouseLeave={() => handleButtonLeave(7)}
                     disabled={isLoading}
-                    trackClassName="bg-[#ccf2fc]"
-                    rangeClassName="bg-[#74defc]"
-                    thumbClassName="h-8 w-8 flex items-center justify-center rounded-full"
-                    thumb={
-                      <img
-                        src={SliderIcon}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    }
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>{formatTime(progress)}</span>
-                    <span>{currentTrack.duration}</span>
-                  </div>
+                  >
+                    <img src={sanrio} alt="sanrio" />
+                    <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                      {isLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : isPlaying ? (
+                        <Pause className="h-3 w-3" />
+                      ) : (
+                        <Play className="h-3 w-3" />
+                      )}
+                    </div>
+                  </button>
+
+                  <button
+                    ref={(el) => {
+                      if (el) buttonsRef.current[8] = el;
+                    }}
+                    className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                    onClick={() => {
+                      handleNext();
+                      playClickSound();
+                      handleButtonClick(8);
+                    }}
+                    onMouseEnter={() => handleButtonHover(8)}
+                    onMouseLeave={() => handleButtonLeave(8)}
+                    disabled={isLoading}
+                  >
+                    <img src={Forward} alt="forward" />
+                    <div className="absolute top-1/2 left-[55%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                      <SkipForward className="h-3 w-3" />
+                    </div>
+                  </button>
                 </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="playlist"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-              className="p-4 h-full flex flex-col"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                  Playlist
-                </h3>
-                <motion.button
-                  className="w-8 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                  onClick={() => {
-                    setShowPlaylist(false);
-                    playClickSound();
+                <button
+                  ref={(el) => {
+                    if (el) buttonsRef.current[9] = el;
                   }}
-                  variants={iconVariants}
-                  initial="hidden"
-                  animate="visible"
-                  whileHover="hover"
-                  whileTap="tap"
+                  className="w-10 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                  onClick={() => {
+                    handlePlaylistToggle();
+                    handleButtonClick(9);
+                  }}
+                  onMouseEnter={() => handleButtonHover(9)}
+                  onMouseLeave={() => handleButtonLeave(9)}
+                  disabled={isLoading}
                 >
-                  <img src={CinamonExit} alt="Cinamon Exit" />
-                  <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                    <X className="h-3 w-3" />
+                  <img src={PlaylistIcon} alt="Playlist Icon" />
+                  <div className="absolute top-[20%] left-[30%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                    <List className="h-3 w-3" />
                   </div>
-                </motion.button>
+                </button>
               </div>
 
-              {/* Horizontal scrolling playlist */}
-              <div className="flex-1 overflow-hidden">
-                <div
-                  className="flex gap-3 overflow-x-auto p-2 py-2 h-full"
-                  style={{ scrollbarWidth: "thin" }}
-                >
-                  {playlist.map((track) => (
-                    <motion.div
-                      key={track.id}
-                      className={cn(
-                        "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border",
-                        currentTrack.id === track.id
-                          ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
-                          : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
-                      )}
-                      onClick={() => {
-                        changeTrack(track);
-                        setShowPlaylist(false);
-                      }}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <div className="w-12 h-12 aspect-square rounded-lg overflow-hidden">
-                        <img
-                          src={track.cover || "/placeholder.svg"}
-                          alt={track.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
-                          {track.title}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                          {track.artist}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {track.duration}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
+              <div className="w-full">
+                <Slider
+                  value={[progress]}
+                  max={100}
+                  step={0.1}
+                  className="cursor-pointer w-full"
+                  onValueChange={handleSeek}
+                  disabled={isLoading}
+                  trackClassName="bg-[#ccf2fc]"
+                  rangeClassName="bg-[#74defc]"
+                  thumbClassName="h-8 w-8 flex items-center justify-center rounded-full"
+                  thumb={
+                    <img
+                      src={SliderIcon}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  }
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>{formatTime(progress)}</span>
+                  <span>{currentTrack.duration}</span>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 h-full flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+                Playlist
+              </h3>
+              <button
+                ref={(el) => {
+                  if (el) buttonsRef.current[10] = el;
+                }}
+                className="w-8 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                onClick={() => {
+                  setShowPlaylist(false);
+                  playClickSound();
+                  handleButtonClick(10);
+                }}
+                onMouseEnter={() => handleButtonHover(10)}
+                onMouseLeave={() => handleButtonLeave(10)}
+              >
+                <img src={CinamonExit} alt="Cinamon Exit" />
+                <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                  <X className="h-3 w-3" />
+                </div>
+              </button>
+            </div>
+
+            {/* Horizontal scrolling playlist */}
+            <div className="flex-1 overflow-hidden">
+              <div
+                className="flex gap-3 overflow-x-auto p-2 py-2 h-full"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                {playlist.map((track) => (
+                  <div
+                    key={track.id}
+                    className={cn(
+                      "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border",
+                      currentTrack.id === track.id
+                        ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
+                        : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
+                    )}
+                    onClick={() => {
+                      changeTrack(track);
+                      setShowPlaylist(false);
+                    }}
+                    onMouseEnter={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 1.05, y: -2, duration: 0.1 });
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 1, y: 0, duration: 0.1 });
+                      }
+                    }}
+                    onMouseDown={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 0.95, duration: 0.1 });
+                      }
+                    }}
+                    onMouseUp={() => {
+                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!prefersReducedMotion) {
+                        gsap.to(event?.currentTarget, { scale: 1.05, duration: 0.1 });
+                      }
+                    }}
+                  >
+                    <div className="w-12 h-12 aspect-square rounded-lg overflow-hidden">
+                      <img
+                        src={track.cover || "/placeholder.svg"}
+                        alt={track.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
+                        {track.title}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                        {track.artist}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {track.duration}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

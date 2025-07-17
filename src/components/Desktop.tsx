@@ -1,7 +1,7 @@
 import React from "react";
 
 import { DndContext } from "@dnd-kit/core";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AppWindow } from "./Window";
 import { DesktopIcon } from "./Icon";
 import { MobileIcon } from "./MobileIcon";
@@ -19,10 +19,12 @@ import GreetingGif from "../assets/greeting.gif";
 import WaterCd from "../assets/water-cd.jpg";
 import CutePuppy from "../assets/cute-puppy.jpg";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { AudioProvider } from "./audio-context";
 import { SoundProvider } from "./sound-context";
 import { CuteSuspenseFallback } from "./suspense-fallback";
+
 const AboutMe = React.lazy(() => import("./pages/about-me"));
 const Resume = React.lazy(() => import("./pages/resume"));
 const Projects = React.lazy(() => import("./pages/projects"));
@@ -39,7 +41,11 @@ export default function Desktop() {
 
   const isDesktop = useMediaQuery("(min-width: 650px)");
   const [greeting, setGreeting] = useState("Good morning");
-  const prefersReducedMotion = useReducedMotion();
+  const greetingRef = useRef<HTMLDivElement>(null);
+  const greetingImageRef = useRef<HTMLImageElement>(null);
+  const greetingTextRef = useRef<HTMLHeadingElement>(null);
+  const desktopIconsRef = useRef<HTMLDivElement[]>([]);
+  const mobileIconsRef = useRef<HTMLDivElement[]>([]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -113,57 +119,123 @@ export default function Desktop() {
     }
   };
 
-  // Animation variants
-  const greetingVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        delay: 0.3,
-        type: "spring",
-        damping: 15,
-      },
-    },
-  };
+  // GSAP Animations
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (prefersReducedMotion) {
+      // Simple fade-in for reduced motion users
+      if (greetingRef.current) {
+        gsap.fromTo(greetingRef.current, 
+          { opacity: 0 }, 
+          { opacity: 1, duration: 0.3, delay: 0.3 }
+        );
+      }
+      
+      desktopIconsRef.current.forEach((icon, index) => {
+        if (icon) {
+          gsap.fromTo(icon, 
+            { opacity: 0 }, 
+            { opacity: 1, duration: 0.3, delay: index * 0.05 }
+          );
+        }
+      });
+      
+      mobileIconsRef.current.forEach((icon, index) => {
+        if (icon) {
+          gsap.fromTo(icon, 
+            { opacity: 0 }, 
+            { opacity: 1, duration: 0.3, delay: index * 0.05 }
+          );
+        }
+      });
+      return;
+    }
 
-  const iconVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.5,
-        delay: i * 0.1,
-        type: "spring",
-        damping: 15,
-      },
-    }),
-  };
+    // Desktop greeting animation
+    if (isDesktop && greetingRef.current) {
+      const tl = gsap.timeline();
+      
+      tl.fromTo(greetingRef.current, 
+        { opacity: 0, y: -20 }, 
+        { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "back.out(1.7)" }
+      );
 
-  const mobileIconVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: (i: number) => ({
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.3,
-        delay: i * 0.1,
-        type: "spring",
-        damping: 15,
-      },
-    }),
-  };
+      if (greetingImageRef.current) {
+        tl.fromTo(greetingImageRef.current, 
+          { scale: 0.8, opacity: 0 }, 
+          { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 
+          "-=0.5"
+        );
+        
+        // Floating animation
+        gsap.to(greetingImageRef.current, {
+          y: -10,
+          duration: 3,
+          ease: "power2.inOut",
+          yoyo: true,
+          repeat: -1
+        });
+      }
 
-  // Use simpler animations for users who prefer reduced motion
-  const reducedMotionVariants = {
-    hidden: { opacity: 0 },
-    visible: (i: number) => ({
-      opacity: 1,
-      transition: { duration: 0.3, delay: i * 0.05 },
-    }),
-  };
+      if (greetingTextRef.current) {
+        gsap.to(greetingTextRef.current, {
+          opacity: 0.7,
+          duration: 3,
+          ease: "power2.inOut",
+          yoyo: true,
+          repeat: -1
+        });
+      }
+    }
+
+    // Desktop icons animation
+    if (isDesktop) {
+      desktopIconsRef.current.forEach((icon, index) => {
+        if (icon) {
+          gsap.fromTo(icon, 
+            { opacity: 0, x: -20 }, 
+            { 
+              opacity: 1, 
+              x: 0, 
+              duration: 0.5, 
+              delay: index * 0.1, 
+              ease: "back.out(1.7)" 
+            }
+          );
+        }
+      });
+    } else {
+      // Mobile icons animation
+      mobileIconsRef.current.forEach((icon, index) => {
+        if (icon) {
+          gsap.fromTo(icon, 
+            { opacity: 0, scale: 0.8 }, 
+            { 
+              opacity: 1, 
+              scale: 1, 
+              duration: 0.3, 
+              delay: index * 0.1, 
+              ease: "back.out(1.7)" 
+            }
+          );
+        }
+      });
+    }
+
+    // Floating animation for decorative images
+    const floatingElements = document.querySelectorAll('.animate-float');
+    floatingElements.forEach((element) => {
+      gsap.to(element, {
+        y: -10,
+        duration: 6,
+        ease: "power2.inOut",
+        yoyo: true,
+        repeat: -1
+      });
+    });
+
+  }, [isDesktop, greeting]);
 
   return (
     <SoundProvider>
@@ -177,38 +249,27 @@ export default function Desktop() {
 
             {isDesktop && (
               <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-                <motion.div
+                <div 
+                  ref={greetingRef}
                   className="flex flex-col items-center"
-                  variants={
-                    prefersReducedMotion ? reducedMotionVariants : greetingVariants
-                  }
-                  initial="hidden"
-                  animate="visible"
                 >
-                  <motion.img
+                  <img
+                    ref={greetingImageRef}
                     src={GreetingGif}
                     alt="Cute greeting"
                     className="w-24 h-24 mb-2 animate-float"
-                    whileHover={
-                      prefersReducedMotion ? {} : { scale: 1.1, rotate: 5 }
-                    }
                     style={{
                       willChange: "transform",
                       backfaceVisibility: "hidden",
                     }}
                   />
-                  <motion.h1
+                  <h1
+                    ref={greetingTextRef}
                     className="text-2xl font-bold text-white drop-shadow-md"
-                    animate={prefersReducedMotion ? {} : { opacity: [0.7, 1, 0.7] }}
-                    transition={{
-                      duration: 3,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "easeInOut",
-                    }}
                   >
                     {greeting}!
-                  </motion.h1>
-                </motion.div>
+                  </h1>
+                </div>
               </div>
             )}
 
@@ -216,14 +277,11 @@ export default function Desktop() {
               <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-6">
                 <div className="flex flex-col flex-wrap gap-4 content-start flex-1 overflow-auto pointer-events-none">
                   {desktopApps.map((app, index) => (
-                    <motion.div
+                    <div
                       key={app.id}
-                      variants={
-                        prefersReducedMotion ? reducedMotionVariants : iconVariants
-                      }
-                      initial="hidden"
-                      animate="visible"
-                      custom={index}
+                      ref={(el) => {
+                        if (el) desktopIconsRef.current[index] = el;
+                      }}
                     >
                       <DesktopIcon
                         id={app.id}
@@ -231,7 +289,7 @@ export default function Desktop() {
                         icon={app.icon}
                         onDoubleClick={() => openWindow(app.label)}
                       />
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
                 <MusicPlayerWidget isDesktop={true} />
@@ -248,16 +306,11 @@ export default function Desktop() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
                       {desktopApps.slice(0, 4).map((app, index) => (
-                        <motion.div
+                        <div
                           key={app.id}
-                          variants={
-                            prefersReducedMotion
-                              ? reducedMotionVariants
-                              : mobileIconVariants
-                          }
-                          initial="hidden"
-                          animate="visible"
-                          custom={index}
+                          ref={(el) => {
+                            if (el) mobileIconsRef.current[index] = el;
+                          }}
                         >
                           <MobileIcon
                             id={app.id}
@@ -265,15 +318,10 @@ export default function Desktop() {
                             icon={app.icon}
                             onClick={() => openWindow(app.label)}
                           />
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
-                    <motion.div
-                      className="flex justify-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                    >
+                    <div className="flex justify-center">
                       <img
                         src={WaterCd}
                         className="rounded-2xl h-[160px] animate-float"
@@ -282,15 +330,10 @@ export default function Desktop() {
                           backfaceVisibility: "hidden",
                         }}
                       />
-                    </motion.div>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <motion.div
-                      className="flex justify-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.5 }}
-                    >
+                    <div className="flex justify-center">
                       <img
                         src={CutePuppy}
                         className="rounded-2xl h-[160px] animate-float"
@@ -299,19 +342,14 @@ export default function Desktop() {
                           backfaceVisibility: "hidden",
                         }}
                       />
-                    </motion.div>
+                    </div>
                     <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
                       {desktopApps.slice(4, 6).map((app, index) => (
-                        <motion.div
+                        <div
                           key={app.id}
-                          variants={
-                            prefersReducedMotion
-                              ? reducedMotionVariants
-                              : mobileIconVariants
-                          }
-                          initial="hidden"
-                          animate="visible"
-                          custom={index + 4}
+                          ref={(el) => {
+                            if (el) mobileIconsRef.current[index + 4] = el;
+                          }}
                         >
                           <MobileIcon
                             id={app.id}
@@ -319,7 +357,7 @@ export default function Desktop() {
                             icon={app.icon}
                             onClick={() => openWindow(app.label)}
                           />
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -333,22 +371,21 @@ export default function Desktop() {
                 />
               </div>
             )}
-            <AnimatePresence mode="wait">
-              {openWindows.map((win) => (
-                <AppWindow
-                  key={win.name}
-                  title={win.name}
-                  onClose={() => closeWindow(win.name)}
-                  onMinimize={() => minimizeWindow(win.name)}
-                  isMobile={!isDesktop}
-                  isMinimized={win.minimized}
-                >
-                  <React.Suspense fallback={<CuteSuspenseFallback />}>
-                      {win.component}
-                  </React.Suspense>
-                </AppWindow>
-              ))}
-            </AnimatePresence>
+            
+            {openWindows.map((win) => (
+              <AppWindow
+                key={win.name}
+                title={win.name}
+                onClose={() => closeWindow(win.name)}
+                onMinimize={() => minimizeWindow(win.name)}
+                isMobile={!isDesktop}
+                isMinimized={win.minimized}
+              >
+                <React.Suspense fallback={<CuteSuspenseFallback />}>
+                    {win.component}
+                </React.Suspense>
+              </AppWindow>
+            ))}
           </div>
         </DndContext>
       </AudioProvider>

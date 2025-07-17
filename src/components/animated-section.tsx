@@ -1,5 +1,9 @@
 import { type ReactNode, useRef, useEffect, useState } from "react"
-import { motion, useInView, type Variant, useReducedMotion, type Variants } from "motion/react"
+import { gsap } from "gsap"
+import { useGSAP } from "@gsap/react"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 type AnimationVariant =
   | "fadeIn"
@@ -37,208 +41,145 @@ export function AnimatedSection({
   staggerChildren = 0.1,
   priority = false,
 }: AnimatedSectionProps) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { amount: threshold, once })
-  const prefersReducedMotion = useReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
   const [shouldAnimate, setShouldAnimate] = useState(false)
 
-  // Throttle animations on scroll for better performance
-  useEffect(() => {
-    if (isInView && !shouldAnimate) {
-      // Use requestAnimationFrame for smoother animation triggering
-      requestAnimationFrame(() => {
-        setShouldAnimate(true)
+  useGSAP(() => {
+    if (!ref.current) return
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const skipAnimation = prefersReducedMotion || (priority === false && window?.innerWidth < 768)
+
+    if (skipAnimation) {
+      gsap.fromTo(ref.current, 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.3 }
+      )
+      return
+    }
+
+    const getAnimation = () => {
+      switch (variant) {
+        case "fadeIn":
+          return { from: { opacity: 0 }, to: { opacity: 1, duration, delay } }
+        
+        case "slideUp":
+          return { 
+            from: { opacity: 0, y: 50 }, 
+            to: { opacity: 1, y: 0, duration, delay, ease: "back.out(1.7)" } 
+          }
+        
+        case "slideRight":
+          return { 
+            from: { opacity: 0, x: -50 }, 
+            to: { opacity: 1, x: 0, duration, delay, ease: "back.out(1.7)" } 
+          }
+        
+        case "slideLeft":
+          return { 
+            from: { opacity: 0, x: 50 }, 
+            to: { opacity: 1, x: 0, duration, delay, ease: "back.out(1.7)" } 
+          }
+        
+        case "scale":
+          return { 
+            from: { opacity: 0, scale: 0.8 }, 
+            to: { opacity: 1, scale: 1, duration, delay, ease: "back.out(1.7)" } 
+          }
+        
+        case "rotate":
+          return { 
+            from: { opacity: 0, rotation: -10, scale: 0.95 }, 
+            to: { opacity: 1, rotation: 0, scale: 1, duration, delay, ease: "back.out(1.7)" } 
+          }
+        
+        case "flip":
+          return { 
+            from: { opacity: 0, rotationY: 90 }, 
+            to: { opacity: 1, rotationY: 0, duration, delay, ease: "back.out(1.7)" } 
+          }
+        
+        case "bounce":
+          return { 
+            from: { opacity: 0, y: 50 }, 
+            to: { opacity: 1, y: 0, duration, delay, ease: "bounce.out" } 
+          }
+        
+        case "elastic":
+          return { 
+            from: { opacity: 0, scale: 0.5 }, 
+            to: { opacity: 1, scale: 1, duration, delay, ease: "elastic.out(1, 0.3)" } 
+          }
+        
+        case "pulse":
+          return { 
+            from: { opacity: 0, scale: 0.95 }, 
+            to: { 
+              opacity: 1, 
+              scale: 1, 
+              duration: duration * 1.5, 
+              delay,
+              keyframes: {
+                "0%": { scale: 0.95 },
+                "70%": { scale: 1.05 },
+                "100%": { scale: 1 }
+              }
+            } 
+          }
+        
+        case "stagger":
+          return { 
+            from: { opacity: 0 }, 
+            to: { opacity: 1, delay } 
+          }
+        
+        default:
+          return { from: { opacity: 0 }, to: { opacity: 1, duration, delay } }
+      }
+    }
+
+    const animation = getAnimation()
+
+    if (variant === "stagger") {
+      const children = ref.current.children
+      gsap.fromTo(children, 
+        { opacity: 0, y: 20 }, 
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration, 
+          delay,
+          stagger: staggerChildren,
+          ease: "back.out(1.7)"
+        }
+      )
+    } else {
+      // Use ScrollTrigger for viewport-based animations
+      ScrollTrigger.create({
+        trigger: ref.current,
+        start: `top ${100 - (threshold * 100)}%`,
+        once,
+        onEnter: () => {
+          if (ref.current) {
+            gsap.fromTo(ref.current, animation.from, animation.to)
+          }
+        },
+        onEnterBack: () => {
+          if (!once && ref.current) {
+            gsap.fromTo(ref.current, animation.from, animation.to)
+          }
+        }
       })
     }
-  }, [isInView, shouldAnimate])
 
-  // Skip animations for users who prefer reduced motion
-  const skipAnimation = prefersReducedMotion || (priority === false && window?.innerWidth < 768)
-
-  const getVariants = () => {
-    // If user prefers reduced motion, use minimal animation
-    if (skipAnimation) {
-      return {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.3 } },
-      }
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
     }
-
-    const variants: Record<string, Record<string, Variant>> = {
-      fadeIn: {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration, delay } },
-      },
-      slideUp: {
-        hidden: { opacity: 0, y: 50 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            damping: 15,
-          },
-        },
-      },
-      slideRight: {
-        hidden: { opacity: 0, x: -50 },
-        visible: {
-          opacity: 1,
-          x: 0,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            damping: 15,
-          },
-        },
-      },
-      slideLeft: {
-        hidden: { opacity: 0, x: 50 },
-        visible: {
-          opacity: 1,
-          x: 0,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            damping: 15,
-          },
-        },
-      },
-      scale: {
-        hidden: { opacity: 0, scale: 0.8 },
-        visible: {
-          opacity: 1,
-          scale: 1,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            damping: 12,
-          },
-        },
-      },
-      stagger: {
-        hidden: { opacity: 0 },
-        visible: {
-          opacity: 1,
-          transition: {
-            staggerChildren,
-            delayChildren: delay,
-          },
-        },
-      },
-      rotate: {
-        hidden: { opacity: 0, rotate: -10, scale: 0.95 },
-        visible: {
-          opacity: 1,
-          rotate: 0,
-          scale: 1,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            damping: 12,
-          },
-        },
-      },
-      flip: {
-        hidden: { opacity: 0, rotateY: 90 },
-        visible: {
-          opacity: 1,
-          rotateY: 0,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            damping: 12,
-          },
-        },
-      },
-      bounce: {
-        hidden: { opacity: 0, y: 50 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            stiffness: 300,
-            damping: 10,
-          },
-        },
-      },
-      elastic: {
-        hidden: { opacity: 0, scale: 0.5 },
-        visible: {
-          opacity: 1,
-          scale: 1,
-          transition: {
-            duration,
-            delay,
-            type: "spring",
-            stiffness: 300,
-            damping: 8,
-          },
-        },
-      },
-      pulse: {
-        hidden: { opacity: 0, scale: 0.95 },
-        visible: {
-          opacity: 1,
-          scale: [0.95, 1.05, 1],
-          transition: {
-            duration: duration * 1.5,
-            delay,
-            times: [0, 0.7, 1],
-          },
-        },
-      },
-    }
-
-    return variants[variant]
-  }
-
-  const getChildVariants = (): Variants => {
-    if (skipAnimation) {
-      return {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.3 } },
-      }
-    }
-  
-    if (variant === "stagger") {
-      return {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration,
-            type: "spring",
-            damping: 15,
-          },
-        },
-      }
-    }
-    
-    // Return a default variants object when not in stagger mode
-    return {
-      hidden: { opacity: 1 }, // Default to visible state
-      visible: { opacity: 1 },
-    }
-  }
+  }, [variant, delay, duration, threshold, once, staggerChildren, priority])
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial="hidden"
-      animate={shouldAnimate || isInView ? "visible" : "hidden"}
-      variants={getVariants()}
       className={className}
       style={{
         willChange: "transform, opacity",
@@ -246,19 +187,18 @@ export function AnimatedSection({
       }}
     >
       {variant === "stagger" ? (
-        <motion.div
-          variants={getChildVariants()}
+        <div
           style={{
             willChange: "transform, opacity",
             backfaceVisibility: "hidden",
           }}
         >
           {children}
-        </motion.div>
+        </div>
       ) : (
         children
       )}
-    </motion.div>
+    </div>
   )
 }
 
@@ -271,74 +211,62 @@ export function AnimatedItem({
   className?: string
   variant?: "default" | "pop" | "slide" | "fade" | "bounce"
 }) {
-  const prefersReducedMotion = useReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
 
-  const getVariants = () => {
+  useGSAP(() => {
+    if (!ref.current) return
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
     if (prefersReducedMotion) {
-      return {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 },
+      gsap.fromTo(ref.current, 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.3 }
+      )
+      return
+    }
+
+    const getAnimation = () => {
+      switch (variant) {
+        case "pop":
+          return { 
+            from: { opacity: 0, scale: 0.8 }, 
+            to: { opacity: 1, scale: 1, ease: "back.out(1.7)" } 
+          }
+        
+        case "slide":
+          return { 
+            from: { opacity: 0, x: -20 }, 
+            to: { opacity: 1, x: 0, ease: "back.out(1.7)" } 
+          }
+        
+        case "fade":
+          return { 
+            from: { opacity: 0 }, 
+            to: { opacity: 1 } 
+          }
+        
+        case "bounce":
+          return { 
+            from: { opacity: 0, y: 20 }, 
+            to: { opacity: 1, y: 0, ease: "bounce.out" } 
+          }
+        
+        default:
+          return { 
+            from: { opacity: 0, y: 20 }, 
+            to: { opacity: 1, y: 0, ease: "back.out(1.7)" } 
+          }
       }
     }
 
-    const variants = {
-      default: {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            type: "spring",
-            damping: 15,
-          },
-        },
-      },
-      pop: {
-        hidden: { opacity: 0, scale: 0.8 },
-        visible: {
-          opacity: 1,
-          scale: 1,
-          transition: {
-            type: "spring",
-            damping: 12,
-          },
-        },
-      },
-      slide: {
-        hidden: { opacity: 0, x: -20 },
-        visible: {
-          opacity: 1,
-          x: 0,
-          transition: {
-            type: "spring",
-            damping: 15,
-          },
-        },
-      },
-      fade: {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 },
-      },
-      bounce: {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            type: "spring",
-            stiffness: 300,
-            damping: 10,
-          },
-        },
-      },
-    }
-
-    return variants[variant]
-  }
+    const animation = getAnimation()
+    gsap.fromTo(ref.current, animation.from, animation.to)
+  }, [variant])
 
   return (
-    <motion.div
-      variants={getVariants()}
+    <div
+      ref={ref}
       className={className}
       style={{
         willChange: "transform, opacity",
@@ -346,6 +274,6 @@ export function AnimatedItem({
       }}
     >
       {children}
-    </motion.div>
+    </div>
   )
 }
