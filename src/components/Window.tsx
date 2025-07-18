@@ -203,6 +203,29 @@ export function AppWindow({
     }
   }, [isVisible, isMobile]);
 
+  // Helper function for button animations
+  const handleButtonAnimation = (e: React.MouseEvent<HTMLButtonElement>, phase: 'enter' | 'leave' | 'down' | 'up') => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const target = e.currentTarget;
+    
+    switch (phase) {
+      case 'enter':
+        gsap.to(target, { scale: 1.1, duration: 0.1 });
+        break;
+      case 'leave':
+        gsap.to(target, { scale: 1, duration: 0.1 });
+        break;
+      case 'down':
+        gsap.to(target, { scale: 0.9, duration: 0.1 });
+        break;
+      case 'up':
+        gsap.to(target, { scale: 1.1, duration: 0.1 });
+        break;
+    }
+  };
+
   if (isMobile) {
     return (
       <>
@@ -222,60 +245,20 @@ export function AppWindow({
                 <button
                   onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
-                  onMouseEnter={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
+                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
+                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
+                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
+                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
                 >
                   <Minus size={14} />
                 </button>
                 <button
                   onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
-                  onMouseEnter={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
+                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
+                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
+                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
+                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
                 >
                   <X size={14} />
                 </button>
@@ -349,90 +332,30 @@ export function AppWindow({
                 <button
                   onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
-                  onMouseEnter={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
+                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
+                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
+                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
+                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
                 >
                   <Minus size={14} />
                 </button>
                 <button
                   onClick={() => handleButtonClick(toggleMaximize)}
                   className="window-button"
-                  onMouseEnter={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
+                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
+                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
+                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
+                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
                 >
                   {isMaximized ? <Square size={14} /> : <Maximize size={14} />}
                 </button>
                 <button
                   onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
-                  onMouseEnter={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 0.9, duration: 0.1 });
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                    if (!prefersReducedMotion) {
-                      gsap.to(event?.currentTarget, { scale: 1.1, duration: 0.1 });
-                    }
-                  }}
+                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
+                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
+                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
+                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
                 >
                   <X size={14} />
                 </button>

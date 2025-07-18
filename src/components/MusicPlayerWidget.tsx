@@ -46,17 +46,17 @@ export default function MusicPlayerWidget({
     setVolume,
     setIsLoading,
   } = useContext(AudioContext);
-  
+
   const { playClickSound, playMenuSound, playPowerUpSound } = useAppSound();
-  
+
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const playerRef = useRef<HTMLDivElement>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
   const albumCoverRef = useRef<HTMLImageElement>(null);
   const buttonsRef = useRef<HTMLButtonElement[]>([]);
-  
+
   useEffect(() => {
     const playAudio = async () => {
       if (!audioRef.current) return;
@@ -198,7 +198,9 @@ export default function MusicPlayerWidget({
 
   // GSAP Animations
   useGSAP(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
     // Album cover rotation animation
     if (albumCoverRef.current && isPlaying && !isLoading) {
@@ -207,7 +209,7 @@ export default function MusicPlayerWidget({
           rotation: 360,
           duration: 3,
           repeat: -1,
-          ease: "none"
+          ease: "none",
         });
       }
     } else if (albumCoverRef.current) {
@@ -218,19 +220,21 @@ export default function MusicPlayerWidget({
     buttonsRef.current.forEach((button, index) => {
       if (button) {
         if (prefersReducedMotion) {
-          gsap.fromTo(button, 
-            { opacity: 0 }, 
+          gsap.fromTo(
+            button,
+            { opacity: 0 },
             { opacity: 1, duration: 0.3, delay: 0.9 + index * 0.05 }
           );
         } else {
-          gsap.fromTo(button, 
-            { opacity: 0, scale: 0 }, 
-            { 
-              opacity: 1, 
-              scale: 1, 
-              duration: 0.3, 
-              delay: 0.9 + index * 0.05, 
-              ease: "back.out(1.7)" 
+          gsap.fromTo(
+            button,
+            { opacity: 0, scale: 0 },
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.3,
+              delay: 0.9 + index * 0.05,
+              ease: "back.out(1.7)",
             }
           );
         }
@@ -240,19 +244,21 @@ export default function MusicPlayerWidget({
     // Player entrance animation
     if (playerRef.current) {
       if (prefersReducedMotion) {
-        gsap.fromTo(playerRef.current, 
-          { opacity: 0 }, 
+        gsap.fromTo(
+          playerRef.current,
+          { opacity: 0 },
           { opacity: 1, duration: 0.3, delay: 1 }
         );
       } else {
-        gsap.fromTo(playerRef.current, 
-          { scale: 0, opacity: 0 }, 
-          { 
-            scale: 1, 
-            opacity: 1, 
-            duration: 0.5, 
-            delay: 1, 
-            ease: "back.out(1.7)" 
+        gsap.fromTo(
+          playerRef.current,
+          { scale: 0, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.5,
+            delay: 1,
+            ease: "back.out(1.7)",
           }
         );
       }
@@ -261,28 +267,31 @@ export default function MusicPlayerWidget({
     // Playlist animation
     if (showPlaylist && playlistRef.current) {
       if (prefersReducedMotion) {
-        gsap.fromTo(playlistRef.current, 
-          { opacity: 0 }, 
+        gsap.fromTo(
+          playlistRef.current,
+          { opacity: 0 },
           { opacity: 1, duration: 0.3 }
         );
       } else {
-        gsap.fromTo(playlistRef.current, 
-          { x: 100, opacity: 0, scale: 0.95 }, 
-          { 
-            x: 0, 
-            opacity: 1, 
-            scale: 1, 
-            duration: 0.3, 
-            ease: "back.out(1.7)" 
+        gsap.fromTo(
+          playlistRef.current,
+          { x: 100, opacity: 0, scale: 0.95 },
+          {
+            x: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.3,
+            ease: "back.out(1.7)",
           }
         );
       }
     }
-
   }, [isPlaying, isLoading, showPlaylist]);
 
   const handleButtonHover = (index: number) => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (prefersReducedMotion) return;
 
     const button = buttonsRef.current[index];
@@ -290,13 +299,15 @@ export default function MusicPlayerWidget({
       gsap.to(button, {
         scale: 1.1,
         duration: 0.2,
-        ease: "power2.out"
+        ease: "power2.out",
       });
     }
   };
 
   const handleButtonLeave = (index: number) => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (prefersReducedMotion) return;
 
     const button = buttonsRef.current[index];
@@ -304,13 +315,15 @@ export default function MusicPlayerWidget({
       gsap.to(button, {
         scale: 1,
         duration: 0.2,
-        ease: "power2.out"
+        ease: "power2.out",
       });
     }
   };
 
   const handleButtonClick = (index: number) => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (prefersReducedMotion) return;
 
     const button = buttonsRef.current[index];
@@ -320,17 +333,14 @@ export default function MusicPlayerWidget({
         duration: 0.1,
         ease: "power2.out",
         yoyo: true,
-        repeat: 1
+        repeat: 1,
       });
     }
   };
 
   if (isDesktop && !isExpanded) {
     return (
-      <div
-        ref={playerRef}
-        className="fixed bottom-6 right-6 z-50"
-      >
+      <div ref={playerRef} className="fixed bottom-6 right-6 z-50">
         <button
           ref={(el) => {
             if (el) buttonsRef.current[0] = el;
@@ -582,28 +592,45 @@ export default function MusicPlayerWidget({
                         : "hover:bg-gray-100 dark:hover:bg-gray-700"
                     )}
                     onClick={() => changeTrack(track)}
-                    onMouseEnter={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseEnter={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 1.02, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 1.02,
+                          duration: 0.1,
+                        });
                       }
                     }}
-                    onMouseLeave={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseLeave={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 1, duration: 0.1 });
+                        gsap.to(e.currentTarget, { scale: 1, duration: 0.1 });
                       }
                     }}
-                    onMouseDown={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseDown={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 0.98, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 0.98,
+                          duration: 0.1,
+                        });
                       }
                     }}
-                    onMouseUp={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseUp={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 1.02, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 1.02,
+                          duration: 0.1,
+                        });
                       }
                     }}
                   >
@@ -824,28 +851,50 @@ export default function MusicPlayerWidget({
                       changeTrack(track);
                       setShowPlaylist(false);
                     }}
-                    onMouseEnter={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseEnter={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 1.05, y: -2, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 1.05,
+                          y: -2,
+                          duration: 0.1,
+                        });
                       }
                     }}
-                    onMouseLeave={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseLeave={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 1, y: 0, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 1,
+                          y: 0,
+                          duration: 0.1,
+                        });
                       }
                     }}
-                    onMouseDown={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseDown={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 0.95, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 0.95,
+                          duration: 0.1,
+                        });
                       }
                     }}
-                    onMouseUp={() => {
-                      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    onMouseUp={(e) => {
+                      const prefersReducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                      ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(event?.currentTarget, { scale: 1.05, duration: 0.1 });
+                        gsap.to(e.currentTarget, {
+                          scale: 1.05,
+                          duration: 0.1,
+                        });
                       }
                     }}
                   >
