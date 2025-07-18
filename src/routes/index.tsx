@@ -21,7 +21,7 @@ function LoginScreen() {
   const [isWrongPassword, setIsWrongPassword] = useState(false);
   const navigate = useNavigate();
   const { playClickSound, playErrorSound, playSuccessSound } = useAppSound();
-  
+
   const timeRef = useRef<HTMLHeadingElement>(null);
   const dateRef = useRef<HTMLParagraphElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
@@ -85,24 +85,28 @@ function LoginScreen() {
 
   // GSAP Animations
   useGSAP(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
     // Initial time display animation
     if (timeRef.current && dateRef.current && hintRef.current && !showLogin) {
       if (prefersReducedMotion) {
-        gsap.fromTo([timeRef.current, dateRef.current, hintRef.current], 
-          { opacity: 0 }, 
+        gsap.fromTo(
+          [timeRef.current, dateRef.current, hintRef.current],
+          { opacity: 0 },
           { opacity: 1, duration: 0.5, stagger: 0.1 }
         );
       } else {
-        gsap.fromTo([timeRef.current, dateRef.current, hintRef.current], 
-          { opacity: 0, y: 20 }, 
-          { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.8, 
-            stagger: 0.2, 
-            ease: "back.out(1.7)" 
+        gsap.fromTo(
+          [timeRef.current, dateRef.current, hintRef.current],
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: "back.out(1.7)",
           }
         );
 
@@ -112,7 +116,7 @@ function LoginScreen() {
           duration: 2,
           ease: "power2.inOut",
           yoyo: true,
-          repeat: -1
+          repeat: -1,
         });
       }
     }
@@ -120,13 +124,15 @@ function LoginScreen() {
     // Login overlay animation
     if (showLogin && overlayRef.current) {
       if (prefersReducedMotion) {
-        gsap.fromTo(overlayRef.current, 
-          { opacity: 0 }, 
+        gsap.fromTo(
+          overlayRef.current,
+          { opacity: 0 },
           { opacity: 1, duration: 0.3 }
         );
       } else {
-        gsap.fromTo(overlayRef.current, 
-          { opacity: 0 }, 
+        gsap.fromTo(
+          overlayRef.current,
+          { opacity: 0 },
           { opacity: 1, duration: 0.5, ease: "power2.out" }
         );
       }
@@ -134,13 +140,17 @@ function LoginScreen() {
       // Hide time display
       if (timeRef.current && dateRef.current && hintRef.current) {
         if (prefersReducedMotion) {
-          gsap.to([timeRef.current, dateRef.current, hintRef.current], 
-            { opacity: 0, duration: 0.3 }
-          );
+          gsap.to([timeRef.current, dateRef.current, hintRef.current], {
+            opacity: 0,
+            duration: 0.3,
+          });
         } else {
-          gsap.to([timeRef.current, dateRef.current, hintRef.current], 
-            { opacity: 0, scale: 0.9, duration: 0.5, ease: "power2.out" }
-          );
+          gsap.to([timeRef.current, dateRef.current, hintRef.current], {
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.5,
+            ease: "power2.out",
+          });
         }
       }
     }
@@ -148,20 +158,22 @@ function LoginScreen() {
     // Login card animation
     if (showLogin && loginCardRef.current) {
       if (prefersReducedMotion) {
-        gsap.fromTo(loginCardRef.current, 
-          { opacity: 0 }, 
+        gsap.fromTo(
+          loginCardRef.current,
+          { opacity: 0 },
           { opacity: 1, duration: 0.3, delay: 0.2 }
         );
       } else {
-        gsap.fromTo(loginCardRef.current, 
-          { opacity: 0, scale: 0.8, y: 20 }, 
-          { 
-            opacity: 1, 
-            scale: 1, 
-            y: 0, 
-            duration: 0.5, 
-            delay: 0.2, 
-            ease: "back.out(1.7)" 
+        gsap.fromTo(
+          loginCardRef.current,
+          { opacity: 0, scale: 0.8, y: 20 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.5,
+            delay: 0.2,
+            ease: "back.out(1.7)",
           }
         );
       }
@@ -169,13 +181,18 @@ function LoginScreen() {
 
     // Wrong password shake animation
     if (isWrongPassword && inputRef.current && !prefersReducedMotion) {
-      gsap.to(inputRef.current, {
-        x: [-8, 8, -8, 8, 0],
-        duration: 0.5,
-        ease: "power2.out"
-      });
+      gsap.fromTo(
+        inputRef.current,
+        { x: 0 },
+        {
+          x: 8,
+          duration: 0.1,
+          ease: "power2.out",
+          yoyo: true,
+          repeat: 5,
+        }
+      );
     }
-
   }, [showLogin, isWrongPassword]);
 
   return (
@@ -187,22 +204,13 @@ function LoginScreen() {
       >
         {/* Time display */}
         <div className="flex flex-col items-center">
-          <h1 
-            ref={timeRef}
-            className="text-6xl font-bold text-blue-800 mb-2"
-          >
+          <h1 ref={timeRef} className="text-6xl font-bold text-blue-800 mb-2">
             {formatTime(currentTime)}
           </h1>
-          <p 
-            ref={dateRef}
-            className="text-lg text-blue-600 mb-6"
-          >
+          <p ref={dateRef} className="text-lg text-blue-600 mb-6">
             {formatDate(currentTime)}
           </p>
-          <p 
-            ref={hintRef}
-            className="text-sm text-blue-500/80"
-          >
+          <p ref={hintRef} className="text-sm text-blue-500/80">
             Click anywhere to unlock
           </p>
         </div>
@@ -214,7 +222,7 @@ function LoginScreen() {
             className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div 
+            <div
               ref={loginCardRef}
               className="w-64 p-6 bg-white/20 backdrop-blur-lg rounded-3xl shadow-lg border border-white/30 flex flex-col items-center"
             >
