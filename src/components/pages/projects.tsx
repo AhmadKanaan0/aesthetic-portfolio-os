@@ -6,6 +6,8 @@ import { Github, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react"
 import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
 import { gsap } from "gsap"
 import { useGSAP } from "@gsap/react"
+import facilify from "@/assets/Facilify.png";
+import awqafRashaya from "@/assets/AwqadRashaya.png";
 
 export default function Projects() {
   const [activeProject, setActiveProject] = useState(0)
@@ -14,22 +16,22 @@ export default function Projects() {
   const projects = [
     {
       id: 1,
-      title: "E-Commerce Platform",
+      title: "Facilify",
       description:
-        "A full-featured e-commerce platform with product management, cart functionality, and payment processing.",
-      image: "/projects/project-1.jpg",
-      tags: ["React", "Node.js", "MongoDB", "Stripe"],
-      demoUrl: "https://ecommerce-demo.example.com",
+        "A full-featured facilities management platform, it provides owners, general contractors, and specialty contractors with the tools they need to get the job done.",
+      image: facilify,
+      tags: ["React", "Spring boot", "Postgres"],
+      demoUrl: "https://www.facilify.com.au/",
       githubUrl: "https://github.com/username/ecommerce-platform",
     },
     {
       id: 2,
-      title: "Task Management App",
+      title: "Awqaf Rashaya",
       description:
-        "A collaborative task management application with real-time updates, drag-and-drop interface, and team collaboration features.",
-      image: "/projects/project-2.jpg",
-      tags: ["React", "Firebase", "Tailwind CSS", "DnD Kit"],
-      demoUrl: "https://tasks-app.example.com",
+        "The Awqaf Management System is a platform for managing mosques, cemeteries, religious schools, and imams, with built-in reporting tools to ensure efficient administration and transparency.",
+      image: awqafRashaya,
+      tags: ["React", "Spring boot", "Postgres", "OpenAi"],
+      demoUrl: "https://awqaf-qa.onrender.com",
       githubUrl: "https://github.com/username/task-management",
     },
     {
@@ -102,17 +104,16 @@ export default function Projects() {
           <div
             ref={carouselRef}
             className="flex"
-            style={{ width: `${projects.length * 100}%` }}
           >
             {projects.map((project) => (
               <div key={project.id} className="min-w-full">
                 <Card className="border-0 shadow-lg overflow-hidden">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid gap-2 px-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))" }}>
                     <div className="aspect-video overflow-hidden">
                       <img
                         src={project.image || `/placeholder.svg?height=300&width=500`}
                         alt={project.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover rounded-lg"
                       />
                     </div>
                     <div className="p-6 flex flex-col">

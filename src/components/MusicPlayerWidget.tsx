@@ -1,19 +1,9 @@
-import { useState, useEffect, useContext, useRef } from "react";
-import {
-  SkipBack,
-  Play,
-  Pause,
-  SkipForward,
-  Loader2,
-  Volume2,
-  List,
-  X,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
+import {useCallback, useContext, useEffect, useRef, useState} from "react";
+import {List, Loader2, Pause, Play, SkipBack, SkipForward, Volume2, X,} from "lucide-react";
+import {cn} from "@/lib/utils";
+import {Slider} from "@/components/ui/slider";
+import {gsap} from "gsap";
+import {useGSAP} from "@gsap/react";
 import sanrio from "../assets/sanrio.png";
 import Forward from "../assets/Forward.png";
 import Previous from "../assets/Previous.png";
@@ -22,9 +12,9 @@ import SliderIcon from "../assets/SliderIcon.png";
 import MusicPlayerImage from "../assets/MusicPlayerImage.png";
 import PlaylistIcon from "../assets/PlaylistIcon.png";
 import CinamonExit from "../assets/CinamonExit.png";
-import { AudioContext } from "./audio-context";
-import { useAppSound } from "./sound-context";
-import { playlist, type Track } from "@/types/types";
+import {AudioContext} from "./audio-context";
+import {useAppSound} from "./sound-context";
+import {playlist, type Track} from "@/types/types";
 
 interface MusicPlayerProps {
   isDesktop?: boolean;
@@ -52,10 +42,169 @@ export default function MusicPlayerWidget({
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const playerRef = useRef<HTMLDivElement>(null);
+    const playerRef = useRef<HTMLDivElement>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
   const albumCoverRef = useRef<HTMLImageElement>(null);
   const buttonsRef = useRef<HTMLButtonElement[]>([]);
+  const rotationTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  // Handle album cover rotation
+  const handleAlbumRotation = useCallback(() => {
+    if (!albumCoverRef.current) return;
+
+    // Kill existing rotation if playing state changes
+    if (rotationTweenRef.current) {
+      rotationTweenRef.current.kill();
+    }
+
+    if (isPlaying && !isLoading) {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+      
+      if (!prefersReducedMotion) {
+        rotationTweenRef.current = gsap.to(albumCoverRef.current, {
+          rotation: 360,
+          duration: 3,
+          repeat: -1,
+          ease: "none",
+          transformOrigin: "center center"
+        });
+      }
+    }
+  }, [isPlaying, isLoading]);
+
+  // Button animations
+  const handleButtonHover = (index: number) => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
+
+    const button = buttonsRef.current[index];
+    if (button) {
+      gsap.killTweensOf(button, "scale");
+      gsap.to(button, {
+        scale: 1.1,
+        duration: 0.2,
+        ease: "power2.out",
+      });
+    }
+  };
+
+  const handleButtonLeave = (index: number) => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
+
+    const button = buttonsRef.current[index];
+    if (button) {
+      gsap.killTweensOf(button, "scale");
+      gsap.to(button, {
+        scale: 1,
+        duration: 0.2,
+        ease: "power2.out",
+      });
+    }
+  };
+
+  const handleButtonClick = (index: number) => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
+
+    const button = buttonsRef.current[index];
+    if (button) {
+      gsap.killTweensOf(button, "scale");
+      gsap.to(button, {
+        scale: 0.95,
+        duration: 0.1,
+        ease: "power2.out",
+        yoyo: true,
+        repeat: 1,
+      });
+    }
+  };
+
+  // GSAP animations
+  useGSAP(() => {
+    // Initial animations
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    // Player entrance
+    if (playerRef.current) {
+      gsap.fromTo(
+        playerRef.current,
+        { opacity: 0, scale: prefersReducedMotion ? 1 : 0.8 },
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: "back.out(1.7)",
+        }
+      );
+    }
+
+    // Button entrances
+    buttonsRef.current.forEach((button, index) => {
+      if (button) {
+        gsap.fromTo(
+          button,
+          { opacity: 0, scale: prefersReducedMotion ? 1 : 0 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.3,
+            delay: 0.1 + index * 0.05,
+            ease: "back.out(1.7)",
+          }
+        );
+      }
+    });
+
+    // Handle album rotation
+    handleAlbumRotation();
+
+    // Cleanup
+    return () => {
+      // Don't kill all tweens - just specific ones if needed
+    };
+  }, []);
+
+  // Playlist animation
+  useEffect(() => {
+    if (!playlistRef.current) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (showPlaylist) {
+      gsap.fromTo(
+        playlistRef.current,
+        { x: 100, opacity: 0, scale: 0.95 },
+        {
+          x: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.3,
+          ease: "back.out(1.7)",
+        }
+      );
+    } else {
+      gsap.to(playlistRef.current, {
+        x: 100,
+        opacity: 0,
+        scale: 0.95,
+        duration: 0.3,
+        ease: "back.in(1.7)",
+      });
+    }
+  }, [showPlaylist]);
 
   useEffect(() => {
     const playAudio = async () => {
@@ -144,8 +293,7 @@ export default function MusicPlayerWidget({
 
   const handleSeek = (value: number[]) => {
     if (!audioRef.current) return;
-    const newTime = (audioRef.current.duration * value[0]) / 100;
-    audioRef.current.currentTime = newTime;
+    audioRef.current.currentTime = (audioRef.current.duration * value[0]) / 100;
     setProgress(value[0]);
     playClickSound();
   };
@@ -195,148 +343,6 @@ export default function MusicPlayerWidget({
       audio.removeEventListener("error", handleError);
     };
   }, []);
-
-  // GSAP Animations
-  useGSAP(() => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    // Album cover rotation animation
-    if (albumCoverRef.current && isPlaying && !isLoading) {
-      if (!prefersReducedMotion) {
-        gsap.to(albumCoverRef.current, {
-          rotation: 360,
-          duration: 3,
-          repeat: -1,
-          ease: "none",
-        });
-      }
-    } else if (albumCoverRef.current) {
-      gsap.killTweensOf(albumCoverRef.current);
-    }
-
-    // Buttons entrance animation
-    buttonsRef.current.forEach((button, index) => {
-      if (button) {
-        if (prefersReducedMotion) {
-          gsap.fromTo(
-            button,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.3, delay: 0.9 + index * 0.05 }
-          );
-        } else {
-          gsap.fromTo(
-            button,
-            { opacity: 0, scale: 0 },
-            {
-              opacity: 1,
-              scale: 1,
-              duration: 0.3,
-              delay: 0.9 + index * 0.05,
-              ease: "back.out(1.7)",
-            }
-          );
-        }
-      }
-    });
-
-    // Player entrance animation
-    if (playerRef.current) {
-      if (prefersReducedMotion) {
-        gsap.fromTo(
-          playerRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.3, delay: 1 }
-        );
-      } else {
-        gsap.fromTo(
-          playerRef.current,
-          { scale: 0, opacity: 0 },
-          {
-            scale: 1,
-            opacity: 1,
-            duration: 0.5,
-            delay: 1,
-            ease: "back.out(1.7)",
-          }
-        );
-      }
-    }
-
-    // Playlist animation
-    if (showPlaylist && playlistRef.current) {
-      if (prefersReducedMotion) {
-        gsap.fromTo(
-          playlistRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.3 }
-        );
-      } else {
-        gsap.fromTo(
-          playlistRef.current,
-          { x: 100, opacity: 0, scale: 0.95 },
-          {
-            x: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.3,
-            ease: "back.out(1.7)",
-          }
-        );
-      }
-    }
-  }, [isPlaying, isLoading, showPlaylist]);
-
-  const handleButtonHover = (index: number) => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (prefersReducedMotion) return;
-
-    const button = buttonsRef.current[index];
-    if (button) {
-      gsap.to(button, {
-        scale: 1.1,
-        duration: 0.2,
-        ease: "power2.out",
-      });
-    }
-  };
-
-  const handleButtonLeave = (index: number) => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (prefersReducedMotion) return;
-
-    const button = buttonsRef.current[index];
-    if (button) {
-      gsap.to(button, {
-        scale: 1,
-        duration: 0.2,
-        ease: "power2.out",
-      });
-    }
-  };
-
-  const handleButtonClick = (index: number) => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (prefersReducedMotion) return;
-
-    const button = buttonsRef.current[index];
-    if (button) {
-      gsap.to(button, {
-        scale: 0.95,
-        duration: 0.1,
-        ease: "power2.out",
-        yoyo: true,
-        repeat: 1,
-      });
-    }
-  };
 
   if (isDesktop && !isExpanded) {
     return (
@@ -466,6 +472,7 @@ export default function MusicPlayerWidget({
                       <img
                         src={SliderIcon}
                         className="w-full h-full object-cover rounded-full"
+                        alt={"sliderIcon"}
                       />
                     }
                   />
@@ -563,6 +570,7 @@ export default function MusicPlayerWidget({
                   <img
                     src={SliderIcon}
                     className="w-full h-full object-cover rounded-full"
+                    alt={"sliderIcon"}
                   />
                 }
               />
@@ -796,6 +804,7 @@ export default function MusicPlayerWidget({
                     <img
                       src={SliderIcon}
                       className="w-full h-full object-cover rounded-full"
+                      alt={"sliderIcon"}
                     />
                   }
                 />
