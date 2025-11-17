@@ -16,6 +16,14 @@ import {AudioContext} from "./audio-context";
 import {useAppSound} from "./sound-context";
 import {playlist, type Track} from "@/types/types";
 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
 interface MusicPlayerProps {
   isDesktop?: boolean;
 }
@@ -57,7 +65,7 @@ export default function MusicPlayerWidget({
       rotationTweenRef.current.kill();
     }
 
-    if (isPlaying && !isLoading) {
+    if (isPlaying && !isLoading && isDesktop && !isExpanded) {
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
@@ -72,7 +80,7 @@ export default function MusicPlayerWidget({
         });
       }
     }
-  }, [isPlaying, isLoading]);
+  }, [isPlaying, isLoading, isExpanded, isDesktop]);
 
   // Button animations
   const handleButtonHover = (index: number) => {
@@ -128,6 +136,11 @@ export default function MusicPlayerWidget({
     }
   };
 
+  useEffect(() => {
+    // Handle album rotation
+    handleAlbumRotation();
+  }, [handleAlbumRotation, isPlaying, isLoading, isExpanded]);
+
   // GSAP animations
   useGSAP(() => {
     // Initial animations
@@ -165,9 +178,6 @@ export default function MusicPlayerWidget({
         );
       }
     });
-
-    // Handle album rotation
-    handleAlbumRotation();
 
     // Cleanup
     return () => {
@@ -842,92 +852,103 @@ export default function MusicPlayerWidget({
             </div>
 
             {/* Horizontal scrolling playlist */}
-            <div className="flex-1 overflow-hidden">
-              <div
-                className="flex gap-3 overflow-x-auto p-2 py-2 h-full"
-                style={{ scrollbarWidth: "thin" }}
+            <div className="">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-[calc(100%-90px)] mx-auto"
               >
-                {playlist.map((track) => (
-                  <div
-                    key={track.id}
-                    className={cn(
-                      "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border",
-                      currentTrack.id === track.id
-                        ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
-                        : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
-                    )}
-                    onClick={() => {
-                      changeTrack(track);
-                      setShowPlaylist(false);
-                    }}
-                    onMouseEnter={(e) => {
-                      const prefersReducedMotion = window.matchMedia(
-                        "(prefers-reduced-motion: reduce)"
-                      ).matches;
-                      if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 1.05,
-                          y: -2,
-                          duration: 0.1,
-                        });
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      const prefersReducedMotion = window.matchMedia(
-                        "(prefers-reduced-motion: reduce)"
-                      ).matches;
-                      if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 1,
-                          y: 0,
-                          duration: 0.1,
-                        });
-                      }
-                    }}
-                    onMouseDown={(e) => {
-                      const prefersReducedMotion = window.matchMedia(
-                        "(prefers-reduced-motion: reduce)"
-                      ).matches;
-                      if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 0.95,
-                          duration: 0.1,
-                        });
-                      }
-                    }}
-                    onMouseUp={(e) => {
-                      const prefersReducedMotion = window.matchMedia(
-                        "(prefers-reduced-motion: reduce)"
-                      ).matches;
-                      if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 1.05,
-                          duration: 0.1,
-                        });
-                      }
-                    }}
-                  >
-                    <div className="w-12 h-12 aspect-square rounded-lg overflow-hidden">
-                      <img
-                        src={track.cover || "/placeholder.svg"}
-                        alt={track.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
-                        {track.title}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                        {track.artist}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {track.duration}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                <CarouselContent>
+                  {playlist.map((track) => (
+                    <CarouselItem
+                      key={track.id}
+                      className="basis-1/2 md:basis-1/3"
+                    >
+                      <div
+                        className={cn(
+                          "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border h-full",
+                          currentTrack.id === track.id
+                            ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
+                            : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
+                        )}
+                        onClick={() => {
+                          changeTrack(track);
+                          setShowPlaylist(false);
+                        }}
+                        onMouseEnter={(e) => {
+                          const prefersReducedMotion = window.matchMedia(
+                            "(prefers-reduced-motion: reduce)"
+                          ).matches;
+                          if (!prefersReducedMotion) {
+                            gsap.to(e.currentTarget, {
+                              scale: 1.05,
+                              y: -2,
+                              duration: 0.1,
+                            });
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          const prefersReducedMotion = window.matchMedia(
+                            "(prefers-reduced-motion: reduce)"
+                          ).matches;
+                          if (!prefersReducedMotion) {
+                            gsap.to(e.currentTarget, {
+                              scale: 1,
+                              y: 0,
+                              duration: 0.1,
+                            });
+                          }
+                        }}
+                        onMouseDown={(e) => {
+                          const prefersReducedMotion = window.matchMedia(
+                            "(prefers-reduced-motion: reduce)"
+                          ).matches;
+                          if (!prefersReducedMotion) {
+                            gsap.to(e.currentTarget, {
+                              scale: 0.95,
+                              duration: 0.1,
+                            });
+                          }
+                        }}
+                        onMouseUp={(e) => {
+                          const prefersReducedMotion = window.matchMedia(
+                            "(prefers-reduced-motion: reduce)"
+                          ).matches;
+                          if (!prefersReducedMotion) {
+                            gsap.to(e.currentTarget, {
+                              scale: 1.05,
+                              duration: 0.1,
+                            });
+                          }
+                        }}
+                      >
+                        <div className="w-12 h-12 aspect-square rounded-lg overflow-hidden">
+                          <img
+                            src={track.cover || "/placeholder.svg"}
+                            alt={track.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="text-center flex flex-col items-start">
+                          <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
+                            {track.title}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                            {track.artist}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {track.duration}
+                          </p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
             </div>
           </div>
         )}

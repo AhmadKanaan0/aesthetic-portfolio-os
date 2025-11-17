@@ -4,12 +4,12 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"
-import Autoplay from "embla-carousel-autoplay"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AnimatedSection, AnimatedItem } from "@/components/animated-section";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
   const testimonials = [
@@ -34,7 +34,7 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
         "A developer who truly understands design. Our collaboration was seamless and the implementation was perfect.",
       avatar: "/avatars/avatar-3.jpg",
     },
-        {
+    {
       name: "Alex Thompson",
       role: "Senior Engineer at Innovate Inc.",
       content:
@@ -48,14 +48,26 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
         "Their ability to translate complex requirements into elegant solutions is impressive. I would highly recommend them.",
       avatar: "/avatars/avatar-5.jpg",
     },
-  ]
+  ];
 
   const hobbies = [
-    { name: "Coding", icon: "💻", description: "Building side projects and learning new technologies" },
-    { name: "Photography", icon: "📷", description: "Capturing urban landscapes and nature" },
+    {
+      name: "Coding",
+      icon: "💻",
+      description: "Building side projects and learning new technologies",
+    },
+    {
+      name: "Photography",
+      icon: "📷",
+      description: "Capturing urban landscapes and nature",
+    },
     { name: "Gaming", icon: "🎮", description: "Strategy and indie games" },
-    { name: "Reading", icon: "📚", description: "Tech books and science fiction" },
-  ]
+    {
+      name: "Reading",
+      icon: "📚",
+      description: "Tech books and science fiction",
+    },
+  ];
 
   const getCarouselItemBasis = () => {
     if (!windowWidth) return "basis-full"; // Default to 1 item if width is not available
@@ -75,8 +87,12 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
           <AvatarImage src="/profile-photo.jpg" alt="Profile" />
           <AvatarFallback>AK</AvatarFallback>
         </Avatar>
-        <h1 className="text-3xl font-bold mb-2 dark:text-white">Ahmad Kanaan</h1>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">Full-Stack Developer with 4 years of experience</p>
+        <h1 className="text-3xl font-bold mb-2 dark:text-white">
+          Ahmad Kanaan
+        </h1>
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
+          Full-Stack Developer with 4 years of experience
+        </p>
         <div className="flex flex-wrap justify-center gap-2">
           <Badge variant="secondary">Web Development</Badge>
           <Badge variant="secondary">Web Design</Badge>
@@ -89,31 +105,37 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
       <AnimatedSection variant="slideUp" delay={0.1}>
         <h2 className="text-2xl font-bold mb-4 dark:text-white">About Me</h2>
         <p className="text-gray-700 dark:text-gray-300 mb-4">
-          I'm a passionate full-stack developer with 4 years of experience building modern web applications. I
-          specialize in creating responsive, user-friendly interfaces with React and building robust backend systems
-          with Node.js. My approach combines technical expertise with creative problem-solving to deliver exceptional
-          digital experiences.
+          I'm a passionate full-stack developer with 4 years of experience
+          building modern web applications. I specialize in creating responsive,
+          user-friendly interfaces with React and building robust backend
+          systems with Node.js. My approach combines technical expertise with
+          creative problem-solving to deliver exceptional digital experiences.
         </p>
         <p className="text-gray-700 dark:text-gray-300">
-          When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or
-          sharing my knowledge through blog posts and community events.
+          When I'm not coding, you can find me exploring new technologies,
+          contributing to open-source projects, or sharing my knowledge through
+          blog posts and community events.
         </p>
       </AnimatedSection>
 
       <AnimatedSection variant="stagger" delay={0.2} staggerChildren={0.1}>
-        <h2 className="text-2xl font-bold mb-4 dark:text-white">Testimonials</h2>
-                  <Carousel
-                    plugins={[
-                      Autoplay({
-                        delay: 2000,
-                      }),
-                    ]}
-                    opts={{
-                      align: "start",
-                      loop: true,
-                    }}
-                    className="w-[calc(100%-96px)] mx-auto"
-                  >          <CarouselContent>
+        <h2 className="text-2xl font-bold mb-4 dark:text-white">
+          Testimonials
+        </h2>
+        <Carousel
+          plugins={[
+            Autoplay({
+              delay: 2000,
+            }),
+          ]}
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-[calc(100%-96px)] mx-auto"
+        >
+          {" "}
+          <CarouselContent>
             {testimonials.map((testimonial, index) => (
               <CarouselItem
                 key={index}
@@ -121,10 +143,10 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
                   !windowWidth
                     ? "basis-full"
                     : windowWidth < 640
-                    ? "basis-full"
-                    : windowWidth < 1024
-                    ? "basis-1/2"
-                    : "basis-1/3"
+                      ? "basis-full"
+                      : windowWidth < 1024
+                        ? "basis-1/2"
+                        : "basis-1/3"
                 }
               >
                 <div className="p-1 h-full">
@@ -132,15 +154,26 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
                     <CardContent className="pt-6 flex-grow flex flex-col">
                       <div className="flex items-start gap-4 mb-4">
                         <Avatar className="shrink-0">
-                          <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
-                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                          <AvatarImage
+                            src={testimonial.avatar || "/placeholder.svg"}
+                            alt={testimonial.name}
+                          />
+                          <AvatarFallback>
+                            {testimonial.name.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="font-medium dark:text-white truncate">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{testimonial.role}</p>
+                          <p className="font-medium dark:text-white truncate">
+                            {testimonial.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {testimonial.role}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-muted-foreground italic flex-grow">"{testimonial.content}"</p>
+                      <p className="text-muted-foreground italic flex-grow">
+                        "{testimonial.content}"
+                      </p>
                     </CardContent>
                   </Card>
                 </div>
@@ -153,15 +186,26 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
       </AnimatedSection>
 
       <AnimatedSection variant="stagger" delay={0.3} staggerChildren={0.1}>
-        <h2 className="text-2xl font-bold mb-4 dark:text-white">Hobbies & Interests</h2>
-        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
+        <h2 className="text-2xl font-bold mb-4 dark:text-white">
+          Hobbies & Interests
+        </h2>
+        <div
+          className="grid gap-4"
+          style={{
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+          }}
+        >
           {hobbies.map((hobby, index) => (
             <AnimatedItem key={index}>
               <Card className="h-full hover:shadow-md transition-shadow border-0">
                 <CardContent className="pt-6 text-center">
                   <div className="text-4xl mb-2">{hobby.icon}</div>
-                  <h3 className="font-bold mb-1 dark:text-white">{hobby.name}</h3>
-                  <p className="text-sm text-muted-foreground">{hobby.description}</p>
+                  <h3 className="font-bold mb-1 dark:text-white">
+                    {hobby.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {hobby.description}
+                  </p>
                 </CardContent>
               </Card>
             </AnimatedItem>
@@ -169,5 +213,5 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
         </div>
       </AnimatedSection>
     </div>
-  )
+  );
 }
