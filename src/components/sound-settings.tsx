@@ -93,16 +93,16 @@ export function SoundSettings() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-3">
               <Gamepad2 className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium">8-Bit Sound Effects</span>
+              <span className="text-sm font-medium text-black dark:text-white">8-Bit Sound Effects</span>
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-sm">Retro Audio</span>
+              <span className="text-sm text-black dark:text-white">Retro Audio</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleToggleSound}
-                className="h-8"
+                className="h-8 text-black dark:text-white"
               >
                 {isSoundEnabled ? 'On' : 'Off'}
               </Button>
@@ -112,7 +112,7 @@ export function SoundSettings() {
               <>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Volume</span>
+                    <span className="text-sm text-black dark:text-white">Volume</span>
                     <span className="text-xs text-muted-foreground">
                       {Math.round(volume * 100)}%
                     </span>
@@ -131,7 +131,7 @@ export function SoundSettings() {
                   variant="outline"
                   size="sm"
                   onClick={handleTestSounds}
-                  className="w-full text-xs"
+                  className="w-full text-xs text-black dark:text-white"
                 >
                   🎮 Test Retro Sounds
                 </Button>
