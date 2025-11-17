@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isWrongPassword, setIsWrongPassword] = useState(false);
   const navigate = useNavigate();
+  const router = useRouter();
   const { playClickSound, playErrorSound, playSuccessSound } = useAppSound();
 
   const timeRef = useRef<HTMLHeadingElement>(null);
@@ -28,6 +29,10 @@ function LoginScreen() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const loginCardRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    router.preloadRoute({ to: "/desktop" });
+  }, [router]);
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -1,9 +1,17 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-export default function AboutMe() {
+export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
   const testimonials = [
     {
       name: "Sarah Johnson",
@@ -26,6 +34,20 @@ export default function AboutMe() {
         "A developer who truly understands design. Our collaboration was seamless and the implementation was perfect.",
       avatar: "/avatars/avatar-3.jpg",
     },
+        {
+      name: "Alex Thompson",
+      role: "Senior Engineer at Innovate Inc.",
+      content:
+        "A highly skilled and collaborative team member. Their contributions have been invaluable to our project's success.",
+      avatar: "/avatars/avatar-4.jpg",
+    },
+    {
+      name: "Jessica Lee",
+      role: "Product Owner at Agile Solutions",
+      content:
+        "Their ability to translate complex requirements into elegant solutions is impressive. I would highly recommend them.",
+      avatar: "/avatars/avatar-5.jpg",
+    },
   ]
 
   const hobbies = [
@@ -34,6 +56,17 @@ export default function AboutMe() {
     { name: "Gaming", icon: "🎮", description: "Strategy and indie games" },
     { name: "Reading", icon: "📚", description: "Tech books and science fiction" },
   ]
+
+  const getCarouselItemBasis = () => {
+    if (!windowWidth) return "basis-full"; // Default to 1 item if width is not available
+    if (windowWidth < 640) {
+      return "basis-full"; // 1 item per page
+    } else if (windowWidth < 1024) {
+      return "basis-1/2"; // 2 items per page
+    } else {
+      return "basis-1/3"; // 3 items per page
+    }
+  };
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -69,27 +102,54 @@ export default function AboutMe() {
 
       <AnimatedSection variant="stagger" delay={0.2} staggerChildren={0.1}>
         <h2 className="text-2xl font-bold mb-4 dark:text-white">Testimonials</h2>
-        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-          {testimonials.map((testimonial, index) => (
-            <AnimatedItem key={index}>
-              <Card className="h-full border-0">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    <Avatar className="shrink-0">
-                      <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
-                      <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="font-medium dark:text-white truncate">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground truncate">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground italic">"{testimonial.content}"</p>
-                </CardContent>
-              </Card>
-            </AnimatedItem>
-          ))}
-        </div>
+                  <Carousel
+                    plugins={[
+                      Autoplay({
+                        delay: 2000,
+                      }),
+                    ]}
+                    opts={{
+                      align: "start",
+                      loop: true,
+                    }}
+                    className="w-[calc(100%-96px)] mx-auto"
+                  >          <CarouselContent>
+            {testimonials.map((testimonial, index) => (
+              <CarouselItem
+                key={index}
+                className={
+                  !windowWidth
+                    ? "basis-full"
+                    : windowWidth < 640
+                    ? "basis-full"
+                    : windowWidth < 1024
+                    ? "basis-1/2"
+                    : "basis-1/3"
+                }
+              >
+                <div className="p-1 h-full">
+                  <Card className="h-full border-0 flex flex-col">
+                    <CardContent className="pt-6 flex-grow flex flex-col">
+                      <div className="flex items-start gap-4 mb-4">
+                        <Avatar className="shrink-0">
+                          <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
+                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="font-medium dark:text-white truncate">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{testimonial.role}</p>
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground italic flex-grow">"{testimonial.content}"</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </AnimatedSection>
 
       <AnimatedSection variant="stagger" delay={0.3} staggerChildren={0.1}>

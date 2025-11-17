@@ -381,9 +381,7 @@ export default function Desktop() {
                 isMobile={!isDesktop}
                 isMinimized={win.minimized}
               >
-                <React.Suspense fallback={<CuteSuspenseFallback />}>
-                    {win.component}
-                </React.Suspense>
+                {win.component}
               </AppWindow>
             ))}
           </div>

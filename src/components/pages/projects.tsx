@@ -1,4 +1,10 @@
-import { useState, useRef } from "react"
+import { useState, useRef } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,7 +28,10 @@ export default function Projects() {
       image: facilify,
       tags: ["React", "Spring boot", "Postgres"],
       demoUrl: "https://www.facilify.com.au/",
-      githubUrl: "https://github.com/username/ecommerce-platform",
+      githubUrl: {
+        frontend: "https://github.com/username/ecommerce-platform-frontend",
+        backend: "https://github.com/username/ecommerce-platform-backend",
+      },
     },
     {
       id: 2,
@@ -32,7 +41,10 @@ export default function Projects() {
       image: awqafRashaya,
       tags: ["React", "Spring boot", "Postgres", "OpenAi"],
       demoUrl: "https://awqaf-qa.onrender.com",
-      githubUrl: "https://github.com/username/task-management",
+      githubUrl: {
+        frontend: "https://github.com/username/task-management-frontend",
+        backend: "https://github.com/username/task-management-backend",
+      },
     },
     {
       id: 3,
@@ -132,11 +144,33 @@ export default function Projects() {
                             <ExternalLink className="mr-2 h-4 w-4" /> Live Demo
                           </a>
                         </Button>
-                        <Button variant="outline" asChild className="flex-grow sm:flex-grow-0">
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                            <Github className="mr-2 h-4 w-4" /> GitHub
-                          </a>
-                        </Button>
+                        {typeof project.githubUrl === "string" ? (
+                          <Button variant="outline" asChild className="flex-grow sm:flex-grow-0">
+                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                              <Github className="mr-2 h-4 w-4" /> GitHub
+                            </a>
+                          </Button>
+                        ) : (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" className="flex-grow sm:flex-grow-0">
+                                <Github className="mr-2 h-4 w-4" /> Code
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="z-[9999] border border-[#373737] bg-[#212121]">
+                              <DropdownMenuItem asChild>
+                                <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">
+                                  Frontend
+                                </a>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">
+                                  Backend
+                                </a>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -199,11 +233,33 @@ export default function Projects() {
                 </CardContent>
                 <CardFooter className="pt-0">
                   <div className="flex gap-2 w-full">
-                    <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                        <Github className="mr-2 h-4 w-4" /> Code
-                      </a>
-                    </Button>
+                    {typeof project.githubUrl === "string" ? (
+                      <Button variant="outline" size="sm" className="flex-1" asChild>
+                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                          <Github className="mr-2 h-4 w-4" /> Code
+                        </a>
+                      </Button>
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="flex-1">
+                            <Github className="mr-2 h-4 w-4" /> Code
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="z-[9999]">
+                          <DropdownMenuItem asChild>
+                            <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">
+                              Frontend
+                            </a>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">
+                              Backend
+                            </a>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                     <Button size="sm" className="flex-1" asChild>
                       <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="mr-2 h-4 w-4" /> Demo

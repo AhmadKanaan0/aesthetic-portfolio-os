@@ -10,7 +10,7 @@ import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
 import { useAppSound } from "@/components/sound-context"
 import emailjs from '@emailjs/browser'
 
-export default function Contact() {
+export default function Contact({ windowWidth }: { windowWidth?: number }) {
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -106,6 +106,8 @@ export default function Contact() {
     },
   ]
 
+  const isMultiColumn = windowWidth ? windowWidth >= 750 : false;
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <AnimatedSection variant="scale" duration={0.7} className="text-center">
@@ -113,8 +115,8 @@ export default function Contact() {
         <p className="text-gray-700 dark:text-gray-300">Have a question or want to work together? Drop me a message!</p>
       </AnimatedSection>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <AnimatedSection variant="slideRight" delay={0.1} className="md:col-span-1 space-y-6">
+      <div className={`grid ${isMultiColumn ? 'grid-cols-3' : 'grid-cols-1'} gap-8`}>
+        <AnimatedSection variant="slideRight" delay={0.1} className={`${isMultiColumn ? 'col-span-1' : ''} space-y-6`}>
           {contactInfo.map((info, index) => (
             <AnimatedItem key={index}>
               <Card className="hover:shadow-md transition-shadow border-0">
@@ -157,7 +159,7 @@ export default function Contact() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection variant="slideLeft" delay={0.2} className="md:col-span-2">
+        <AnimatedSection variant="slideLeft" delay={0.2} className={isMultiColumn ? 'col-span-2' : ''}>
           <Card className="border-0">
             <CardContent className="p-6">
               {isSubmitted ? (

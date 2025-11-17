@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 
 import { Rnd } from "react-rnd";
 import { useEffect, useState, useRef } from "react";
@@ -7,6 +7,7 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
 import { useAppSound } from "./sound-context";
+import { CuteSuspenseFallback } from "./suspense-fallback";
 
 let globalZ = 100;
 
@@ -44,6 +45,7 @@ export function AppWindow({
   isMobile?: boolean;
   isMinimized?: boolean;
 }) {
+  const [isDragging, setIsDragging] = useState(false);
   const [zIndex, setZIndex] = useState(globalZ++);
   const [isMaximized, setIsMaximized] = useState(isMobile ? true : false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -269,7 +271,13 @@ export function AppWindow({
               className="window-content-mobile"
               data-width={contentWidth}
             >
-              {children}
+              <React.Suspense fallback={<CuteSuspenseFallback />}>
+                {isDragging ? null : React.Children.map(children, (child) =>
+                  React.isValidElement(child)
+                    ? React.cloneElement(child, { windowWidth: contentWidth } as { windowWidth: number })
+                    : child
+                )}
+              </React.Suspense>
             </div>
           </div>
         )}
@@ -298,22 +306,24 @@ export function AppWindow({
                 : size
             }
             position={isMaximized ? { x: 0, y: 0 } : position}
+            onDragStart={() => { bringToFront(); setIsDragging(true); }}
             onDragStop={(e, d) => {
               if (!isMaximized) {
                 setPosition({ x: d.x, y: d.y });
               }
+              setIsDragging(false);
             }}
+            onResizeStart={() => { bringToFront(); setIsDragging(true); }}
             onResizeStop={(e, direction, ref, delta, pos) => {
               if (!isMaximized) {
                 setSize({ width: ref.offsetWidth, height: ref.offsetHeight });
                 setPosition(pos);
               }
+              setIsDragging(false);
             }}
             enableResizing={!isMaximized}
             disableDragging={isMaximized}
             dragHandleClassName="window-drag-handle"
-            onDragStart={bringToFront}
-            onResizeStart={bringToFront}
             onClick={bringToFront}
             bounds="window"
             className={`window-container bg-white/90 dark:bg-gray-900/90 backdrop-blur-md ${isMaximized ? "maximized-window" : ""}`}
@@ -366,7 +376,13 @@ export function AppWindow({
               className="window-content"
               data-width={contentWidth}
             >
-              {children}
+              <React.Suspense fallback={<CuteSuspenseFallback />}>
+                {isDragging ? null : React.Children.map(children, (child) =>
+                  React.isValidElement(child)
+                    ? React.cloneElement(child, { windowWidth: contentWidth } as { windowWidth: number })
+                    : child
+                )}
+              </React.Suspense>
             </div>
           </Rnd>
         </div>
