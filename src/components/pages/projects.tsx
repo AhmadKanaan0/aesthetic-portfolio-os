@@ -28,10 +28,7 @@ export default function Projects() {
       image: facilify,
       tags: ["React", "Spring boot", "Postgres"],
       demoUrl: "https://www.facilify.com.au/",
-      githubUrl: {
-        frontend: "https://github.com/username/ecommerce-platform-frontend",
-        backend: "https://github.com/username/ecommerce-platform-backend",
-      },
+      githubUrl: "https://github.com/hussamkhaled/nufm-web-deploy",
     },
     {
       id: 2,
@@ -45,36 +42,6 @@ export default function Projects() {
         frontend: "https://github.com/username/task-management-frontend",
         backend: "https://github.com/username/task-management-backend",
       },
-    },
-    {
-      id: 3,
-      title: "Weather Dashboard",
-      description:
-        "An interactive weather dashboard that displays current conditions and forecasts for multiple locations with beautiful visualizations.",
-      image: "/projects/project-3.jpg",
-      tags: ["React", "Chart.js", "Weather API", "Geolocation"],
-      demoUrl: "https://weather-dash.example.com",
-      githubUrl: "https://github.com/username/weather-dashboard",
-    },
-    {
-      id: 4,
-      title: "Social Media Analytics",
-      description:
-        "A dashboard for tracking and analyzing social media performance across multiple platforms with customizable reports.",
-      image: "/projects/project-4.jpg",
-      tags: ["Next.js", "D3.js", "Social APIs", "Auth0"],
-      demoUrl: "https://social-analytics.example.com",
-      githubUrl: "https://github.com/username/social-analytics",
-    },
-    {
-      id: 5,
-      title: "Recipe Finder App",
-      description:
-        "A mobile-first web application for discovering recipes based on available ingredients, dietary restrictions, and preferences.",
-      image: "/projects/project-5.jpg",
-      tags: ["React Native", "Express", "MongoDB", "Food API"],
-      demoUrl: "https://recipe-finder.example.com",
-      githubUrl: "https://github.com/username/recipe-finder",
     },
   ]
 

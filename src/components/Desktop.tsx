@@ -23,7 +23,6 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { AudioProvider } from "./audio-context";
 import { SoundProvider } from "./sound-context";
-import { CuteSuspenseFallback } from "./suspense-fallback";
 
 const AboutMe = React.lazy(() => import("./pages/about-me"));
 const Resume = React.lazy(() => import("./pages/resume"));
@@ -248,7 +247,7 @@ export default function Desktop() {
             {isDesktop && <MenuBar />}
 
             {isDesktop && (
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+              <div className="absolute top-9 left-1/2 -translate-x-1/2 text-center pointer-events-none">
                 <div 
                   ref={greetingRef}
                   className="flex flex-col items-center"
@@ -274,7 +273,7 @@ export default function Desktop() {
             )}
 
             {isDesktop ? (
-              <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-6">
+              <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-8">
                 <div className="flex flex-col flex-wrap gap-4 content-start flex-1 overflow-auto pointer-events-none">
                   {desktopApps.map((app, index) => (
                     <div

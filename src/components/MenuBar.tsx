@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { ModeToggle } from "./mode-toggle"
 import { SoundSettings } from "./sound-settings"
+import HalloGif from "../assets/hallo.gif";
 
 export default function MenuBar() {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -15,10 +16,11 @@ export default function MenuBar() {
   }, [])
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-7 bg-white/20 dark:bg-gray-900/40 backdrop-blur-xs flex items-center justify-between px-4 text-white z-50 text-sm">
+    <div className="fixed top-0 left-0 right-0 h-8 bg-white/20 dark:bg-gray-900/40 backdrop-blur-xs flex items-center justify-between px-4 text-white z-50 text-sm">
       <div className="flex items-center gap-4">
         <div className="font-bold flex items-center">
-          <span className="mr-1">🌸</span> Portfolio
+          <img src={HalloGif} alt="Logo" className="h-7 w-8 mr-2" /> 
+          <p>Ahmad kanaan</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
