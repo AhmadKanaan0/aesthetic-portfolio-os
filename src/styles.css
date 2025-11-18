@@ -456,6 +456,15 @@ code {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Simplified glass for better mobile performance */
+  .window-mobile,
+  .window-header-mobile,
+  .window-content-mobile,
+  .window-button {
+    backdrop-filter: none;
+    box-shadow: none;
+  }
 }
 
 /* Desktop icon styles */

@@ -177,6 +177,16 @@ export function AppWindow({
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
+    // On mobile, keep it very light for performance
+    if (isMobile) {
+      gsap.fromTo(
+        windowRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.25 }
+      );
+      return;
+    }
+
     if (prefersReducedMotion) {
       gsap.fromTo(
         windowRef.current,
@@ -184,28 +194,14 @@ export function AppWindow({
         { opacity: 1, duration: 0.3 }
       );
     } else {
-      if (isMobile) {
-        gsap.fromTo(
-          windowRef.current,
-          { opacity: 0, y: 20, scale: 0.98 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.4,
-            ease: "power2.out",
-          }
-        );
-      } else {
-        gsap.fromTo(
-          windowRef.current,
-          { opacity: 0, scale: 0.9 },
-          {
-            opacity: 1,
-            ease: "power2.out",
-          }
-        );
-      }
+      gsap.fromTo(
+        windowRef.current,
+        { opacity: 0, scale: 0.9 },
+        {
+          opacity: 1,
+          ease: "power2.out",
+        }
+      );
     }
   }, [isVisible, isMobile]);
 
