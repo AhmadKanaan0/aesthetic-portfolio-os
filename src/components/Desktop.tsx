@@ -1,5 +1,4 @@
 import React from "react";
-
 import { DndContext } from "@dnd-kit/core";
 import { useEffect, useState, useRef } from "react";
 import { AppWindow } from "./Window";
@@ -45,6 +44,7 @@ export default function Desktop() {
   const greetingTextRef = useRef<HTMLHeadingElement>(null);
   const desktopIconsRef = useRef<HTMLDivElement[]>([]);
   const mobileIconsRef = useRef<HTMLDivElement[]>([]);
+  const floatingAnims = useRef<gsap.core.Tween[]>([]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -63,6 +63,17 @@ export default function Desktop() {
   ];
 
   const [openWindows, setOpenWindows] = useState<WindowData[]>([]);
+
+  useEffect(() => {
+    if (!isDesktop) {
+      const hasOpenWindow = openWindows.some((w) => !w.minimized);
+      if (hasOpenWindow) {
+        floatingAnims.current.forEach((anim) => anim.pause());
+      } else {
+        floatingAnims.current.forEach((anim) => anim.resume());
+      }
+    }
+  }, [openWindows, isDesktop]);
 
   const getComponentForWindow = (name: string) => {
     switch (name) {
@@ -119,122 +130,140 @@ export default function Desktop() {
   };
 
   // GSAP Animations
-  useGSAP(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
-    if (prefersReducedMotion) {
-      // Simple fade-in for reduced motion users
-      if (greetingRef.current) {
-        gsap.fromTo(greetingRef.current, 
-          { opacity: 0 }, 
-          { opacity: 1, duration: 0.3, delay: 0.3 }
-        );
+  useGSAP(
+    () => {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      if (prefersReducedMotion) {
+        // Simple fade-in for reduced motion users
+        if (greetingRef.current) {
+          gsap.fromTo(
+            greetingRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.3, delay: 0.3 }
+          );
+        }
+
+        desktopIconsRef.current.forEach((icon, index) => {
+          if (icon) {
+            gsap.fromTo(
+              icon,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.3, delay: index * 0.05 }
+            );
+          }
+        });
+
+        mobileIconsRef.current.forEach((icon, index) => {
+          if (icon) {
+            gsap.fromTo(
+              icon,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.3, delay: index * 0.05 }
+            );
+          }
+        });
+        return;
       }
-      
-      desktopIconsRef.current.forEach((icon, index) => {
-        if (icon) {
-          gsap.fromTo(icon, 
-            { opacity: 0 }, 
-            { opacity: 1, duration: 0.3, delay: index * 0.05 }
-          );
-        }
-      });
-      
-      mobileIconsRef.current.forEach((icon, index) => {
-        if (icon) {
-          gsap.fromTo(icon, 
-            { opacity: 0 }, 
-            { opacity: 1, duration: 0.3, delay: index * 0.05 }
-          );
-        }
-      });
-      return;
-    }
 
-    // Desktop greeting animation
-    if (isDesktop && greetingRef.current) {
-      const tl = gsap.timeline();
-      
-      tl.fromTo(greetingRef.current, 
-        { opacity: 0, y: -20 }, 
-        { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "back.out(1.7)" }
-      );
+      // Desktop greeting animation
+      if (isDesktop && greetingRef.current) {
+        const tl = gsap.timeline();
 
-      if (greetingImageRef.current) {
-        tl.fromTo(greetingImageRef.current, 
-          { scale: 0.8, opacity: 0 }, 
-          { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 
-          "-=0.5"
+        tl.fromTo(
+          greetingRef.current,
+          { opacity: 0, y: -20 },
+          { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "back.out(1.7)" }
         );
-        
-        // Floating animation
-        gsap.to(greetingImageRef.current, {
-          y: -10,
-          duration: 3,
-          ease: "power2.inOut",
-          yoyo: true,
-          repeat: -1
+
+        if (greetingImageRef.current) {
+          tl.fromTo(
+            greetingImageRef.current,
+            { scale: 0.8, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" },
+            "-=0.5"
+          );
+
+          // Floating animation
+          floatingAnims.current.push(
+            gsap.to(greetingImageRef.current, {
+              y: -10,
+              duration: 3,
+              ease: "power2.inOut",
+              yoyo: true,
+              repeat: -1,
+            })
+          );
+        }
+
+        if (greetingTextRef.current) {
+          floatingAnims.current.push(
+            gsap.to(greetingTextRef.current, {
+              opacity: 0.7,
+              duration: 3,
+              ease: "power2.inOut",
+              yoyo: true,
+              repeat: -1,
+            })
+          );
+        }
+      }
+
+      // Desktop icons animation
+      if (isDesktop) {
+        desktopIconsRef.current.forEach((icon, index) => {
+          if (icon) {
+            gsap.fromTo(
+              icon,
+              { opacity: 0, x: -20 },
+              {
+                opacity: 1,
+                x: 0,
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: "back.out(1.7)",
+              }
+            );
+          }
+        });
+      } else {
+        // Mobile icons animation
+        mobileIconsRef.current.forEach((icon, index) => {
+          if (icon) {
+            gsap.fromTo(
+              icon,
+              { opacity: 0, scale: 0.8 },
+              {
+                opacity: 1,
+                scale: 1,
+                duration: 0.3,
+                delay: index * 0.1,
+                ease: "back.out(1.7)",
+              }
+            );
+          }
         });
       }
 
-      if (greetingTextRef.current) {
-        gsap.to(greetingTextRef.current, {
-          opacity: 0.7,
-          duration: 3,
-          ease: "power2.inOut",
-          yoyo: true,
-          repeat: -1
-        });
-      }
-    }
-
-    // Desktop icons animation
-    if (isDesktop) {
-      desktopIconsRef.current.forEach((icon, index) => {
-        if (icon) {
-          gsap.fromTo(icon, 
-            { opacity: 0, x: -20 }, 
-            { 
-              opacity: 1, 
-              x: 0, 
-              duration: 0.5, 
-              delay: index * 0.1, 
-              ease: "back.out(1.7)" 
-            }
-          );
-        }
+      // Floating animation for decorative images
+      const floatingElements =
+        document.querySelectorAll<HTMLElement>(".animate-float");
+      floatingElements.forEach((element) => {
+        floatingAnims.current.push(
+          gsap.to(element, {
+            y: -10,
+            duration: 6,
+            ease: "power2.inOut",
+            yoyo: true,
+            repeat: -1,
+          })
+        );
       });
-    } else {
-      // Mobile icons animation
-      mobileIconsRef.current.forEach((icon, index) => {
-        if (icon) {
-          gsap.fromTo(icon, 
-            { opacity: 0, scale: 0.8 }, 
-            { 
-              opacity: 1, 
-              scale: 1, 
-              duration: 0.3, 
-              delay: index * 0.1, 
-              ease: "back.out(1.7)" 
-            }
-          );
-        }
-      });
-    }
-
-    // Floating animation for decorative images
-    const floatingElements = document.querySelectorAll('.animate-float');
-    floatingElements.forEach((element) => {
-      gsap.to(element, {
-        y: -10,
-        duration: 6,
-        ease: "power2.inOut",
-        yoyo: true,
-        repeat: -1
-      });
-    });
-
-  }, [isDesktop, greeting]);
+    },
+    { dependencies: [isDesktop, greeting], revertOnUpdate: true }
+  );
 
   return (
     <SoundProvider>
@@ -248,10 +277,7 @@ export default function Desktop() {
 
             {isDesktop && (
               <div className="absolute top-9 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-                <div 
-                  ref={greetingRef}
-                  className="flex flex-col items-center"
-                >
+                <div ref={greetingRef} className="flex flex-col items-center">
                   <img
                     ref={greetingImageRef}
                     src={GreetingGif}
@@ -370,7 +396,7 @@ export default function Desktop() {
                 />
               </div>
             )}
-            
+
             {openWindows.map((win) => (
               <AppWindow
                 key={win.name}

@@ -210,6 +210,7 @@ export function AppWindow({
     e: React.MouseEvent<HTMLButtonElement>,
     phase: "enter" | "leave" | "down" | "up"
   ) => {
+    if (isMobile) return;
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
