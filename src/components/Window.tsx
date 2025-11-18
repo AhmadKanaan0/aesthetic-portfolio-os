@@ -55,12 +55,12 @@ export function AppWindow({
   const [prevPosition, setPrevPosition] = useState(position);
   const rndRef = useRef<Rnd>(null);
   const windowRef = useRef<HTMLDivElement>(null);
-  const { 
-    playWindowOpenSound, 
-    playWindowCloseSound, 
-    playMinimizeSound, 
+  const {
+    playWindowOpenSound,
+    playWindowCloseSound,
+    playMinimizeSound,
     playMaximizeSound,
-    playClickSound 
+    playClickSound,
   } = useAppSound();
 
   useEffect(() => {
@@ -71,10 +71,8 @@ export function AppWindow({
       y: Math.max(10, Math.min(centerY, window.innerHeight - size.height - 10)),
     });
 
-    setTimeout(() => {
-      setIsVisible(true);
-      playWindowOpenSound();
-    }, 50);
+    setIsVisible(true);
+    playWindowOpenSound();
   }, [size.width, size.height, playWindowOpenSound]);
 
   useEffect(() => {
@@ -103,16 +101,18 @@ export function AppWindow({
 
   const handleClose = () => {
     playWindowCloseSound();
-    
+
     // Exit animation
     if (windowRef.current) {
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
       if (prefersReducedMotion) {
         gsap.to(windowRef.current, {
           opacity: 0,
           duration: 0.2,
-          onComplete: () => onClose?.()
+          onComplete: () => onClose?.(),
         });
       } else {
         gsap.to(windowRef.current, {
@@ -120,8 +120,8 @@ export function AppWindow({
           scale: 0.9,
           y: isMobile ? 20 : 0,
           duration: 0.2,
-          ease: "power2.in",
-          onComplete: () => onClose?.()
+          ease: "power2.out",
+          onComplete: () => onClose?.(),
         });
       }
     } else {
@@ -145,7 +145,7 @@ export function AppWindow({
         if (rndRef.current) {
           rndRef.current.updateSize({
             width: window.innerWidth,
-            height: window.innerHeight - 10,
+            height: window.innerHeight,
           });
           rndRef.current.updatePosition({ x: 0, y: 0 });
         }
@@ -160,7 +160,7 @@ export function AppWindow({
     if (isMaximized && !isMobile && rndRef.current) {
       rndRef.current.updateSize({
         width: window.innerWidth,
-        height: window.innerHeight - 10,
+        height: window.innerHeight,
       });
       rndRef.current.updatePosition({ x: 0, y: 0 });
     }
@@ -173,32 +173,36 @@ export function AppWindow({
   useGSAP(() => {
     if (!isVisible || !windowRef.current) return;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     if (prefersReducedMotion) {
-      gsap.fromTo(windowRef.current, 
-        { opacity: 0 }, 
+      gsap.fromTo(
+        windowRef.current,
+        { opacity: 0 },
         { opacity: 1, duration: 0.3 }
       );
     } else {
       if (isMobile) {
-        gsap.fromTo(windowRef.current, 
-          { opacity: 0, y: 20 }, 
-          { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.3, 
-            ease: "back.out(1.7)" 
+        gsap.fromTo(
+          windowRef.current,
+          { opacity: 0, y: 20, scale: 0.98 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.4,
+            ease: "power2.out",
           }
         );
       } else {
-        gsap.fromTo(windowRef.current, 
-          { opacity: 0, scale: 0.9 }, 
-          { 
-            opacity: 1, 
-            scale: 1, 
-            duration: 0.3, 
-            ease: "back.out(1.7)" 
+        gsap.fromTo(
+          windowRef.current,
+          { opacity: 0, scale: 0.9 },
+          {
+            opacity: 1,
+            ease: "power2.out",
           }
         );
       }
@@ -206,23 +210,28 @@ export function AppWindow({
   }, [isVisible, isMobile]);
 
   // Helper function for button animations
-  const handleButtonAnimation = (e: React.MouseEvent<HTMLButtonElement>, phase: 'enter' | 'leave' | 'down' | 'up') => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const handleButtonAnimation = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    phase: "enter" | "leave" | "down" | "up"
+  ) => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (prefersReducedMotion) return;
 
     const target = e.currentTarget;
-    
+
     switch (phase) {
-      case 'enter':
+      case "enter":
         gsap.to(target, { scale: 1.1, duration: 0.1 });
         break;
-      case 'leave':
+      case "leave":
         gsap.to(target, { scale: 1, duration: 0.1 });
         break;
-      case 'down':
+      case "down":
         gsap.to(target, { scale: 0.9, duration: 0.1 });
         break;
-      case 'up':
+      case "up":
         gsap.to(target, { scale: 1.1, duration: 0.1 });
         break;
     }
@@ -247,20 +256,20 @@ export function AppWindow({
                 <button
                   onClick={() => handleButtonClick(handleMinimize)}
                   className="window-button"
-                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
-                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
-                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
-                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
+                  onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                  onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                  onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                  onMouseUp={(e) => handleButtonAnimation(e, "up")}
                 >
                   <Minus size={14} />
                 </button>
                 <button
                   onClick={() => handleButtonClick(handleClose)}
                   className="window-button window-button-close"
-                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
-                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
-                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
-                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
+                  onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                  onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                  onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                  onMouseUp={(e) => handleButtonAnimation(e, "up")}
                 >
                   <X size={14} />
                 </button>
@@ -272,11 +281,15 @@ export function AppWindow({
               data-width={contentWidth}
             >
               <React.Suspense fallback={<CuteSuspenseFallback />}>
-                {isDragging ? null : React.Children.map(children, (child) =>
-                  React.isValidElement(child)
-                    ? React.cloneElement(child, { windowWidth: contentWidth } as { windowWidth: number })
-                    : child
-                )}
+                {isDragging
+                  ? null
+                  : React.Children.map(children, (child) =>
+                      React.isValidElement(child)
+                        ? React.cloneElement(child, {
+                            windowWidth: contentWidth,
+                          } as { windowWidth: number })
+                        : child
+                    )}
               </React.Suspense>
             </div>
           </div>
@@ -298,93 +311,155 @@ export function AppWindow({
             color: "var(--text-primary)",
           }}
         >
-          <Rnd
-            ref={rndRef}
-            size={
-              isMaximized
-                ? { width: window.innerWidth, height: window.innerHeight - 10 }
-                : size
-            }
-            position={isMaximized ? { x: 0, y: 0 } : position}
-            onDragStart={() => { bringToFront(); setIsDragging(true); }}
-            onDragStop={(e, d) => {
-              if (!isMaximized) {
-                setPosition({ x: d.x, y: d.y });
-              }
-              setIsDragging(false);
-            }}
-            onResizeStart={() => { bringToFront(); setIsDragging(true); }}
-            onResizeStop={(e, direction, ref, delta, pos) => {
-              if (!isMaximized) {
-                setSize({ width: ref.offsetWidth, height: ref.offsetHeight });
-                setPosition(pos);
-              }
-              setIsDragging(false);
-            }}
-            enableResizing={!isMaximized}
-            disableDragging={isMaximized}
-            dragHandleClassName="window-drag-handle"
-            onClick={bringToFront}
-            bounds="window"
-            className={`window-container bg-white/90 dark:bg-gray-900/90 backdrop-blur-md ${isMaximized ? "maximized-window" : ""}`}
-            minWidth={350}
-            minHeight={300}
-            default={{
-              x: position.x,
-              y: position.y,
-              width: size.width,
-              height: size.height,
-            }}
-          >
-            <div className="window-drag-handle">
-              <span className="font-semibold text-sm truncate">{title}</span>
-              <div className="flex gap-1 shrink-0">
-                <button
-                  onClick={() => handleButtonClick(handleMinimize)}
-                  className="window-button"
-                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
-                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
-                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
-                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
-                >
-                  <Minus size={14} />
-                </button>
-                <button
-                  onClick={() => handleButtonClick(toggleMaximize)}
-                  className="window-button"
-                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
-                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
-                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
-                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
-                >
-                  {isMaximized ? <Square size={14} /> : <Maximize size={14} />}
-                </button>
-                <button
-                  onClick={() => handleButtonClick(handleClose)}
-                  className="window-button window-button-close"
-                  onMouseEnter={(e) => handleButtonAnimation(e, 'enter')}
-                  onMouseLeave={(e) => handleButtonAnimation(e, 'leave')}
-                  onMouseDown={(e) => handleButtonAnimation(e, 'down')}
-                  onMouseUp={(e) => handleButtonAnimation(e, 'up')}
-                >
-                  <X size={14} />
-                </button>
+          {isMaximized ? (
+            <div
+              className="window-container maximized-window bg-white/90 dark:bg-gray-900/90 backdrop-blur-md"
+              onClick={bringToFront}
+            >
+              <div className="window-drag-handle">
+                <span className="font-semibold text-sm truncate">{title}</span>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => handleButtonClick(handleMinimize)}
+                    className="window-button"
+                    onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                    onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                    onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                    onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleButtonClick(toggleMaximize)}
+                    className="window-button"
+                    onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                    onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                    onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                    onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                  >
+                    {isMaximized ? (
+                      <Square size={14} />
+                    ) : (
+                      <Maximize size={14} />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleButtonClick(handleClose)}
+                    className="window-button window-button-close"
+                    onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                    onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                    onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                    onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+              <div
+                ref={contentRef}
+                className="window-content"
+                data-width={contentWidth}
+              >
+                <React.Suspense fallback={<CuteSuspenseFallback />}>
+                  {React.Children.map(children, (child) =>
+                    React.isValidElement(child)
+                      ? React.cloneElement(child, {
+                          windowWidth: contentWidth,
+                        } as { windowWidth: number })
+                      : child
+                  )}
+                </React.Suspense>
               </div>
             </div>
-            <div
-              ref={contentRef}
-              className="window-content"
-              data-width={contentWidth}
+          ) : (
+            <Rnd
+              ref={rndRef}
+              size={size}
+              position={position}
+              onDragStart={() => {
+                bringToFront();
+                setIsDragging(true);
+              }}
+              onDragStop={(e, d) => {
+                setPosition({ x: d.x, y: d.y });
+                setIsDragging(false);
+              }}
+              onResizeStart={() => {
+                bringToFront();
+                setIsDragging(true);
+              }}
+              onResizeStop={(e, direction, ref, delta, pos) => {
+                setSize({ width: ref.offsetWidth, height: ref.offsetHeight });
+                setPosition(pos);
+                setIsDragging(false);
+              }}
+              dragHandleClassName="window-drag-handle"
+              onClick={bringToFront}
+              bounds="window"
+              minWidth={350}
+              minHeight={300}
+              default={{
+                x: position.x,
+                y: position.y,
+                width: size.width,
+                height: size.height,
+              }}
+              className="window-container bg-white/90 dark:bg-gray-900/90 backdrop-blur-md"
             >
-              <React.Suspense fallback={<CuteSuspenseFallback />}>
-                {isDragging ? null : React.Children.map(children, (child) =>
-                  React.isValidElement(child)
-                    ? React.cloneElement(child, { windowWidth: contentWidth } as { windowWidth: number })
-                    : child
-                )}
-              </React.Suspense>
-            </div>
-          </Rnd>
+              <div className="window-drag-handle">
+                <span className="font-semibold text-sm truncate">{title}</span>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => handleButtonClick(handleMinimize)}
+                    className="window-button"
+                    onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                    onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                    onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                    onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleButtonClick(toggleMaximize)}
+                    className="window-button"
+                    onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                    onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                    onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                    onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                  >
+                    {isMaximized ? <Square size={14} /> : <Maximize size={14} />}
+                  </button>
+                  <button
+                    onClick={() => handleButtonClick(handleClose)}
+                    className="window-button window-button-close"
+                    onMouseEnter={(e) => handleButtonAnimation(e, "enter")}
+                    onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                    onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                    onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+              <div
+                ref={contentRef}
+                className="window-content"
+                data-width={contentWidth}
+              >
+                <React.Suspense fallback={<CuteSuspenseFallback />}>
+                  {isDragging
+                    ? null
+                    : React.Children.map(children, (child) =>
+                        React.isValidElement(child)
+                          ? React.cloneElement(child, {
+                              windowWidth: contentWidth,
+                            } as { windowWidth: number })
+                          : child
+                      )}
+                </React.Suspense>
+              </div>
+            </Rnd>
+          )}
         </div>
       )}
     </>
