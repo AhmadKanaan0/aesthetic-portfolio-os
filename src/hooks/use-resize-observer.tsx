@@ -1,29 +1,38 @@
-import type React from "react"
-
-import { useEffect, useRef, useState } from "react"
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useResizeObserver(ref: React.RefObject<HTMLElement | null>) {
-  const [size, setSize] = useState({ width: 0, height: 0 })
-  const observerRef = useRef<ResizeObserver | null>(null)
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const animationFrameId = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!ref.current) return
+    if (!ref.current) {
+      return;
+    }
 
-    const element = ref.current
+    const observer = new ResizeObserver((entries) => {
+      if (animationFrameId.current) {
+        window.cancelAnimationFrame(animationFrameId.current);
+      }
 
-    observerRef.current = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect
-      setSize({ width, height })
-    })
+      animationFrameId.current = window.requestAnimationFrame(() => {
+        if (entries.length > 0 && entries[0]) {
+          const { width, height } = entries[0].contentRect;
+          setSize({ width, height });
+        }
+      });
+    });
 
-    observerRef.current.observe(element)
+    const element = ref.current;
+    observer.observe(element);
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
+      if (animationFrameId.current) {
+        window.cancelAnimationFrame(animationFrameId.current);
       }
-    }
-  }, [ref])
+      observer.disconnect();
+    };
+  }, [ref]);
 
-  return size
+  return size;
 }
