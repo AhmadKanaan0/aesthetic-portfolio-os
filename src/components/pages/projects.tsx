@@ -1,4 +1,12 @@
-import { useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,16 +16,14 @@ import {
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Github, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react"
+import { Github, ExternalLink } from "lucide-react"
 import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
-import { gsap } from "gsap"
-import { useGSAP } from "@gsap/react"
 import facilify from "@/assets/Facilify.png";
 import awqafRashaya from "@/assets/AwqadRashaya.png";
 
 export default function Projects() {
   const [activeProject, setActiveProject] = useState(0)
-  const carouselRef = useRef<HTMLDivElement>(null)
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null)
 
   const projects = [
     {
@@ -45,31 +51,20 @@ export default function Projects() {
     },
   ]
 
-  const nextProject = () => {
-    setActiveProject((prev) => (prev + 1) % projects.length)
-  }
+  useEffect(() => {
+    if (!carouselApi) return
 
-  const prevProject = () => {
-    setActiveProject((prev) => (prev - 1 + projects.length) % projects.length)
-  }
-
-  useGSAP(() => {
-    if (carouselRef.current) {
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      
-      if (prefersReducedMotion) {
-        gsap.set(carouselRef.current, {
-          x: -activeProject * 100 + "%"
-        });
-      } else {
-        gsap.to(carouselRef.current, {
-          x: -activeProject * 100 + "%",
-          duration: 0.5,
-          ease: "power2.out"
-        });
-      }
+    const onSelect = () => {
+      setActiveProject(carouselApi.selectedScrollSnap())
     }
-  }, [activeProject]);
+
+    onSelect()
+    carouselApi.on("select", onSelect)
+
+    return () => {
+      carouselApi.off("select", onSelect)
+    }
+  }, [carouselApi])
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -79,20 +74,29 @@ export default function Projects() {
       </AnimatedSection>
 
       <AnimatedSection variant="scale" delay={0.1} duration={0.7} className="relative" threshold={0.3}>
-        <div className="overflow-hidden">
-          <div
-            ref={carouselRef}
-            className="flex"
-          >
+        <Carousel
+          setApi={setCarouselApi}
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+        >
+          <CarouselContent>
             {projects.map((project) => (
-              <div key={project.id} className="min-w-full">
+              <CarouselItem key={project.id}>
                 <Card className="border-0 shadow-lg overflow-hidden">
-                  <div className="grid gap-2 px-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))" }}>
-                    <div className="aspect-video overflow-hidden">
+                  <div
+                    className="grid gap-2 px-4"
+                    style={{
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(min(100%, 400px), 1fr))",
+                    }}
+                  >
+                    <div className="aspect-video overflow-hidden w-full max-w-full">
                       <img
                         src={project.image || `/placeholder.svg?height=300&width=500`}
                         alt={project.title}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-auto object-cover rounded-lg"
                       />
                     </div>
                     <div className="p-6 flex flex-col">
@@ -142,34 +146,19 @@ export default function Projects() {
                     </div>
                   </div>
                 </Card>
-              </div>
+              </CarouselItem>
             ))}
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm"
-          onClick={prevProject}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm"
-          onClick={nextProject}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
 
         <div className="flex justify-center mt-4 gap-2">
           {projects.map((_, index) => (
             <button
               key={index}
               className={`w-2 h-2 rounded-full ${index === activeProject ? "bg-primary" : "bg-muted"}`}
-              onClick={() => setActiveProject(index)}
+              onClick={() => carouselApi?.scrollTo(index)}
             />
           ))}
         </div>
