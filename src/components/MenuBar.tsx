@@ -16,10 +16,18 @@ export default function MenuBar() {
   }, [])
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-8 bg-white/20 dark:bg-gray-900/40 backdrop-blur-xs flex items-center justify-between px-4 text-white z-50 text-sm">
+    <div
+      className="fixed top-0 left-0 right-0 h-10 flex items-center justify-between px-4 z-50 text-lg font-medium transition-none"
+      style={{
+        background: "var(--cute-header)",
+        color: "var(--cute-text)",
+        borderBottom: "2px solid var(--cute-text)",
+        boxShadow: "0 4px 0 rgba(0,0,0,0.1)"
+      }}
+    >
       <div className="flex items-center gap-4">
         <div className="font-bold flex items-center">
-          <img src={HalloGif} alt="Logo" className="h-7 w-8 mr-2" /> 
+          <img src={HalloGif} alt="Logo" className="h-7 w-8 mr-2" />
           <p>Ahmad kanaan</p>
         </div>
       </div>

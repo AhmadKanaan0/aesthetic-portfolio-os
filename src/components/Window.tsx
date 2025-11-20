@@ -281,12 +281,12 @@ export function AppWindow({
                 {isDragging
                   ? null
                   : React.Children.map(children, (child) =>
-                      React.isValidElement(child)
-                        ? React.cloneElement(child, {
-                            windowWidth: contentWidth,
-                          } as { windowWidth: number })
-                        : child
-                    )}
+                    React.isValidElement(child)
+                      ? React.cloneElement(child, {
+                        windowWidth: contentWidth,
+                      } as { windowWidth: number })
+                      : child
+                  )}
               </React.Suspense>
             </div>
           </div>
@@ -302,9 +302,9 @@ export function AppWindow({
           ref={windowRef}
           className="absolute"
           style={{
-            zIndex,
-            willChange: "transform, opacity",
-            backfaceVisibility: "hidden",
+            zIndex: isMaximized ? 9999 : zIndex,
+            willChange: isMaximized ? "auto" : "transform, opacity",
+            backfaceVisibility: isMaximized ? "visible" : "hidden",
             color: "var(--text-primary)",
           }}
         >
@@ -361,8 +361,8 @@ export function AppWindow({
                   {React.Children.map(children, (child) =>
                     React.isValidElement(child)
                       ? React.cloneElement(child, {
-                          windowWidth: contentWidth,
-                        } as { windowWidth: number })
+                        windowWidth: contentWidth,
+                      } as { windowWidth: number })
                       : child
                   )}
                 </React.Suspense>
@@ -447,12 +447,12 @@ export function AppWindow({
                   {isDragging
                     ? null
                     : React.Children.map(children, (child) =>
-                        React.isValidElement(child)
-                          ? React.cloneElement(child, {
-                              windowWidth: contentWidth,
-                            } as { windowWidth: number })
-                          : child
-                      )}
+                      React.isValidElement(child)
+                        ? React.cloneElement(child, {
+                          windowWidth: contentWidth,
+                        } as { windowWidth: number })
+                        : child
+                    )}
                 </React.Suspense>
               </div>
             </Rnd>
