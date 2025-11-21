@@ -22,7 +22,7 @@ export function DesktopIcon({
 
   const handleMouseEnter = () => {
     playHoverSound()
-    
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
 
@@ -30,14 +30,6 @@ export function DesktopIcon({
       gsap.to(iconRef.current, {
         scale: 1.1,
         rotation: 5,
-        duration: 0.2,
-        ease: "power2.out"
-      })
-    }
-
-    if (textRef.current) {
-      gsap.to(textRef.current, {
-        backgroundColor: "rgba(0, 0, 0, 0.4)",
         duration: 0.2,
         ease: "power2.out"
       })
@@ -52,14 +44,6 @@ export function DesktopIcon({
       gsap.to(iconRef.current, {
         scale: 1,
         rotation: 0,
-        duration: 0.2,
-        ease: "power2.out"
-      })
-    }
-
-    if (textRef.current) {
-      gsap.to(textRef.current, {
-        backgroundColor: "transparent",
         duration: 0.2,
         ease: "power2.out"
       })
@@ -94,23 +78,23 @@ export function DesktopIcon({
 
   useGSAP(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
+
     if (iconRef.current) {
       if (prefersReducedMotion) {
-        gsap.fromTo(iconRef.current, 
-          { opacity: 0 }, 
+        gsap.fromTo(iconRef.current,
+          { opacity: 0 },
           { opacity: 1, duration: 0.3 }
         );
       } else {
-        gsap.fromTo(iconRef.current, 
-          { scale: 0.8, opacity: 0, y: 10 }, 
-          { 
-            scale: 1, 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.5, 
+        gsap.fromTo(iconRef.current,
+          { scale: 0.8, opacity: 0, y: 10 },
+          {
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
             delay: Math.random() * 0.3,
-            ease: "back.out(1.7)" 
+            ease: "back.out(1.7)"
           }
         );
       }
@@ -128,7 +112,7 @@ export function DesktopIcon({
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       style={{ transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
-      className="desktop-icon flex flex-col items-center justify-center w-16 sm:w-18 md:w-20 cursor-pointer select-none mb-2 pointer-events-auto transition-transform"
+      className="desktop-icon flex flex-col items-center justify-center w-20 sm:w-24 md:w-28 p-2 rounded-md hover:bg-white/20 hover:backdrop-blur-sm transition-colors cursor-pointer select-none mb-2 pointer-events-auto"
     >
       <div
         ref={iconRef}
@@ -144,7 +128,7 @@ export function DesktopIcon({
           }}
         />
       </div>
-      <span 
+      <span
         ref={textRef}
         className="desktop-icon-text"
       >

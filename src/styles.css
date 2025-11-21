@@ -182,35 +182,9 @@ code {
 /* Dark mode scrollbar */
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Window styles - Pixel Retro Blue Theme */
-.window-container {
-  background: var(--cute-bg);
-  border: 2px solid var(--cute-text);
-  border-radius: 0;
-  overflow: hidden;
-  /* Retro Bevel Effect */
-  box-shadow:
-    inset 2px 2px 0px #ffffff,
-    inset -2px -2px 0px var(--cute-border),
-    4px 4px 0px rgba(0, 0, 0, 0.2);
-  transition: none;
-  /* Retro UIs snap, they don't fade */
-  transform: translateZ(0);
-  position: relative;
-}
-
-.window-container:hover {
-  transform: none;
-  box-shadow:
-    inset 2px 2px 0px #ffffff,
-    inset -2px -2px 0px var(--cute-border),
-    6px 6px 0px rgba(0, 0, 0, 0.3);
+  inset 2px 2px 0px #ffffff,
+  inset -2px -2px 0px var(--cute-border),
+  6px 6px 0px rgba(0, 0, 0, 0.3);
 }
 
 .window-drag-handle {
@@ -348,50 +322,11 @@ code {
   margin: 0 !important;
 }
 
-.maximized-window .window-content {
-  height: calc(100vh - 49px) !important;
-  max-height: calc(100vh - 49px) !important;
-}
-
-/* Mobile window styles */
-@media (max-width: 650px) {
-  .window-content {
-    padding: 1rem;
-    height: calc(100vh - 36px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .window-mobile,
-  .window-header-mobile,
-  .window-content-mobile,
-  .window-button {
-    backdrop-filter: none;
-    box-shadow: none;
-  }
-}
-
-/* Desktop icon styles */
-.desktop-icon-text {
-  color: white;
-  text-shadow: 2px 2px 0px #000000;
-  /* Retro shadow */
-  font-size: 1rem;
-  text-align: center;
-  margin-top: 0.25rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+.window-mobile,
+.window-header-mobile,
+.window-content-mobile,
+.window-button {
   backdrop-filter: none;
-}
-
-.dark .desktop-icon-text {
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-/* Taskbar styles - Pixel Retro Blue Theme */
-.taskbar {
-  margin: 0 auto;
   padding: 8px 12px;
   background: var(--cute-bg);
   border: 2px solid var(--cute-text);
@@ -589,4 +524,15 @@ code {
   .animate-spin-slow {
     animation: none !important;
   }
+}
+
+/* Fix snap menu z-index */
+.window-drag-handle {
+  position: relative;
+  z-index: 20;
+}
+
+.window-content {
+  position: relative;
+  z-index: 10;
 }
