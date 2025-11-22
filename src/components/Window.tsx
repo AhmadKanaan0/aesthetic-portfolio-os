@@ -8,6 +8,8 @@ import { useGSAP } from "@gsap/react";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
 import { useAppSound } from "./sound-context";
 import { CuteSuspenseFallback } from "./suspense-fallback";
+import { SnapMenu, type SnapType } from "./SnapMenu";
+
 let globalZ = 100;
 const getOptimalWindowSize = (title: string) => {
   switch (title) {
@@ -220,89 +222,22 @@ export function AppWindow({
     }
   };
 
-  const [snapType, setSnapType] = useState<
-    | null
-    | "left"
-    | "right"
-    | "top-left"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-right"
-    | "left-wide"
-    | "right-narrow"
-    | "three-col-left"
-    | "three-col-center"
-    | "three-col-right"
-    | "four-grid-top-left"
-    | "four-grid-top-right"
-    | "four-grid-bottom-left"
-    | "four-grid-bottom-right"
-    | "left-half-right-top"
-    | "left-half-right-bottom"
-    | "center-wide-left"
-    | "center-wide-center"
-    | "center-wide-right"
-  >(null);
+  const [snapType, setSnapType] = useState<SnapType | null>(null);
 
-  const [snapPreview, setSnapPreview] = useState<
-    | null
-    | "left"
-    | "right"
-    | "top-left"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-right"
-    | "maximize"
-    // New snap types
-    | "left-wide" // 60/40
-    | "right-narrow" // 40/60
-    | "three-col-left"
-    | "three-col-center"
-    | "three-col-right"
-    | "four-grid-top-left"
-    | "four-grid-top-right"
-    | "four-grid-bottom-left"
-    | "four-grid-bottom-right"
-    | "left-half-right-top"
-    | "left-half-right-bottom"
-    | "center-wide-left"
-    | "center-wide-center"
-    | "center-wide-right"
-  >(null);
+  const [snapPreview, setSnapPreview] = useState<SnapType | "maximize" | null>(null);
 
   const [showSnapMenu, setShowSnapMenu] = useState(false);
   const snapMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSnap = (
-    type:
-      | "left"
-      | "right"
-      | "top-left"
-      | "top-right"
-      | "bottom-left"
-      | "bottom-right"
-      | "left-wide"
-      | "right-narrow"
-      | "three-col-left"
-      | "three-col-center"
-      | "three-col-right"
-      | "four-grid-top-left"
-      | "four-grid-top-right"
-      | "four-grid-bottom-left"
-      | "four-grid-bottom-right"
-      | "left-half-right-top"
-      | "left-half-right-bottom"
-      | "center-wide-left"
-      | "center-wide-center"
-      | "center-wide-right"
-  ) => {
+  const handleSnap = (type: SnapType) => {
+    console.log(type);
     bringToFront();
     setSnapType(type);
     setIsMaximized(false);
     setShowSnapMenu(false);
   };
 
-  const getSnapStyles = (type: string | null): React.CSSProperties => {
+  const getSnapStyles = (type: SnapType | null): React.CSSProperties => {
     if (!type) return {};
     const common = {
       position: "fixed" as const,
@@ -426,115 +361,6 @@ export function AppWindow({
     setIsDragging(false);
   };
 
-  const SnapZone = ({
-    className,
-    onClick,
-  }: {
-    className: string;
-    onClick: (e: React.MouseEvent) => void;
-  }) => (
-    <div
-      className={`bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-blue-400 dark:hover:bg-blue-600 transition-colors cursor-pointer ${className}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick(e);
-      }}
-    />
-  );
-
-  const snapMenuContent = (
-    <div
-      className="absolute top-full right-0 mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4 grid grid-cols-3 gap-4 z-50 w-[280px]"
-      onMouseEnter={handleMaximizeHover}
-      onMouseLeave={handleMaximizeLeave}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      {/* 1. 50/50 Split */}
-      <div className="flex gap-1 h-16 w-full group">
-        <SnapZone className="w-1/2 h-full" onClick={() => handleSnap("left")} />
-        <SnapZone className="w-1/2 h-full" onClick={() => handleSnap("right")} />
-      </div>
-
-      {/* 2. 60/40 Split */}
-      <div className="flex gap-1 h-16 w-full group">
-        <SnapZone
-          className="w-[60%] h-full"
-          onClick={() => handleSnap("left-wide")}
-        />
-        <SnapZone
-          className="w-[40%] h-full"
-          onClick={() => handleSnap("right-narrow")}
-        />
-      </div>
-
-      {/* 3. Three Columns */}
-      <div className="flex gap-1 h-16 w-full group">
-        <SnapZone
-          className="w-1/3 h-full"
-          onClick={() => handleSnap("three-col-left")}
-        />
-        <SnapZone
-          className="w-1/3 h-full"
-          onClick={() => handleSnap("three-col-center")}
-        />
-        <SnapZone
-          className="w-1/3 h-full"
-          onClick={() => handleSnap("three-col-right")}
-        />
-      </div>
-
-      {/* 4. Grid (Quadrants) */}
-      <div className="grid grid-cols-2 gap-1 h-16 w-full group">
-        <SnapZone
-          className="h-full"
-          onClick={() => handleSnap("four-grid-top-left")}
-        />
-        <SnapZone
-          className="h-full"
-          onClick={() => handleSnap("four-grid-top-right")}
-        />
-        <SnapZone
-          className="h-full"
-          onClick={() => handleSnap("four-grid-bottom-left")}
-        />
-        <SnapZone
-          className="h-full"
-          onClick={() => handleSnap("four-grid-bottom-right")}
-        />
-      </div>
-
-      {/* 5. Left Half / Right Quarters */}
-      <div className="flex gap-1 h-16 w-full group">
-        <SnapZone className="w-1/2 h-full" onClick={() => handleSnap("left")} />
-        <div className="flex flex-col gap-1 w-1/2 h-full">
-          <SnapZone
-            className="h-1/2 w-full"
-            onClick={() => handleSnap("left-half-right-top")}
-          />
-          <SnapZone
-            className="h-1/2 w-full"
-            onClick={() => handleSnap("left-half-right-bottom")}
-          />
-        </div>
-      </div>
-
-      {/* 6. Center Wide */}
-      <div className="flex gap-1 h-16 w-full group">
-        <SnapZone
-          className="w-1/4 h-full"
-          onClick={() => handleSnap("center-wide-left")}
-        />
-        <SnapZone
-          className="w-1/2 h-full"
-          onClick={() => handleSnap("center-wide-center")}
-        />
-        <SnapZone
-          className="w-1/4 h-full"
-          onClick={() => handleSnap("center-wide-right")}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -616,7 +442,7 @@ export function AppWindow({
                 style={{ width: "100%", height: "100%" }}
               >
                 <div
-                  className="window-drag-handle"
+                  className="window-drag-handle relative z-50"
                   onMouseDown={!isMaximized ? handleSnapDragStart : undefined}
                 >
                   <span className="font-semibold text-sm truncate">{title}</span>
@@ -631,26 +457,34 @@ export function AppWindow({
                     >
                       <Minus size={14} />
                     </button>
-                    <div className="relative" onMouseLeave={handleMaximizeLeave}>
-                      <button
-                        onClick={() => handleButtonClick(toggleMaximize)}
-                        className="window-button"
-                        onMouseEnter={(e) => {
-                          handleButtonAnimation(e, "enter");
-                          handleMaximizeHover();
-                        }}
-                        onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
-                        onMouseDown={(e) => handleButtonAnimation(e, "down")}
-                        onMouseUp={(e) => handleButtonAnimation(e, "up")}
-                      >
-                        {isMaximized ? (
-                          <Square size={14} />
-                        ) : (
-                          <Maximize size={14} />
+                    {!isMobile && (
+                      <div className="relative" onMouseLeave={handleMaximizeLeave}>
+                        <button
+                          onClick={() => handleButtonClick(toggleMaximize)}
+                          className="window-button"
+                          onMouseEnter={(e) => {
+                            handleButtonAnimation(e, "enter");
+                            handleMaximizeHover();
+                          }}
+                          onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                          onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                          onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                        >
+                          {isMaximized ? (
+                            <Square size={14} />
+                          ) : (
+                            <Maximize size={14} />
+                          )}
+                        </button>
+                        {showSnapMenu && (
+                          <SnapMenu
+                            onSnap={handleSnap}
+                            onMouseEnter={handleMaximizeHover}
+                            onMouseLeave={handleMaximizeLeave}
+                          />
                         )}
-                      </button>
-                      {showSnapMenu && snapMenuContent}
-                    </div>
+                      </div>
+                    )}
                     <button
                       onClick={() => handleButtonClick(handleClose)}
                       className="window-button window-button-close"
@@ -714,7 +548,7 @@ export function AppWindow({
               style={{ zIndex: zIndex }}
               className="window-container bg-white/90 dark:bg-gray-900/90 backdrop-blur-md"
             >
-              <div className="window-drag-handle">
+              <div className="window-drag-handle relative z-50">
                 <span className="font-semibold text-sm truncate">{title}</span>
                 <div className="flex gap-1 shrink-0">
                   <button
@@ -727,26 +561,34 @@ export function AppWindow({
                   >
                     <Minus size={14} />
                   </button>
-                  <div className="relative" onMouseLeave={handleMaximizeLeave}>
-                    <button
-                      onClick={() => handleButtonClick(toggleMaximize)}
-                      className="window-button"
-                      onMouseEnter={(e) => {
-                        handleButtonAnimation(e, "enter");
-                        handleMaximizeHover();
-                      }}
-                      onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
-                      onMouseDown={(e) => handleButtonAnimation(e, "down")}
-                      onMouseUp={(e) => handleButtonAnimation(e, "up")}
-                    >
-                      {isMaximized ? (
-                        <Square size={14} />
-                      ) : (
-                        <Maximize size={14} />
+                  {!isMobile && (
+                    <div className="relative" onMouseLeave={handleMaximizeLeave}>
+                      <button
+                        onClick={() => handleButtonClick(toggleMaximize)}
+                        className="window-button"
+                        onMouseEnter={(e) => {
+                          handleButtonAnimation(e, "enter");
+                          handleMaximizeHover();
+                        }}
+                        onMouseLeave={(e) => handleButtonAnimation(e, "leave")}
+                        onMouseDown={(e) => handleButtonAnimation(e, "down")}
+                        onMouseUp={(e) => handleButtonAnimation(e, "up")}
+                      >
+                        {isMaximized ? (
+                          <Square size={14} />
+                        ) : (
+                          <Maximize size={14} />
+                        )}
+                      </button>
+                      {showSnapMenu && (
+                        <SnapMenu
+                          onSnap={handleSnap}
+                          onMouseEnter={handleMaximizeHover}
+                          onMouseLeave={handleMaximizeLeave}
+                        />
                       )}
-                    </button>
-                    {showSnapMenu && snapMenuContent}
-                  </div>
+                    </div>
+                  )}
                   <button
                     onClick={() => handleButtonClick(handleClose)}
                     className="window-button window-button-close"

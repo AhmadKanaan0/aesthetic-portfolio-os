@@ -10,6 +10,7 @@ body {
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: none;
   font-size: 20px;
+  overflow: hidden;
   /* Slightly larger for pixel font readability */
 }
 
@@ -452,6 +453,16 @@ code {
 .window-content {
   will-change: transform, opacity;
   backface-visibility: hidden;
+}
+
+.window-container {
+  border: 2px solid var(--cute-text);
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
+}
+
+.dark .window-container {
+  border: 2px solid var(--cute-text);
+  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
 }
 
 /* Responsive adjustments */

@@ -299,7 +299,7 @@ export default function Desktop() {
             )}
 
             {isDesktop ? (
-              <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-8">
+              <div className="absolute inset-0 flex flex-col gap-4 p-4 pt-12">
                 <div className="flex flex-col flex-wrap gap-4 content-start flex-1 overflow-auto pointer-events-none">
                   {desktopApps.map((app, index) => (
                     <div
