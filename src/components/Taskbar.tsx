@@ -25,8 +25,6 @@ interface TaskbarProps {
 export function Taskbar({ apps, openWindows, onAppClick, className = "" }: TaskbarProps) {
   const { playClickSound, playHoverSound } = useAppSound()
   const taskbarRef = useRef<HTMLDivElement>(null)
-  const iconsRef = useRef<HTMLDivElement[]>([])
-  const dotsRef = useRef<HTMLDivElement[]>([])
 
   const handleAppClick = (label: string) => {
     playClickSound()
@@ -39,174 +37,126 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
 
   useGSAP(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
-    // Taskbar entrance animation
-    if (taskbarRef.current) {
-      if (prefersReducedMotion) {
-        gsap.fromTo(taskbarRef.current, 
-          { opacity: 0 }, 
-          { opacity: 1, duration: 0.3, delay: 0.8 }
-        );
-      } else {
-        gsap.fromTo(taskbarRef.current, 
-          { y: 50, opacity: 0 }, 
-          { 
-            y: 0, 
-            opacity: 1, 
-            duration: 0.5, 
-            delay: 0.8, 
-            ease: "back.out(1.7)" 
-          }
-        );
-      }
+
+    if (taskbarRef.current && !prefersReducedMotion) {
+      gsap.fromTo(taskbarRef.current,
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          delay: 0.8,
+          ease: "back.out(1.7)"
+        }
+      );
     }
-
-    // Icons entrance animation
-    iconsRef.current.forEach((icon, index) => {
-      if (icon) {
-        if (prefersReducedMotion) {
-          gsap.fromTo(icon, 
-            { opacity: 0 }, 
-            { opacity: 1, duration: 0.3, delay: 0.9 + index * 0.05 }
-          );
-        } else {
-          gsap.fromTo(icon, 
-            { opacity: 0, y: 20 }, 
-            { 
-              opacity: 1, 
-              y: 0, 
-              duration: 0.3, 
-              delay: 0.9 + index * 0.05, 
-              ease: "back.out(1.7)" 
-            }
-          );
-        }
-      }
-    });
-
-    // Dots entrance animation
-    dotsRef.current.forEach((dot) => {
-      if (dot) {
-        if (prefersReducedMotion) {
-          gsap.fromTo(dot, 
-            { scale: 0 }, 
-            { scale: 1, duration: 0.2, ease: "power2.out" }
-          );
-        } else {
-          gsap.fromTo(dot, 
-            { scale: 0 }, 
-            { scale: 1, duration: 0.2, ease: "back.out(1.7)" }
-          );
-        }
-      }
-    });
-
   }, []);
 
-  const handleIconHover = (index: number) => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-
-    const icon = iconsRef.current[index];
-    if (icon) {
-      gsap.to(icon, {
-        scale: 1.1,
-        duration: 0.2,
-        ease: "power2.out"
-      });
-    }
-  };
-
-  const handleIconLeave = (index: number) => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-
-    const icon = iconsRef.current[index];
-    if (icon) {
-      gsap.to(icon, {
-        scale: 1,
-        duration: 0.2,
-        ease: "power2.out"
-      });
-    }
-  };
-
-  const handleIconClick = (index: number) => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-
-    const icon = iconsRef.current[index];
-    if (icon) {
-      gsap.to(icon, {
-        scale: 0.95,
-        duration: 0.1,
-        ease: "power2.out",
-        yoyo: true,
-        repeat: 1
-      });
-    }
-  };
-
   return (
-    <div
-      ref={taskbarRef}
-      className={`taskbar ${className}`}
-      style={{
-        willChange: "transform, opacity",
-        backfaceVisibility: "hidden",
-      }}
-    >
-      <TooltipProvider>
-        {apps.map((app, index) => {
-          const win = openWindows.find((w) => w.name === app.label)
-          const isRunning = !!win
+    <>
+      <svg style={{ display: 'none' }}>
+        <filter
+          id="glass-distortion"
+          x="0%"
+          y="0%"
+          width="100%"
+          height="100%"
+          filterUnits="objectBoundingBox"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.01 0.01"
+            numOctaves="1"
+            seed="5"
+            result="turbulence"
+          />
+          <feComponentTransfer in="turbulence" result="mapped">
+            <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+            <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+            <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+          </feComponentTransfer>
 
-          return (
-            <Tooltip key={app.id}>
-              <TooltipTrigger asChild>
-                <div
-                  ref={(el) => {
-                    if (el) iconsRef.current[index] = el;
-                  }}
-                  className="relative flex flex-col items-center cursor-pointer group p-1"
-                  onClick={() => {
-                    handleAppClick(app.label);
-                    handleIconClick(index);
-                  }}
-                  onMouseEnter={() => {
-                    handleMouseEnter();
-                    handleIconHover(index);
-                  }}
-                  onMouseLeave={() => handleIconLeave(index)}
-                  style={{
-                    willChange: "transform, opacity",
-                    backfaceVisibility: "hidden",
-                  }}
-                >
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <img
-                      src={app.icon || "/placeholder.svg"}
-                      alt={app.label}
-                      className="max-w-full max-h-full object-contain transition-transform group-hover:scale-110 drop-shadow-md"
-                    />
-                  </div>
-                  {isRunning && (
-                    <div
-                      ref={(el) => {
-                        if (el) dotsRef.current[index] = el;
-                      }}
-                      className="taskbar-indicator"
-                    />
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{app.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          )
-        })}
-      </TooltipProvider>
-    </div>
+          <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+
+          <feSpecularLighting
+            in="softMap"
+            surfaceScale="5"
+            specularConstant="1"
+            specularExponent="100"
+            lightingColor="white"
+            result="specLight"
+          >
+            <fePointLight x="-200" y="-200" z="300" />
+          </feSpecularLighting>
+
+          <feComposite
+            in="specLight"
+            operator="arithmetic"
+            k1="0"
+            k2="1"
+            k3="1"
+            k4="0"
+            result="litImage"
+          />
+
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="softMap"
+            scale="150"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+
+      <div
+        ref={taskbarRef}
+        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 ${className}`}
+        style={{
+          width: "auto",
+        }}
+      >
+        <div className="liquidGlass-wrapper">
+          <div className="liquidGlass-effect"></div>
+          <div className="liquidGlass-tint"></div>
+          <div className="liquidGlass-shine"></div>
+          <div className="liquidGlass-content">
+            <div className="dock">
+              <TooltipProvider>
+                {apps.map((app) => {
+                  const win = openWindows.find((w) => w.name === app.label)
+                  const isRunning = !!win
+                  const isMinimized = win?.minimized
+
+                  return (
+                    <Tooltip key={app.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="dock-icon group relative"
+                          onClick={() => handleAppClick(app.label)}
+                          onMouseEnter={handleMouseEnter}
+                        >
+                          <img
+                            src={app.icon || "/placeholder.svg"}
+                            alt={app.label}
+                            className="drop-shadow-lg"
+                          />
+                          {isRunning && (
+                            <div className={`absolute -bottom-2 w-1.5 h-1.5 rounded-full bg-white shadow-sm ${isMinimized ? 'opacity-50' : 'opacity-100'}`} />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-white/80 backdrop-blur-sm text-black border-none shadow-lg rounded-lg">
+                        <p>{app.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                })}
+              </TooltipProvider>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }

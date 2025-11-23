@@ -11,6 +11,7 @@ body {
   -moz-osx-font-smoothing: none;
   font-size: 20px;
   overflow: hidden;
+  letter-spacing: 0.5px;
   /* Slightly larger for pixel font readability */
 }
 
@@ -143,18 +144,26 @@ code {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --bg-window: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
-  --primary-color: #f8fafc;
-  --primary-light: #1e293b;
-  --accent-color: #60a5fa;
+  --bg-window: #020617;
+  --text-primary: #bae6fd;
+  --text-secondary: #7dd3fc;
+  --border-color: #1e293b;
+  --primary-color: #bae6fd;
+  --primary-light: #0f172a;
+  --accent-color: #38bdf8;
   --window-header: #0f172a;
-  --card-bg: #1e293b;
+  --card-bg: #0f172a;
   --music-slider-bg: #334155;
-  --music-slider-active: #74cef7;
-  --music-slider-thumb: #60a5fa;
+  --music-slider-active: #38bdf8;
+  --music-slider-thumb: #7dd3fc;
+
+  /* Dark Mode Cute Theme Variables - High Contrast */
+  --cute-bg: #020617;
+  --cute-border: #38bdf8;
+  --cute-header: #0f172a;
+  --cute-shadow: rgba(56, 189, 248, 0.15);
+  --cute-text: #bae6fd;
+  --cute-highlight: #1e293b;
 }
 
 /* Custom utilities */
@@ -570,4 +579,130 @@ code {
   .animate-spin-slow {
     animation: none !important;
   }
+}
+
+/* Liquid Glass Taskbar Styles */
+.liquidGlass-wrapper {
+  position: relative;
+  display: flex;
+  font-weight: 600;
+  overflow: hidden;
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+  border-radius: 2rem;
+}
+
+.liquidGlass-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  backdrop-filter: blur(3px);
+  filter: url(#glass-distortion);
+  overflow: hidden;
+  border-radius: 2rem;
+}
+
+.liquidGlass-tint {
+  z-index: 1;
+  position: absolute;
+  inset: 0;
+  background: rgba(56, 189, 248, 0.50);
+  /* Sky blue tint */
+  border-radius: 2rem;
+}
+
+.liquidGlass-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  box-shadow: inset 2px 2px 1px 0 rgba(224, 242, 254, 0.6),
+    inset -1px -1px 1px 1px rgba(224, 242, 254, 0.6);
+  border-radius: 2rem;
+}
+
+.liquidGlass-content {
+  z-index: 3;
+  position: relative;
+}
+
+.dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.6rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+.liquidGlass-wrapper:hover .dock {
+  padding: 0.8rem;
+}
+
+.dock-icon {
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+}
+
+.dock-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+.dock-icon:hover {
+  transform: scale(0.95);
+  transform-origin: center center;
+}
+
+/* Pixel Retro Utility Classes */
+.pixel-card {
+  background: var(--card-bg);
+  border: 2px solid var(--cute-text);
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pixel-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.2);
+}
+
+.dark .pixel-card {
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+}
+
+.dark .pixel-card:hover {
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.5);
+}
+
+.pixel-badge {
+  border-radius: 0 !important;
+  border: 2px solid var(--cute-text);
+  background: var(--cute-highlight);
+  color: var(--cute-text);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+  font-family: "VT323", monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pixel-text {
+  color: var(--cute-text);
+  font-family: "VT323", monospace;
+}
+
+.pixel-title {
+  color: var(--cute-text);
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }

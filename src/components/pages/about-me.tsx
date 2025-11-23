@@ -81,37 +81,37 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto pixel-text">
       <AnimatedSection variant="scale" duration={0.7} className="text-center">
-        <Avatar className="w-24 h-24 mx-auto mb-4">
+        <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-[var(--cute-text)] rounded-none">
           <AvatarImage src="/profile-photo.jpg" alt="Profile" />
-          <AvatarFallback>AK</AvatarFallback>
+          <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">AK</AvatarFallback>
         </Avatar>
-        <h1 className="text-3xl font-bold mb-2 dark:text-white">
+        <h1 className="text-3xl font-bold mb-2 pixel-title">
           Ahmad Kanaan
         </h1>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
+        <p className="mb-4 opacity-80">
           Full-Stack Developer with 4 years of experience
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <Badge variant="secondary">Web Development</Badge>
-          <Badge variant="secondary">Web Design</Badge>
-          <Badge variant="secondary">React</Badge>
-          <Badge variant="secondary">Node.js</Badge>
-          <Badge variant="secondary">UI/UX</Badge>
+          <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">Web Development</Badge>
+          <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">Web Design</Badge>
+          <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">React</Badge>
+          <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">Node.js</Badge>
+          <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">UI/UX</Badge>
         </div>
       </AnimatedSection>
 
       <AnimatedSection variant="slideUp" delay={0.1}>
-        <h2 className="text-2xl font-bold mb-4 dark:text-white">About Me</h2>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
+        <h2 className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">About Me</h2>
+        <p className="mb-4 leading-relaxed">
           I'm a passionate full-stack developer with 4 years of experience
           building modern web applications. I specialize in creating responsive,
           user-friendly interfaces with React and building robust backend
           systems with Node.js. My approach combines technical expertise with
           creative problem-solving to deliver exceptional digital experiences.
         </p>
-        <p className="text-gray-700 dark:text-gray-300">
+        <p className="leading-relaxed">
           When I'm not coding, you can find me exploring new technologies,
           contributing to open-source projects, or sharing my knowledge through
           blog posts and community events.
@@ -119,7 +119,7 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
       </AnimatedSection>
 
       <AnimatedSection variant="stagger" delay={0.2} staggerChildren={0.1}>
-        <h2 className="text-2xl font-bold mb-4 dark:text-white">
+        <h2 className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">
           Testimonials
         </h2>
         <Carousel
@@ -150,28 +150,28 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
                 }
               >
                 <div className="p-1 h-full">
-                  <Card className="h-full border-0 flex flex-col">
+                  <Card className="h-full pixel-card">
                     <CardContent className="pt-6 flex-grow flex flex-col">
                       <div className="flex items-start gap-4 mb-4">
-                        <Avatar className="shrink-0">
+                        <Avatar className="shrink-0 border-2 border-[var(--cute-text)] rounded-none w-10 h-10">
                           <AvatarImage
                             src={testimonial.avatar || "/placeholder.svg"}
                             alt={testimonial.name}
                           />
-                          <AvatarFallback>
+                          <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">
                             {testimonial.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="font-medium dark:text-white truncate">
+                          <p className="font-medium pixel-text truncate">
                             {testimonial.name}
                           </p>
-                          <p className="text-sm text-muted-foreground truncate">
+                          <p className="text-sm opacity-70 truncate">
                             {testimonial.role}
                           </p>
                         </div>
                       </div>
-                      <p className="text-muted-foreground italic flex-grow">
+                      <p className="italic flex-grow opacity-90">
                         "{testimonial.content}"
                       </p>
                     </CardContent>
@@ -180,13 +180,13 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+          <CarouselNext className="border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
         </Carousel>
       </AnimatedSection>
 
       <AnimatedSection variant="stagger" delay={0.3} staggerChildren={0.1}>
-        <h2 className="text-2xl font-bold mb-4 dark:text-white">
+        <h2 className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">
           Hobbies & Interests
         </h2>
         <div
@@ -197,13 +197,13 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
         >
           {hobbies.map((hobby, index) => (
             <AnimatedItem key={index}>
-              <Card className="h-full hover:shadow-md transition-shadow border-0">
+              <Card className="h-full pixel-card hover:shadow-md transition-shadow">
                 <CardContent className="pt-6 text-center">
                   <div className="text-4xl mb-2">{hobby.icon}</div>
-                  <h3 className="font-bold mb-1 dark:text-white">
+                  <h3 className="font-bold mb-1 pixel-text">
                     {hobby.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm opacity-70">
                     {hobby.description}
                   </p>
                 </CardContent>

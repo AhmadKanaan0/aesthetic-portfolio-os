@@ -37,7 +37,7 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
       const serviceId = 'service_gu9vlg7'
       const templateId = 'template_rfakvho'
       const publicKey = '684VFv9sBjrGrc0-P'
-      
+
       await emailjs.send(
         serviceId,
         templateId,
@@ -93,7 +93,7 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
       icon: <Linkedin className="h-5 w-5" />,
       name: "LinkedIn",
       url: "https://linkedin.com/in/username",
-     },
+    },
     {
       icon: <Github className="h-5 w-5" />,
       name: "GitHub",
@@ -109,26 +109,26 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
   const isMultiColumn = windowWidth ? windowWidth >= 750 : false;
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-8 max-w-5xl mx-auto pixel-text">
       <AnimatedSection variant="scale" duration={0.7} className="text-center">
-        <h1 className="text-3xl font-bold mb-2">Get In Touch</h1>
-        <p className="text-gray-700 dark:text-gray-300">Have a question or want to work together? Drop me a message!</p>
+        <h1 className="text-3xl font-bold mb-2 pixel-title">Get In Touch</h1>
+        <p className="opacity-80">Have a question or want to work together? Drop me a message!</p>
       </AnimatedSection>
 
       <div className={`grid ${isMultiColumn ? 'grid-cols-3' : 'grid-cols-1'} gap-8`}>
         <AnimatedSection variant="slideRight" delay={0.1} className={`${isMultiColumn ? 'col-span-1' : ''} space-y-6`}>
           {contactInfo.map((info, index) => (
             <AnimatedItem key={index}>
-              <Card className="hover:shadow-md transition-shadow border-0">
+              <Card className="hover:shadow-md transition-shadow border-0 pixel-card">
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-full shrink-0">{info.icon}</div>
+                  <div className="bg-[var(--cute-highlight)] p-3 rounded-none shrink-0 border-2 border-[var(--cute-text)] text-[var(--cute-text)]">{info.icon}</div>
                   <div className="min-w-0">
-                    <h3 className="font-medium">{info.title}</h3>
+                    <h3 className="font-medium pixel-text">{info.title}</h3>
                     <a
                       href={info.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-muted-foreground hover:text-primary truncate block"
+                      className="text-sm opacity-70 hover:text-[var(--cute-text)] truncate block"
                       onClick={playClickSound}
                     >
                       {info.value}
@@ -140,7 +140,7 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
           ))}
 
           <div className="pt-4">
-            <h3 className="font-medium mb-3">Connect on Social Media</h3>
+            <h3 className="font-medium mb-3 pixel-title">Connect on Social Media</h3>
             <div className="flex flex-wrap gap-3">
               {socialLinks.map((social, index) => (
                 <a
@@ -148,7 +148,7 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-muted hover:bg-muted/80 p-2 rounded-full transition-colors"
+                  className="bg-[var(--cute-highlight)] hover:bg-[var(--cute-highlight)]/80 p-2 rounded-none border-2 border-[var(--cute-text)] text-[var(--cute-text)] transition-colors"
                   aria-label={social.name}
                   onClick={playClickSound}
                 >
@@ -160,28 +160,28 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
         </AnimatedSection>
 
         <AnimatedSection variant="slideLeft" delay={0.2} className={isMultiColumn ? 'col-span-2' : ''}>
-          <Card className="border-0">
+          <Card className="border-0 pixel-card">
             <CardContent className="p-6">
               {isSubmitted ? (
                 <div className="text-center py-8">
-                  <div className="bg-green-100 text-green-800 p-3 rounded-full inline-flex mb-4">
+                  <div className="bg-green-100 text-green-800 p-3 rounded-full inline-flex mb-4 border-2 border-green-800">
                     <Send className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Message Sent!</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="text-xl font-bold mb-2 pixel-title">Message Sent!</h3>
+                  <p className="opacity-80">
                     Thank you for reaching out. I'll get back to you as soon as possible.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {error && (
-                    <div className="bg-red-100 text-red-800 p-3 rounded-md">
+                    <div className="bg-red-100 text-red-800 p-3 rounded-none border-2 border-red-800">
                       {error}
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Your Name</Label>
+                      <Label htmlFor="name" className="pixel-text">Your Name</Label>
                       <Input
                         id="name"
                         name="name"
@@ -189,10 +189,11 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
                         value={formState.name}
                         onChange={handleChange}
                         required
+                        className="rounded-none border-2 border-[var(--cute-text)] bg-[var(--card-bg)] focus-visible:ring-0 focus-visible:border-[var(--cute-highlight)]"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email" className="pixel-text">Email Address</Label>
                       <Input
                         id="email"
                         name="email"
@@ -201,11 +202,12 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
                         value={formState.email}
                         onChange={handleChange}
                         required
+                        className="rounded-none border-2 border-[var(--cute-text)] bg-[var(--card-bg)] focus-visible:ring-0 focus-visible:border-[var(--cute-highlight)]"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject" className="pixel-text">Subject</Label>
                     <Input
                       id="subject"
                       name="subject"
@@ -213,10 +215,11 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
                       value={formState.subject}
                       onChange={handleChange}
                       required
+                      className="rounded-none border-2 border-[var(--cute-text)] bg-[var(--card-bg)] focus-visible:ring-0 focus-visible:border-[var(--cute-highlight)]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message" className="pixel-text">Message</Label>
                     <Textarea
                       id="message"
                       name="message"
@@ -225,11 +228,12 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
                       value={formState.message}
                       onChange={handleChange}
                       required
+                      className="rounded-none border-2 border-[var(--cute-text)] bg-[var(--card-bg)] focus-visible:ring-0 focus-visible:border-[var(--cute-highlight)]"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+                  <Button
+                    type="submit"
+                    className="w-full rounded-none border-2 border-[var(--cute-text)] bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90"
                     disabled={isSubmitting}
                     onClick={playClickSound}
                   >
@@ -252,7 +256,7 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
       </div>
 
       <AnimatedSection variant="fadeIn" delay={0.4} threshold={0.2}>
-        <div className="mt-8 rounded-xl overflow-hidden h-64">
+        <div className="mt-8 rounded-none overflow-hidden h-64 border-2 border-[var(--cute-text)]">
           <iframe
             title="Map"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d100939.98555098464!2d-122.50764017948551!3d37.75781499657633!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80859a6d00690021%3A0x4a501367f076adff!2sSan%20Francisco%2C%20CA!5e0!3m2!1sen!2sus!4v1652813309840!5m2!1sen!2sus"
