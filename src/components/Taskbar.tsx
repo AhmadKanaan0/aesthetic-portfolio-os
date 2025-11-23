@@ -111,7 +111,7 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
 
       <div
         ref={taskbarRef}
-        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 ${className}`}
+        className={`fixed bottom-2 left-1/2 -translate-x-1/2 z-[60] ${className}`}
         style={{
           width: "auto",
         }}

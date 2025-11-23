@@ -326,7 +326,7 @@ export default function Desktop() {
                 />
               </div>
             ) : (
-              <div className="absolute inset-0 flex flex-col justify-between overflow-hidden gap-8 p-4">
+              <div className="absolute inset-0 flex flex-col justify-between overflow-hidden gap-8 p-4 pb-24">
                 <div className="flex flex-col gap-4 justify-between h-full">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
@@ -349,7 +349,7 @@ export default function Desktop() {
                     <div className="flex justify-center">
                       <img
                         src={WaterCd}
-                        className="rounded-2xl h-[160px] animate-float"
+                        className="rounded-2xl h-[160px] animate-float-smooth"
                         style={{
                           willChange: "transform",
                           backfaceVisibility: "hidden",
@@ -361,7 +361,7 @@ export default function Desktop() {
                     <div className="flex justify-center">
                       <img
                         src={CutePuppy}
-                        className="rounded-2xl h-[160px] animate-float"
+                        className="rounded-2xl h-[160px] animate-float-smooth"
                         style={{
                           willChange: "transform",
                           backfaceVisibility: "hidden",
