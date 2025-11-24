@@ -112,28 +112,33 @@ export function DesktopIcon({
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       style={{ transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
-      className="desktop-icon flex flex-col items-center justify-center w-20 sm:w-24 md:w-28 p-2 rounded-md hover:bg-white/20 hover:backdrop-blur-sm transition-colors cursor-pointer select-none mb-2 pointer-events-auto"
+      className="liquidGlass-icon desktop-icon w-20 sm:w-24 md:w-28 p-2 mb-2 cursor-pointer select-none pointer-events-auto"
     >
-      <div
-        ref={iconRef}
-        className="w-12 h-12 flex items-center justify-center"
-      >
-        <img
-          src={icon || "/placeholder.svg"}
-          alt={label}
-          className="max-w-full max-h-full object-contain drop-shadow-md"
-          style={{
-            willChange: "transform",
-            backfaceVisibility: "hidden",
-          }}
-        />
+      <div className="liquidGlass-effect"></div>
+      <div className="liquidGlass-tint"></div>
+      <div className="liquidGlass-shine"></div>
+      <div className="liquidGlass-content">
+        <div
+          ref={iconRef}
+          className="w-12 h-12 flex items-center justify-center"
+        >
+          <img
+            src={icon || "/placeholder.svg"}
+            alt={label}
+            className="max-w-full max-h-full object-contain drop-shadow-md"
+            style={{
+              willChange: "transform",
+              backfaceVisibility: "hidden",
+            }}
+          />
+        </div>
+        <span
+          ref={textRef}
+          className="desktop-icon-text"
+        >
+          {label}
+        </span>
       </div>
-      <span
-        ref={textRef}
-        className="desktop-icon-text"
-      >
-        {label}
-      </span>
     </div>
   )
 }

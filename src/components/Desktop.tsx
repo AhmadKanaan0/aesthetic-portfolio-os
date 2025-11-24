@@ -22,6 +22,7 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { AudioProvider } from "./audio-context";
 import { SoundProvider } from "./sound-context";
+import { MobileSettingsBar } from "./MobileSettingsBar";
 
 const AboutMe = React.lazy(() => import("./pages/about-me"));
 const Resume = React.lazy(() => import("./pages/resume"));
@@ -368,6 +369,7 @@ export default function Desktop() {
                         }}
                       />
                     </div>
+                    <div className="flex flex-col justify-center">
                     <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
                       {desktopApps.slice(4, 6).map((app, index) => (
                         <div
@@ -384,6 +386,8 @@ export default function Desktop() {
                           />
                         </div>
                       ))}
+                    </div>
+                    <MobileSettingsBar />
                     </div>
                   </div>
                   <MusicPlayerWidget isDesktop={false} />

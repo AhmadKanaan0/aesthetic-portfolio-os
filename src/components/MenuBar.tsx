@@ -16,25 +16,24 @@ export default function MenuBar() {
   }, [])
 
   return (
-    <div
-      className="fixed top-0 left-0 right-0 h-10 flex items-center justify-between px-4 z-50 text-lg font-medium transition-none"
-      style={{
-        background: "var(--cute-header)",
-        color: "var(--cute-text)",
-        borderBottom: "2px solid var(--cute-text)",
-        boxShadow: "0 4px 0 rgba(0,0,0,0.1)"
-      }}
-    >
-      <div className="flex items-center gap-4">
-        <div className="font-bold flex items-center">
-          <img src={HalloGif} alt="Logo" className="h-7 w-8 mr-2" />
-          <p>Ahmad kanaan</p>
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <div className="liquidGlass-wrapper menubar h-12 flex items-center justify-between px-4 text-lg font-medium transition-none">
+        <div className="liquidGlass-effect"></div>
+        <div className="liquidGlass-tint"></div>
+        <div className="liquidGlass-shine"></div>
+        <div className="liquidGlass-content w-full flex items-center justify-between" style={{ color: "var(--cute-text)" }}>
+          <div className="flex items-center gap-4">
+            <div className="font-bold flex items-center">
+              <img src={HalloGif} alt="Logo" className="h-7 w-8 mr-2" />
+              <p>Ahmad kanaan</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <SoundSettings />
+            <ModeToggle />
+            <span>{format(currentTime, "EEE d MMM h:mm a")}</span>
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <SoundSettings />
-        <ModeToggle />
-        <span>{format(currentTime, "EEE d MMM h:mm a")}</span>
       </div>
     </div>
   )
