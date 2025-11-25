@@ -90,7 +90,7 @@ export function Taskbar({ apps, openWindows, onAppClick, className = "" }: Taskb
                         )}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-white/80 backdrop-blur-sm text-black border-none shadow-lg rounded-lg">
+                    <TooltipContent side="top" sideOffset={8} className="taskbar-tooltip bg-sky-400/30 backdrop-blur-md text-black border-none shadow-lg rounded-lg" arrowClassName="bg-transparent fill-transparent">
                       <p>{app.label}</p>
                     </TooltipContent>
                   </Tooltip>

@@ -80,14 +80,14 @@ export function ModeToggle() {
             <div className="liquidGlass-tint"></div>
             <div className="liquidGlass-shine"></div>
             <div className="liquidGlass-content p-2 w-full">
-              <DropdownMenuItem onClick={() => setTheme("light")} className="w-full cursor-pointer hover:bg-white/10 dark:hover:bg-white/10 text-slate-900 focus:text-slate-900">
-                <Sun className="h-[1rem] w-[1rem] mr-2" /> Light
+              <DropdownMenuItem onClick={() => setTheme("light")} className="w-full cursor-pointer hover:bg-sky-400/30 text-slate-900 focus:text-slate-900">
+                <Sun className="h-[1rem] w-[1rem] mr-2 text-gray-600" /> Light
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")} className="w-full cursor-pointer hover:bg-white/10 dark:hover:bg-white/10 text-slate-900 focus:text-slate-900">
-                <Moon className="h-[1rem] w-[1rem] mr-2" /> Dark
+              <DropdownMenuItem onClick={() => setTheme("dark")} className="w-full cursor-pointer hover:bg-sky-400/30 text-slate-900 focus:text-slate-900">
+                <Moon className="h-[1rem] w-[1rem] mr-2 text-gray-600" /> Dark
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")} className="w-full cursor-pointer hover:bg-white/10 dark:hover:bg-white/10 text-slate-900 focus:text-slate-900">
-                <Monitor className="h-[1rem] w-[1rem] mr-2" /> System
+              <DropdownMenuItem onClick={() => setTheme("system")} className="w-full cursor-pointer hover:bg-sky-400/30 text-slate-900 focus:text-slate-900">
+                <Monitor className="h-[1rem] w-[1rem] mr-2 text-gray-600" /> System
               </DropdownMenuItem>
             </div>
           </div>
