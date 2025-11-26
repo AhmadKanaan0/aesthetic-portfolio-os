@@ -1,12 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 body {
   @apply m-0;
-  font-family: "VT323", monospace;
+  font-family: "Pixelify Sans", monospace;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: none;
   font-size: 20px;
@@ -217,7 +217,7 @@ code {
   padding: 20px;
   height: calc(100% - 49px);
   overflow: auto;
-  background: #ffffff;
+  background: var(--bg-window);
   color: var(--cute-text);
   transition: none;
   overscroll-behavior: contain;
@@ -247,7 +247,7 @@ code {
   padding: 20px;
   height: calc(100% - 49px);
   overflow: auto;
-  background: #ffffff;
+  background: var(--bg-window);
   color: var(--cute-text);
   transition: none;
   overscroll-behavior: contain;
@@ -258,7 +258,7 @@ code {
   width: 24px;
   height: 24px;
   border-radius: 0;
-  background: #ffffff;
+  background: var(--card-bg);
   border: 2px solid var(--cute-text);
   color: var(--cute-text);
   transition: none;
@@ -283,7 +283,7 @@ code {
 .window-button-close {
   border-color: var(--cute-text);
   color: var(--cute-text);
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 .window-button-close:hover {
@@ -692,7 +692,7 @@ code {
   background: var(--cute-highlight);
   color: var(--cute-text);
   box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
-  font-family: "VT323", monospace;
+  font-family: "Pixelify Sans", monospace;
   text-transform: uppercase;
   letter-spacing: 1px;
 }

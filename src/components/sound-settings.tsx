@@ -14,6 +14,7 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import SliderIcon from "../assets/SliderIcon.png";
 
 export function SoundSettings() {
   const {
@@ -65,7 +66,7 @@ export function SoundSettings() {
               variant="outline"
               size="sm"
               onClick={handleToggleSound}
-              className="h-8 text-slate-900 border-slate-300 hover:bg-white/20 hover:text-slate-900"
+              className="h-8 text-slate-900 border-white/20 bg-sky-500/20 hover:bg-sky-500/30 hover:text-slate-900"
             >
               {isSoundEnabled ? 'On' : 'Off'}
             </Button>
@@ -85,16 +86,25 @@ export function SoundSettings() {
                   max={1}
                   min={0}
                   step={0.1}
+                  className="cursor-pointer w-full"
                   onValueChange={handleVolumeChange}
-                  className="w-full"
+                  trackClassName="bg-[#ccf2fc]"
+                  rangeClassName="bg-[#74defc]"
+                  thumbClassName="h-8 w-8 flex items-center justify-center rounded-full"
+                  thumb={
+                    <img
+                      src={SliderIcon}
+                      className="w-full h-full object-cover rounded-full"
+                      alt={"sliderIcon"}
+                    />
+                  }
                 />
               </div>
-
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleTestSounds}
-                className="w-full text-xs text-slate-900 border-slate-300 hover:bg-white/20 hover:text-slate-900"
+                className="w-full text-xs text-slate-900 border-white/20 bg-sky-500/20 hover:bg-sky-500/30 hover:text-slate-900"
               >
                 🎮 Test Retro Sounds
               </Button>
