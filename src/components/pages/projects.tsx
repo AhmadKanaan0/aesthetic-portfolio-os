@@ -20,6 +20,7 @@ import { Github, ExternalLink } from "lucide-react"
 import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
 import facilify from "@/assets/Facilify.png";
 import awqafRashaya from "@/assets/AwqadRashaya.png";
+import nebula from "@/assets/Nebula.png";
 
 export default function Projects() {
   const [activeProject, setActiveProject] = useState(0)
@@ -48,6 +49,16 @@ export default function Projects() {
         frontend: "https://github.com/username/task-management-frontend",
         backend: "https://github.com/username/task-management-backend",
       },
+    },
+    {
+      id: 3,
+      title: "Nebula",
+      description:
+        "Nebula is a modern AI Agent Platform designed for creating, managing, and interacting with specialized AI agents.",
+      image: nebula,
+      tags: ["React", "Node js", "Postgres"],
+      demoUrl: "https://nebula-gamma-inky.vercel.app/",
+      githubUrl: "https://github.com/AhmadKanaan0/Nebula",
     },
   ]
 
