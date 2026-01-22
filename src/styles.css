@@ -455,6 +455,33 @@ code {
   box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
 }
 
+/* Active/Focused Window Styling */
+.window-container.window-active {
+  box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-color);
+}
+
+.window-container.window-inactive {
+  filter: saturate(0.6) brightness(0.95);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  border-color: var(--border-color);
+}
+
+.window-container.window-inactive .window-drag-handle {
+  background: color-mix(in srgb, var(--cute-header) 80%, #888);
+}
+
+.dark .window-container.window-active {
+  box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.6);
+  border-color: var(--accent-color);
+}
+
+.dark .window-container.window-inactive {
+  filter: saturate(0.5) brightness(0.85);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+  border-color: var(--border-color);
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .desktop-icon {

@@ -1,9 +1,9 @@
-import {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {List, Loader2, Pause, Play, SkipBack, SkipForward, Volume2, X,} from "lucide-react";
-import {cn} from "@/lib/utils";
-import {Slider} from "@/components/ui/slider";
-import {gsap} from "gsap";
-import {useGSAP} from "@gsap/react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { List, Loader2, Pause, Play, SkipBack, SkipForward, Volume2, X, } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import sanrio from "../assets/sanrio.png";
 import Forward from "../assets/Forward.png";
 import Previous from "../assets/Previous.png";
@@ -12,9 +12,9 @@ import SliderIcon from "../assets/SliderIcon.png";
 import MusicPlayerImage from "../assets/MusicPlayerImage.png";
 import PlaylistIcon from "../assets/PlaylistIcon.png";
 import CinamonExit from "../assets/CinamonExit.png";
-import {AudioContext} from "./audio-context";
-import {useAppSound} from "./sound-context";
-import {playlist, type Track} from "@/types/types";
+import { AudioContext } from "./audio-context";
+import { useAppSound } from "./sound-context";
+import { playlist, type Track } from "@/types/types";
 
 import {
   Carousel,
@@ -50,7 +50,7 @@ export default function MusicPlayerWidget({
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-    const playerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
   const albumCoverRef = useRef<HTMLImageElement>(null);
   const buttonsRef = useRef<HTMLButtonElement[]>([]);
@@ -69,7 +69,7 @@ export default function MusicPlayerWidget({
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
-      
+
       if (!prefersReducedMotion) {
         rotationTweenRef.current = gsap.to(albumCoverRef.current, {
           rotation: 360,
@@ -852,102 +852,105 @@ export default function MusicPlayerWidget({
             </div>
 
             {/* Horizontal scrolling playlist */}
-            <div className="">
+            <div className="flex-1 overflow-hidden">
               <Carousel
                 opts={{
                   align: "start",
                   loop: true,
                 }}
-                className="w-[calc(100%-90px)] mx-auto"
               >
-                <CarouselContent>
-                  {playlist.map((track) => (
-                    <CarouselItem
-                      key={track.id}
-                      className="basis-1/2 md:basis-1/3"
-                    >
-                      <div
-                        className={cn(
-                          "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border h-full",
-                          currentTrack.id === track.id
-                            ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
-                            : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
-                        )}
-                        onClick={() => {
-                          changeTrack(track);
-                          setShowPlaylist(false);
-                        }}
-                        onMouseEnter={(e) => {
-                          const prefersReducedMotion = window.matchMedia(
-                            "(prefers-reduced-motion: reduce)"
-                          ).matches;
-                          if (!prefersReducedMotion) {
-                            gsap.to(e.currentTarget, {
-                              scale: 1.05,
-                              y: -2,
-                              duration: 0.1,
-                            });
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          const prefersReducedMotion = window.matchMedia(
-                            "(prefers-reduced-motion: reduce)"
-                          ).matches;
-                          if (!prefersReducedMotion) {
-                            gsap.to(e.currentTarget, {
-                              scale: 1,
-                              y: 0,
-                              duration: 0.1,
-                            });
-                          }
-                        }}
-                        onMouseDown={(e) => {
-                          const prefersReducedMotion = window.matchMedia(
-                            "(prefers-reduced-motion: reduce)"
-                          ).matches;
-                          if (!prefersReducedMotion) {
-                            gsap.to(e.currentTarget, {
-                              scale: 0.95,
-                              duration: 0.1,
-                            });
-                          }
-                        }}
-                        onMouseUp={(e) => {
-                          const prefersReducedMotion = window.matchMedia(
-                            "(prefers-reduced-motion: reduce)"
-                          ).matches;
-                          if (!prefersReducedMotion) {
-                            gsap.to(e.currentTarget, {
-                              scale: 1.05,
-                              duration: 0.1,
-                            });
-                          }
-                        }}
+                <div className="flex items-center gap-1">
+                  <CarouselPrevious className="static translate-x-0 translate-y-0 shrink-0 h-8 w-8 rounded-none border-2 border-[#74cef7] bg-white/30 hover:bg-[#bae6fd] text-[#0c4a6e] shadow-[2px_2px_0px_rgba(0,0,0,0.2)]" />
+
+                  <CarouselContent className="flex-1">
+                    {playlist.map((track) => (
+                      <CarouselItem
+                        key={track.id}
+                        className="basis-full"
                       >
-                        <div className="w-12 h-12 aspect-square rounded-lg overflow-hidden">
-                          <img
-                            src={track.cover || "/placeholder.svg"}
-                            alt={track.title}
-                            className="w-full h-full object-cover"
-                          />
+                        <div
+                          className={cn(
+                            "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border h-full",
+                            currentTrack.id === track.id
+                              ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
+                              : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
+                          )}
+                          onClick={() => {
+                            changeTrack(track);
+                            setShowPlaylist(false);
+                          }}
+                          onMouseEnter={(e) => {
+                            const prefersReducedMotion = window.matchMedia(
+                              "(prefers-reduced-motion: reduce)"
+                            ).matches;
+                            if (!prefersReducedMotion) {
+                              gsap.to(e.currentTarget, {
+                                scale: 1.05,
+                                y: -2,
+                                duration: 0.1,
+                              });
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            const prefersReducedMotion = window.matchMedia(
+                              "(prefers-reduced-motion: reduce)"
+                            ).matches;
+                            if (!prefersReducedMotion) {
+                              gsap.to(e.currentTarget, {
+                                scale: 1,
+                                y: 0,
+                                duration: 0.1,
+                              });
+                            }
+                          }}
+                          onMouseDown={(e) => {
+                            const prefersReducedMotion = window.matchMedia(
+                              "(prefers-reduced-motion: reduce)"
+                            ).matches;
+                            if (!prefersReducedMotion) {
+                              gsap.to(e.currentTarget, {
+                                scale: 0.95,
+                                duration: 0.1,
+                              });
+                            }
+                          }}
+                          onMouseUp={(e) => {
+                            const prefersReducedMotion = window.matchMedia(
+                              "(prefers-reduced-motion: reduce)"
+                            ).matches;
+                            if (!prefersReducedMotion) {
+                              gsap.to(e.currentTarget, {
+                                scale: 1.05,
+                                duration: 0.1,
+                              });
+                            }
+                          }}
+                        >
+                          <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden">
+                            <img
+                              src={track.cover || "/placeholder.svg"}
+                              alt={track.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex flex-col items-start min-w-0 flex-1">
+                            <p className="font-medium text-sm text-gray-800 dark:text-white truncate w-full">
+                              {track.title}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 truncate w-full">
+                              {track.artist}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {track.duration}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-center flex flex-col items-start">
-                          <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
-                            {track.title}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                            {track.artist}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {track.duration}
-                          </p>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+
+                  <CarouselNext className="static translate-x-0 translate-y-0 shrink-0 h-8 w-8 rounded-none border-2 border-[#74cef7] bg-white/30 hover:bg-[#bae6fd] text-[#0c4a6e] shadow-[2px_2px_0px_rgba(0,0,0,0.2)]" />
+                </div>
               </Carousel>
             </div>
           </div>

@@ -132,56 +132,76 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
             align: "start",
             loop: true,
           }}
-          className="w-[calc(100%-96px)] mx-auto"
         >
-          {" "}
-          <CarouselContent>
-            {testimonials.map((testimonial, index) => (
-              <CarouselItem
-                key={index}
-                className={
-                  !windowWidth
-                    ? "basis-full"
-                    : windowWidth < 640
+          <div className="flex items-center gap-2">
+            {/* Previous button - hidden when narrow */}
+            {windowWidth && windowWidth >= 700 && (
+              <div className="flex items-center justify-center shrink-0">
+                <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+              </div>
+            )}
+
+            <CarouselContent className="items-stretch flex-1">
+              {testimonials.map((testimonial, index) => (
+                <CarouselItem
+                  key={index}
+                  className={
+                    !windowWidth
                       ? "basis-full"
-                      : windowWidth < 1024
-                        ? "basis-1/2"
-                        : "basis-1/3"
-                }
-              >
-                <div className="p-1 h-full">
-                  <Card className="h-full pixel-card">
-                    <CardContent className="pt-6 flex-grow flex flex-col">
-                      <div className="flex items-start gap-4 mb-4">
-                        <Avatar className="shrink-0 border-2 border-[var(--cute-text)] rounded-none w-10 h-10">
-                          <AvatarImage
-                            src={testimonial.avatar || "/placeholder.svg"}
-                            alt={testimonial.name}
-                          />
-                          <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">
-                            {testimonial.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-medium pixel-text truncate">
-                            {testimonial.name}
-                          </p>
-                          <p className="text-sm opacity-70 truncate">
-                            {testimonial.role}
-                          </p>
+                      : windowWidth < 640
+                        ? "basis-full"
+                        : windowWidth < 1024
+                          ? "basis-1/2"
+                          : "basis-1/3"
+                  }
+                >
+                  <div className="p-1 h-full">
+                    <Card className="h-full pixel-card">
+                      <CardContent className="pt-6 flex-grow flex flex-col">
+                        <div className="flex items-start gap-4 mb-4">
+                          <Avatar className="shrink-0 border-2 border-[var(--cute-text)] rounded-none w-10 h-10">
+                            <AvatarImage
+                              src={testimonial.avatar || "/placeholder.svg"}
+                              alt={testimonial.name}
+                            />
+                            <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">
+                              {testimonial.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="font-medium pixel-text truncate">
+                              {testimonial.name}
+                            </p>
+                            <p className="text-sm opacity-70 truncate">
+                              {testimonial.role}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <p className="italic flex-grow opacity-90">
-                        "{testimonial.content}"
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
-          <CarouselNext className="border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+                        <p className="italic flex-grow opacity-90">
+                          "{testimonial.content}"
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+
+            {/* Next button - hidden when narrow */}
+            {windowWidth && windowWidth >= 700 && (
+              <div className="flex items-center justify-center shrink-0">
+                <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+              </div>
+            )}
+          </div>
+
+          {/* Buttons below carousel when narrow */}
+          {(!windowWidth || windowWidth < 700) && (
+            <div className="flex justify-center gap-4 mt-4">
+              <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+              <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+            </div>
+          )}
         </Carousel>
       </AnimatedSection>
 

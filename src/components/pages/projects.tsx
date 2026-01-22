@@ -21,10 +21,16 @@ import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
 import facilify from "@/assets/Facilify.png";
 import awqafRashaya from "@/assets/AwqadRashaya.png";
 import nebula from "@/assets/Nebula.png";
+import notionCraft from "@/assets/NotionCraft-Ai.png";
+import portagen from "@/assets/Portagen.png";
+import Autoplay from "embla-carousel-autoplay";
 
-export default function Projects() {
+export default function Projects({ windowWidth }: { windowWidth?: number }) {
   const [activeProject, setActiveProject] = useState(0)
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null)
+
+  // Show buttons below carousel when window is narrow (less than 700px)
+  const isNarrow = windowWidth !== undefined && windowWidth < 700;
 
   const projects = [
     {
@@ -60,6 +66,26 @@ export default function Projects() {
       demoUrl: "https://nebula-gamma-inky.vercel.app/",
       githubUrl: "https://github.com/AhmadKanaan0/Nebula",
     },
+    {
+      id: 4,
+      title: "NotionCraft-ai",
+      description:
+        "NotionCraft AI: A Next.js web app mimicking Notion's rich text editor with AI-powered chat and writing features.",
+      image: notionCraft,
+      tags: ["Next.js", "Supabase", "Vercel ai sdk"],
+      demoUrl: "https://notioncraft-ai.vercel.app/",
+      githubUrl: "https://github.com/AhmadKanaan0/notioncraft-ai",
+    },
+    {
+      id: 5,
+      title: "Portagen",
+      description:
+        "PortaGen is a web-based portfolio generator that allows users to create customizable desktop environments, lock screens, and interactive windows for showcasing projects and content.",
+      image: portagen,
+      tags: ["Next.js", "Supabase", "Google Drive integration", "Spotify integration"],
+      demoUrl: "https://porta-gen.vercel.app/",
+      githubUrl: "https://github.com/AhmadKanaan0/PortaGen",
+    },
   ]
 
   useEffect(() => {
@@ -87,81 +113,108 @@ export default function Projects() {
       <AnimatedSection variant="scale" delay={0.1} duration={0.7} className="relative" threshold={0.3}>
         <Carousel
           setApi={setCarouselApi}
+          plugins={[
+            Autoplay({
+              delay: 2000,
+            }),
+          ]}
           opts={{
             align: "start",
             loop: true,
           }}
         >
-          <CarouselContent>
-            {projects.map((project) => (
-              <CarouselItem key={project.id}>
-                <Card className="pixel-card border-0 shadow-lg overflow-hidden">
-                  <div
-                    className="grid gap-2 px-4"
-                    style={{
-                      gridTemplateColumns:
-                        "repeat(auto-fill, minmax(min(100%, 400px), 1fr))",
-                    }}
-                  >
-                    <div className="aspect-video overflow-hidden w-full max-w-full mt-4 border-2 border-[var(--cute-text)]">
-                      <img
-                        src={project.image || `/placeholder.svg?height=300&width=500`}
-                        alt={project.title}
-                        className="w-full h-auto object-cover"
-                      />
-                    </div>
-                    <div className="p-6 flex flex-col">
-                      <h2 className="text-2xl font-bold mb-2 pixel-title">{project.title}</h2>
-                      <p className="text-muted-foreground mb-4 opacity-80">{project.description}</p>
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {project.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">
-                            {tag}
-                          </Badge>
-                        ))}
+          <div className="flex items-center gap-2">
+            {/* Previous button - hidden when narrow */}
+            {!isNarrow && (
+              <div className="flex items-center justify-center shrink-0">
+                <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+              </div>
+            )}
+
+            <CarouselContent className="-ml-4 items-stretch flex-1">
+              {projects.map((project) => (
+                <CarouselItem key={project.id} className="pl-4">
+                  <Card className="pixel-card border-0 shadow-lg overflow-hidden h-full flex flex-col">
+                    <div
+                      className="grid gap-2 px-4 flex-1"
+                      style={{
+                        gridTemplateColumns:
+                          "repeat(auto-fill, minmax(min(100%, 400px), 1fr))",
+                      }}
+                    >
+                      <div className="aspect-video overflow-hidden w-full max-w-full mt-4 border-2 border-[var(--cute-text)]">
+                        <img
+                          src={project.image || `/placeholder.svg?height=300&width=500`}
+                          alt={project.title}
+                          className="w-full h-auto object-cover"
+                        />
                       </div>
-                      <div className="mt-auto flex flex-wrap gap-3">
-                        <Button asChild className="flex-grow sm:flex-grow-0 border-2 border-[var(--cute-text)] rounded-none bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90">
-                          <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="mr-2 h-4 w-4" /> Live Demo
-                          </a>
-                        </Button>
-                        {typeof project.githubUrl === "string" ? (
-                          <Button variant="outline" asChild className="flex-grow sm:flex-grow-0 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
-                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                              <Github className="mr-2 h-4 w-4" /> GitHub
+                      <div className="p-6 flex flex-col">
+                        <h2 className="text-2xl font-bold mb-2 pixel-title">{project.title}</h2>
+                        <p className="text-muted-foreground mb-4 opacity-80">{project.description}</p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {project.tags.map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="mt-auto flex flex-wrap gap-3">
+                          <Button asChild className="flex-grow sm:flex-grow-0 border-2 border-[var(--cute-text)] rounded-none bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90">
+                            <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="mr-2 h-4 w-4" /> Live Demo
                             </a>
                           </Button>
-                        ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" className="flex-grow sm:flex-grow-0 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
-                                <Github className="mr-2 h-4 w-4" /> Code
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
-                              <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                                <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">
-                                  Frontend
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                                <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">
-                                  Backend
-                                </a>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
+                          {typeof project.githubUrl === "string" ? (
+                            <Button variant="outline" asChild className="flex-grow sm:flex-grow-0 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
+                              <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                                <Github className="mr-2 h-4 w-4" /> GitHub
+                              </a>
+                            </Button>
+                          ) : (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="flex-grow sm:flex-grow-0 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
+                                  <Github className="mr-2 h-4 w-4" /> Code
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
+                                <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
+                                  <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">
+                                    Frontend
+                                  </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
+                                  <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">
+                                    Backend
+                                  </a>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
-          <CarouselNext className="border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+
+            {/* Next button - hidden when narrow */}
+            {!isNarrow && (
+              <div className="flex items-center justify-center shrink-0">
+                <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+              </div>
+            )}
+          </div>
+
+          {/* Buttons below carousel when narrow */}
+          {isNarrow && (
+            <div className="flex justify-center gap-4 mt-4">
+              <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+              <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+            </div>
+          )}
         </Carousel>
 
         <div className="flex justify-center mt-4 gap-2">
@@ -179,7 +232,7 @@ export default function Projects() {
         <div className="grid gap-6 mt-8" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
           {projects.map((project) => (
             <AnimatedItem key={project.id}>
-              <Card className="h-full flex flex-col hover:shadow-md transition-shadow border-0 pixel-card">
+              <Card className="h-full flex flex-col hover:shadow- mdtransition-shadow border-0 pixel-card">
                 <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
                   <img
                     src={project.image || `/placeholder.svg?height=200&width=400`}
