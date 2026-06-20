@@ -25,6 +25,8 @@ const getOptimalWindowSize = (title: string) => {
       return { width: 750, height: 600 };
     case "Contact me":
       return { width: 800, height: 600 };
+    case "Terminal":
+      return { width: 720, height: 480 };
     default:
       return { width: 800, height: 600 };
   }

@@ -1,12 +1,13 @@
 import React from "react";
 import { DndContext } from "@dnd-kit/core";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppWindow } from "./Window";
 import { DesktopIcon } from "./Icon";
 import { MobileIcon } from "./MobileIcon";
 import { Taskbar } from "./Taskbar";
 import MenuBar from "./MenuBar";
 import MusicPlayerWidget from "./MusicPlayerWidget";
+import AchievementToast from "./AchievementToast";
 import Wallpaper from "../assets/wallpaper.jpg";
 import Project from "../assets/project.png";
 import LinkIcon from "../assets/Links.png";
@@ -14,6 +15,8 @@ import Phone from "../assets/phone.png";
 import BlogIcon from "../assets/Blog.png";
 import About from "../assets/about.png";
 import ResumeIcon from "../assets/resume.png";
+import JellyfishIcon from "../assets/jellyfish.png";
+import TerminalIcon from "../assets/terminal.png";
 import GreetingGif from "../assets/greeting.gif";
 import WaterCd from "../assets/water-cd.jpg";
 import CutePuppy from "../assets/cute-puppy.jpg";
@@ -23,6 +26,7 @@ import { useGSAP } from "@gsap/react";
 import { AudioProvider } from "./audio-context";
 import { SoundProvider } from "./sound-context";
 import { MobileSettingsBar } from "./MobileSettingsBar";
+import { AchievementProvider, useAchievements, type AchievementId } from "./achievement-context";
 
 const AboutMe = React.lazy(() => import("./pages/about-me"));
 const Resume = React.lazy(() => import("./pages/resume"));
@@ -30,8 +34,18 @@ const Projects = React.lazy(() => import("./pages/projects"));
 const Blog = React.lazy(() => import("./pages/blog"));
 const Links = React.lazy(() => import("./pages/links"));
 const Contact = React.lazy(() => import("./pages/contact"));
+const Achievements = React.lazy(() => import("./pages/achievements"));
+const Terminal = React.lazy(() => import("./pages/terminal"));
 
 export default function Desktop() {
+  return (
+    <AchievementProvider>
+      <DesktopInner />
+    </AchievementProvider>
+  );
+}
+
+function DesktopInner() {
   type WindowData = {
     name: string;
     minimized: boolean;
@@ -47,6 +61,36 @@ export default function Desktop() {
   const mobileIconsRef = useRef<HTMLDivElement[]>([]);
   const floatingAnims = useRef<gsap.core.Tween[]>([]);
 
+  const { unlock, unlocked } = useAchievements();
+  const openedAppsRef = useRef<Set<string>>(new Set());
+  const initialUnlockedRef = useRef(unlocked);
+  const [folderPage, setFolderPage] = useState(0);
+  const [folderDragOffset, setFolderDragOffset] = useState(0);
+  const touchStartX = useRef(0);
+
+  const CORE_APPS = ['About me', 'Resume', 'Projects', 'Blog', 'Links', 'Contact me'];
+
+  useEffect(() => {
+    const achievementToApp: Record<string, string> = {
+      about_me: 'About me',
+      resume: 'Resume',
+      projects: 'Projects',
+      blog: 'Blog',
+      links: 'Links',
+      contact: 'Contact me',
+    };
+    initialUnlockedRef.current.forEach(id => {
+      const appName = achievementToApp[id];
+      if (appName) openedAppsRef.current.add(appName);
+    });
+  }, []);
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 0 && hour < 5) unlock('night_owl');
+    if (hour >= 5 && hour < 7) unlock('early_bird');
+  }, []);
+
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good morning");
@@ -61,9 +105,16 @@ export default function Desktop() {
     { id: "blog", label: "Blog", icon: BlogIcon },
     { id: "links", label: "Links", icon: LinkIcon },
     { id: "contact", label: "Contact me", icon: Phone },
+    { id: "achievements", label: "Achievements", icon: JellyfishIcon },
+    { id: "terminal", label: "Terminal", icon: TerminalIcon },
   ];
 
   const [openWindows, setOpenWindows] = useState<WindowData[]>([]);
+
+  useEffect(() => {
+    const nonMinimized = openWindows.filter(w => !w.minimized).length;
+    if (nonMinimized >= 3) unlock('multitasker');
+  }, [openWindows, unlock]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -90,9 +141,22 @@ export default function Desktop() {
         return <Links />;
       case "Contact me":
         return <Contact />;
+      case "Achievements":
+        return <Achievements />;
+      case "Terminal":
+        return <Terminal />;
       default:
         return <div>Content for {name}</div>;
     }
+  };
+
+  const appAchievements: Record<string, AchievementId> = {
+    'About me': 'about_me',
+    'Resume': 'resume',
+    'Projects': 'projects',
+    'Blog': 'blog',
+    'Links': 'links',
+    'Contact me': 'contact',
   };
 
   const openWindow = (name: string) => {
@@ -103,6 +167,19 @@ export default function Desktop() {
         { name, minimized: false, component: getComponentForWindow(name) },
       ];
     });
+
+    if (!openedAppsRef.current.has(name)) {
+      openedAppsRef.current.add(name);
+
+      if (openedAppsRef.current.size === 1) unlock('first_window');
+
+      const achievementId = appAchievements[name];
+      if (achievementId) unlock(achievementId);
+
+      if (CORE_APPS.every(app => openedAppsRef.current.has(app))) {
+        unlock('all_apps');
+      }
+    }
   };
 
   const closeWindow = (name: string) => {
@@ -113,6 +190,7 @@ export default function Desktop() {
     setOpenWindows((prev) =>
       prev.map((w) => (w.name === name ? { ...w, minimized: true } : w))
     );
+    unlock('minimize');
   };
 
   const restoreWindow = (name: string) => {
@@ -138,7 +216,6 @@ export default function Desktop() {
       ).matches;
 
       if (prefersReducedMotion) {
-        // Simple fade-in for reduced motion users
         if (greetingRef.current) {
           gsap.fromTo(
             greetingRef.current,
@@ -169,7 +246,6 @@ export default function Desktop() {
         return;
       }
 
-      // Desktop greeting animation
       if (isDesktop && greetingRef.current) {
         const tl = gsap.timeline();
 
@@ -187,7 +263,6 @@ export default function Desktop() {
             "-=0.5"
           );
 
-          // Floating animation
           floatingAnims.current.push(
             gsap.to(greetingImageRef.current, {
               y: -10,
@@ -212,7 +287,6 @@ export default function Desktop() {
         }
       }
 
-      // Desktop icons animation
       if (isDesktop) {
         desktopIconsRef.current.forEach((icon, index) => {
           if (icon) {
@@ -230,7 +304,6 @@ export default function Desktop() {
           }
         });
       } else {
-        // Mobile icons animation
         mobileIconsRef.current.forEach((icon, index) => {
           if (icon) {
             gsap.fromTo(
@@ -248,7 +321,6 @@ export default function Desktop() {
         });
       }
 
-      // Floating animation for decorative images
       const floatingElements =
         document.querySelectorAll<HTMLElement>(".animate-float");
       floatingElements.forEach((element) => {
@@ -329,71 +401,136 @@ export default function Desktop() {
             ) : (
               <div className="absolute inset-0 flex flex-col justify-between overflow-hidden gap-8 p-4 pb-24">
                 <div className="flex flex-col gap-4 justify-between h-full">
+                  {/* Top row: 2-page folder + water CD */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
-                      {desktopApps.slice(0, 4).map((app, index) => (
+                    {/* Folder */}
+                    <div className="liquidGlass-wrapper rounded-2xl h-[180px]">
+                      <div className="liquidGlass-effect"></div>
+                      <div className="liquidGlass-tint"></div>
+                      <div className="liquidGlass-shine"></div>
+                      <div className="liquidGlass-content flex flex-col overflow-hidden flex-1">
+                        {/* Sliding pages */}
                         <div
-                          key={app.id}
-                          ref={(el) => {
-                            if (el) mobileIconsRef.current[index] = el;
+                          className="flex flex-1 overflow-hidden"
+                          onTouchStart={e => {
+                            touchStartX.current = e.touches[0].clientX;
+                          }}
+                          onTouchMove={e => {
+                            const diff = e.touches[0].clientX - touchStartX.current;
+                            // Add rubber-band resistance at the edges
+                            if ((folderPage === 0 && diff > 0) || (folderPage === 1 && diff < 0)) {
+                              setFolderDragOffset(diff * 0.25);
+                            } else {
+                              setFolderDragOffset(diff);
+                            }
+                          }}
+                          onTouchEnd={e => {
+                            const diff = touchStartX.current - e.changedTouches[0].clientX;
+                            if (diff > 40) setFolderPage(1);
+                            else if (diff < -40) setFolderPage(0);
+                            setFolderDragOffset(0);
                           }}
                         >
-                          <MobileIcon
-                            id={app.id}
-                            label={app.label}
-                            icon={app.icon}
-                            onClick={() => openWindow(app.label)}
-                          />
+                          <div
+                            className="flex w-full"
+                            style={{
+                              transform: `translateX(calc(-${folderPage * 100}% + ${folderDragOffset}px))`,
+                              transition: folderDragOffset !== 0 ? 'none' : 'transform 300ms ease-out',
+                            }}
+                          >
+                            {/* Page 1: apps 0–3 */}
+                            <div className="grid grid-cols-2 gap-1 auto-rows-min justify-items-center p-2 flex-shrink-0 w-full content-start">
+                              {desktopApps.slice(0, 4).map((app, index) => (
+                                <div
+                                  key={app.id}
+                                  ref={(el) => { if (el) mobileIconsRef.current[index] = el; }}
+                                >
+                                  <MobileIcon
+                                    id={app.id}
+                                    label={app.label}
+                                    icon={app.icon}
+                                    onClick={() => openWindow(app.label)}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            {/* Page 2: apps 6–7 (Achievements + Terminal) */}
+                            <div className="grid grid-cols-2 gap-1 auto-rows-min justify-items-center p-2 flex-shrink-0 w-full content-start">
+                              {desktopApps.slice(6).map((app, index) => (
+                                <div
+                                  key={app.id}
+                                  ref={(el) => { if (el) mobileIconsRef.current[index + 6] = el; }}
+                                >
+                                  <MobileIcon
+                                    id={app.id}
+                                    label={app.label}
+                                    icon={app.icon}
+                                    onClick={() => openWindow(app.label)}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                      ))}
+                        {/* Page dots */}
+                        <div className="flex justify-center gap-1.5 pb-2">
+                          {[0, 1].map(i => (
+                            <button
+                              key={i}
+                              onClick={() => setFolderPage(i)}
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                                folderPage === i ? 'bg-white' : 'bg-white/35'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Water CD */}
                     <div className="flex justify-center">
                       <img
                         src={WaterCd}
-                        className="rounded-2xl h-[160px] animate-float-smooth"
-                        style={{
-                          willChange: "transform",
-                          backfaceVisibility: "hidden",
-                        }}
+                        className="rounded-2xl h-[180px] animate-float-smooth"
+                        style={{ willChange: "transform", backfaceVisibility: "hidden" }}
                       />
                     </div>
                   </div>
+
+                  {/* Bottom row: puppy + apps 4–5 + settings */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex justify-center">
                       <img
                         src={CutePuppy}
                         className="rounded-2xl h-[160px] animate-float-smooth"
-                        style={{
-                          willChange: "transform",
-                          backfaceVisibility: "hidden",
-                        }}
+                        style={{ willChange: "transform", backfaceVisibility: "hidden" }}
                       />
                     </div>
-                    <div className="flex flex-col justify-center">
-                    <div className="grid grid-cols-2 gap-4 auto-rows-min justify-items-center">
-                      {desktopApps.slice(4, 6).map((app, index) => (
-                        <div
-                          key={app.id}
-                          ref={(el) => {
-                            if (el) mobileIconsRef.current[index + 4] = el;
-                          }}
-                        >
-                          <MobileIcon
-                            id={app.id}
-                            label={app.label}
-                            icon={app.icon}
-                            onClick={() => openWindow(app.label)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <MobileSettingsBar />
+                    <div className="flex flex-col justify-center gap-3">
+                      <div className="grid grid-cols-2 gap-2 auto-rows-min justify-items-center">
+                        {desktopApps.slice(4, 6).map((app, index) => (
+                          <div
+                            key={app.id}
+                            ref={(el) => { if (el) mobileIconsRef.current[index + 4] = el; }}
+                          >
+                            <MobileIcon
+                              id={app.id}
+                              label={app.label}
+                              icon={app.icon}
+                              onClick={() => openWindow(app.label)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <MobileSettingsBar />
                     </div>
                   </div>
+
                   <MusicPlayerWidget isDesktop={false} />
                 </div>
                 <Taskbar
-                  apps={desktopApps}
+                  apps={desktopApps.slice(0, 6)}
+                  overflowApps={desktopApps.slice(6)}
                   openWindows={openWindows}
                   onAppClick={handleAppClick}
                   className="mt-auto"
@@ -413,6 +550,8 @@ export default function Desktop() {
                 {win.component}
               </AppWindow>
             ))}
+
+            <AchievementToast />
           </div>
         </DndContext>
       </AudioProvider>

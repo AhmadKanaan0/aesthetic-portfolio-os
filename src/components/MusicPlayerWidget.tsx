@@ -14,6 +14,7 @@ import PlaylistIcon from "../assets/PlaylistIcon.png";
 import CinamonExit from "../assets/CinamonExit.png";
 import { AudioContext } from "./audio-context";
 import { useAppSound } from "./sound-context";
+import { useAchievements } from "./achievement-context";
 import { playlist, type Track } from "@/types/types";
 
 import {
@@ -46,6 +47,7 @@ export default function MusicPlayerWidget({
   } = useContext(AudioContext);
 
   const { playClickSound, playMenuSound, playPowerUpSound } = useAppSound();
+  const { unlock } = useAchievements();
 
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -263,6 +265,7 @@ export default function MusicPlayerWidget({
         await audioRef.current.play();
         setIsPlaying(true);
         playPowerUpSound();
+        unlock('music_head');
       }
     } catch (error) {
       console.error("Playback error:", error);
