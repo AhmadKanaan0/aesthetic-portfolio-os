@@ -11,7 +11,7 @@ export function MobileSettingsBar() {
                 <div className="liquidGlass-tint"></div>
                 <div className="liquidGlass-shine"></div>
                 <div className="liquidGlass-content">
-                    <div className="flex items-center gap-3 p-4">
+                    <div className="mobile-settings-inner">
                         <SoundSettings />
                         <div className="w-px h-8 bg-white/30" /> {/* Divider */}
                         <ModeToggle />

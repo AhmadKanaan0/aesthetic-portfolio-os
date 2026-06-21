@@ -17,7 +17,7 @@ export default function MenuBar() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
-      <div className="liquidGlass-wrapper menubar h-12 flex items-center justify-between px-4 text-lg font-medium transition-none">
+      <div className="liquidGlass-wrapper menubar flex items-center justify-between text-lg font-medium">
         <div className="liquidGlass-effect"></div>
         <div className="liquidGlass-tint"></div>
         <div className="liquidGlass-shine"></div>

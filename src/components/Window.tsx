@@ -5,10 +5,13 @@ import { useEffect, useState, useRef } from "react";
 import { Maximize, Minus, X, Square } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
 import { useResizeObserver } from "@/hooks/use-resize-observer";
 import { useAppSound } from "./sound-context";
 import { CuteSuspenseFallback } from "./suspense-fallback";
 import { SnapMenu, type SnapType } from "./SnapMenu";
+import { ScrollContainerProvider } from "./animated-section";
 
 let globalZ = 100;
 const getOptimalWindowSize = (title: string) => {
@@ -106,24 +109,26 @@ export function AppWindow({
   };
   const handleClose = () => {
     playWindowCloseSound();
-    // Exit animation
-    if (windowRef.current) {
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
+    const el = windowRef.current ?? rndRef.current?.getSelfElement();
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (el) {
       if (prefersReducedMotion) {
-        gsap.to(windowRef.current, {
+        gsap.to(el, { opacity: 0, duration: 0.2, onComplete: () => onClose?.() });
+      } else if (isMobile) {
+        gsap.to(el, {
           opacity: 0,
-          duration: 0.2,
+          y: 24,
+          duration: 0.25,
+          ease: "power2.in",
           onComplete: () => onClose?.(),
         });
       } else {
-        gsap.to(windowRef.current, {
+        gsap.to(el, {
           opacity: 0,
-          scale: 0.9,
-          y: isMobile ? 20 : 0,
-          duration: 0.2,
-          ease: "power2.out",
+          scale: 0.88,
+          y: 8,
+          duration: 0.25,
+          ease: "back.in(1.4)",
           onComplete: () => onClose?.(),
         });
       }
@@ -164,39 +169,45 @@ export function AppWindow({
     }
   }, [isMaximized, isMobile]);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { width: contentWidth } = useResizeObserver(contentRef);
+  const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
+  // Callback ref keeps contentRef.current (used by ScrollContainerProvider) and
+  // contentEl state (used by useResizeObserver) in sync across branch switches.
+  const contentRefCallback = React.useCallback((el: HTMLDivElement | null) => {
+    contentRef.current = el;
+    setContentEl(el);
+  }, []);
+  const { width: contentWidth } = useResizeObserver(contentEl);
   // GSAP entrance animation
   useGSAP(() => {
-    if (!isVisible || !windowRef.current) return;
+    if (!isVisible) return;
+    // windowRef is set for maximized/snapped windows; for floating Rnd use getSelfElement()
+    const el = windowRef.current ?? rndRef.current?.getSelfElement();
+    if (!el) return;
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    // On mobile, keep it very light for performance
     if (isMobile) {
-      gsap.fromTo(
-        windowRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.25 }
-      );
+      gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.25 });
       return;
     }
     if (prefersReducedMotion) {
-      gsap.fromTo(
-        windowRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3 }
-      );
+      gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.3 });
     } else {
       gsap.fromTo(
-        windowRef.current,
-        { opacity: 0, scale: 0.9 },
-        {
-          opacity: 1,
-          ease: "power2.out",
-        }
+        el,
+        { opacity: 0, scale: 0.92, y: 10 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.35, ease: "back.out(1.4)" }
       );
     }
   }, [isVisible, isMobile]);
+
+  // Refresh ScrollTrigger whenever content may have remounted (open, maximize toggle, snap, drag-end)
+  useEffect(() => {
+    if (!isVisible || isDragging) return;
+    const id = setTimeout(() => ScrollTrigger.refresh(), 400);
+    return () => clearTimeout(id);
+  }, [isVisible, isMaximized, isDragging]);
+
   // Helper function for button animations
   const handleButtonAnimation = (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -302,13 +313,12 @@ export function AppWindow({
     if (isMobile) return;
     snapMenuTimeoutRef.current = setTimeout(() => {
       setShowSnapMenu(false);
-    }, 500);
+    }, 50);
   };
 
-  const handleDrag = (e: any, d: any) => {
+  const handleDrag = (e: any, _d: any) => {
     if (isMaximized) return;
 
-    const { x, y } = d;
     const cursorX = e.clientX;
     const cursorY = e.clientY;
     const screenW = window.innerWidth;
@@ -342,7 +352,7 @@ export function AppWindow({
 
     setSnapPreview(newSnap);
   };
-  const handleDragStop = (e: any, d: any) => {
+  const handleDragStop = (_e: any, d: any) => {
     if (snapPreview) {
       switch (snapPreview) {
         case "maximize":
@@ -439,7 +449,7 @@ export function AppWindow({
               }}
             >
               <div
-                className={`window-container ${isMaximized ? "maximized-window" : "snapped-window"} bg-white/90 dark:bg-gray-900/90 backdrop-blur-md flex flex-col`}
+                className={`window-container ${isMaximized ? "maximized-window" : "snapped-window"} flex flex-col`}
                 onClick={bringToFront}
                 style={{ width: "100%", height: "100%" }}
               >
@@ -462,7 +472,7 @@ export function AppWindow({
                     {!isMobile && (
                       <div className="relative" onMouseLeave={handleMaximizeLeave}>
                         <button
-                          onClick={() => handleButtonClick(toggleMaximize)}
+                          onClick={() => { setShowSnapMenu(false); handleButtonClick(toggleMaximize); }}
                           className="window-button"
                           onMouseEnter={(e) => {
                             handleButtonAnimation(e, "enter");
@@ -500,19 +510,21 @@ export function AppWindow({
                   </div>
                 </div>
                 <div
-                  ref={contentRef}
+                  ref={contentRefCallback}
                   className="window-content"
                   data-width={contentWidth}
                 >
-                  <React.Suspense fallback={<CuteSuspenseFallback />}>
-                    {React.Children.map(children, (child) =>
-                      React.isValidElement(child)
-                        ? React.cloneElement(child, {
-                          windowWidth: contentWidth,
-                        } as { windowWidth: number })
-                        : child
-                    )}
-                  </React.Suspense>
+                  <ScrollContainerProvider container={contentRef}>
+                    <React.Suspense fallback={<CuteSuspenseFallback />}>
+                      {React.Children.map(children, (child) =>
+                        React.isValidElement(child)
+                          ? React.cloneElement(child, {
+                            windowWidth: contentWidth,
+                          } as { windowWidth: number })
+                          : child
+                      )}
+                    </React.Suspense>
+                  </ScrollContainerProvider>
                 </div>
               </div>
             </div>
@@ -531,7 +543,7 @@ export function AppWindow({
                 bringToFront();
                 setIsDragging(true);
               }}
-              onResizeStop={(e, direction, ref, delta, pos) => {
+              onResizeStop={(_e, _direction, ref, _delta, pos) => {
                 setSize({ width: ref.offsetWidth, height: ref.offsetHeight });
                 setPosition(pos);
                 setIsDragging(false);
@@ -548,7 +560,7 @@ export function AppWindow({
                 height: size.height,
               }}
               style={{ zIndex: zIndex }}
-              className="window-container bg-white/90 dark:bg-gray-900/90 backdrop-blur-md"
+              className="window-container"
             >
               <div className="window-drag-handle relative z-50">
                 <span className="font-semibold text-sm truncate">{title}</span>
@@ -604,21 +616,23 @@ export function AppWindow({
                 </div>
               </div>
               <div
-                ref={contentRef}
+                ref={contentRefCallback}
                 className="window-content"
                 data-width={contentWidth}
               >
-                <React.Suspense fallback={<CuteSuspenseFallback />}>
-                  {isDragging
-                    ? null
-                    : React.Children.map(children, (child) =>
-                      React.isValidElement(child)
-                        ? React.cloneElement(child, {
-                          windowWidth: contentWidth,
-                        } as { windowWidth: number })
-                        : child
-                    )}
-                </React.Suspense>
+                <ScrollContainerProvider container={contentRef}>
+                  <React.Suspense fallback={<CuteSuspenseFallback />}>
+                    {isDragging
+                      ? null
+                      : React.Children.map(children, (child) =>
+                        React.isValidElement(child)
+                          ? React.cloneElement(child, {
+                            windowWidth: contentWidth,
+                          } as { windowWidth: number })
+                          : child
+                      )}
+                  </React.Suspense>
+                </ScrollContainerProvider>
               </div>
             </Rnd>
           )}

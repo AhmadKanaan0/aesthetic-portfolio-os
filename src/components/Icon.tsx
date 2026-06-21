@@ -1,7 +1,8 @@
-import { useDraggable } from "@dnd-kit/core"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { gsap } from "gsap"
 import { useGSAP } from "@gsap/react"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { useAppSound } from "./sound-context"
 
 export function DesktopIcon({
@@ -9,8 +10,9 @@ export function DesktopIcon({
   label,
   icon,
   onDoubleClick,
-}: { id: string; label: string; icon: string; onDoubleClick: () => void }) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id })
+  isBeingDragged = false,
+}: { id: string; label: string; icon: string; onDoubleClick: () => void; isBeingDragged?: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
   const iconRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
   const { playClickSound, playHoverSound } = useAppSound()
@@ -76,6 +78,12 @@ export function DesktopIcon({
     }
   }
 
+  useEffect(() => {
+    if (isBeingDragged && iconRef.current) {
+      gsap.to(iconRef.current, { scale: 1, rotation: 0, duration: 0.1 });
+    }
+  }, [isBeingDragged]);
+
   useGSAP(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -111,8 +119,12 @@ export function DesktopIcon({
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      style={{ transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
-      className="liquidGlass-icon desktop-icon w-20 sm:w-24 md:w-28 p-2 mb-2 cursor-pointer select-none pointer-events-auto"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isBeingDragged ? 0.3 : 1,
+      }}
+      className="liquidGlass-icon desktop-icon w-20 sm:w-24 md:w-28 h-full p-2 cursor-grab active:cursor-grabbing select-none pointer-events-auto"
     >
       <div className="liquidGlass-effect"></div>
       <div className="liquidGlass-tint"></div>

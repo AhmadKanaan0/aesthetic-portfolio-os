@@ -123,7 +123,7 @@ export function SoundSettings() {
     <Button
       variant="ghost"
       size="icon"
-      className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors"
+      className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors"
     >
       {isSoundEnabled ? (
         <Volume2 className="h-5 w-5" />

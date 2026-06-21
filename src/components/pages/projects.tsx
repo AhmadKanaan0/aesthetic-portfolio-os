@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useRef, useContext, useEffect, useState } from "react"
+import { useGSAP } from "@gsap/react"
+import { gsap } from "gsap"
 import {
   Carousel,
   CarouselContent,
@@ -6,7 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/components/ui/carousel";
+} from "@/components/ui/carousel"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,27 +19,62 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Github, ExternalLink } from "lucide-react"
-import { AnimatedSection, AnimatedItem } from "@/components/animated-section"
-import facilify from "@/assets/Facilify.png";
-import awqafRashaya from "@/assets/AwqadRashaya.png";
-import nebula from "@/assets/Nebula.png";
-import notionCraft from "@/assets/NotionCraft-Ai.png";
-import portagen from "@/assets/Portagen.png";
-import Autoplay from "embla-carousel-autoplay";
+import { ScrollContainerContext } from "@/components/animated-section"
+import { animateFade, animateScale, animatePop, animateTextReveal } from "@/lib/animations"
+import facilify from "@/assets/Facilify.png"
+import awqafRashaya from "@/assets/AwqadRashaya.png"
+import nebula from "@/assets/Nebula.png"
+import notionCraft from "@/assets/NotionCraft-Ai.png"
+import portagen from "@/assets/Portagen.png"
+import Autoplay from "embla-carousel-autoplay"
 
 export default function Projects({ windowWidth }: { windowWidth?: number }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useContext(ScrollContainerContext)
   const [activeProject, setActiveProject] = useState(0)
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null)
 
-  // Show buttons below carousel when window is narrow (less than 700px)
-  const isNarrow = windowWidth !== undefined && windowWidth < 700;
+  const isNarrow = windowWidth !== undefined && windowWidth < 700
+
+  useGSAP(() => {
+    if (!containerRef.current) return
+    const c = containerRef.current
+    const root = scrollContainerRef?.current ?? null
+
+    const ios = [
+      ...animateScale(gsap.utils.toArray('[data-anim="scale"]', c), root),
+      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.07),
+      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
+      ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
+    ]
+
+    return () => ios.forEach(io => io.disconnect())
+  }, { scope: containerRef, dependencies: [] })
+
+  useEffect(() => {
+    if (!carouselApi) return
+    const onSelect = () => {
+      setActiveProject(carouselApi.selectedScrollSnap())
+      const idx = carouselApi.selectedScrollSnap()
+      const slide = carouselApi.slideNodes()[idx]
+      if (slide) {
+        const targets = slide.querySelectorAll("h2, p, img, .flex-wrap, .mt-auto")
+        gsap.fromTo(targets,
+          { y: 18, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.45, stagger: 0.07, ease: "power2.out", overwrite: true }
+        )
+      }
+    }
+    onSelect()
+    carouselApi.on("select", onSelect)
+    return () => { carouselApi.off("select", onSelect) }
+  }, [carouselApi])
 
   const projects = [
     {
       id: 1,
       title: "Facilify",
-      description:
-        "A full-featured facilities management platform, it provides owners, general contractors, and specialty contractors with the tools they need to get the job done.",
+      description: "A full-featured facilities management platform, it provides owners, general contractors, and specialty contractors with the tools they need to get the job done.",
       image: facilify,
       tags: ["React", "Spring boot", "Postgres"],
       demoUrl: "https://www.facilify.com.au/",
@@ -46,8 +83,7 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
     {
       id: 2,
       title: "Awqaf Rashaya",
-      description:
-        "The Awqaf Management System is a platform for managing mosques, cemeteries, religious schools, and imams, with built-in reporting tools to ensure efficient administration and transparency.",
+      description: "The Awqaf Management System is a platform for managing mosques, cemeteries, religious schools, and imams, with built-in reporting tools to ensure efficient administration and transparency.",
       image: awqafRashaya,
       tags: ["React", "Spring boot", "Postgres", "OpenAi"],
       demoUrl: "https://awqaf-qa.onrender.com",
@@ -59,8 +95,7 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
     {
       id: 3,
       title: "Nebula",
-      description:
-        "Nebula is a modern AI Agent Platform designed for creating, managing, and interacting with specialized AI agents.",
+      description: "Nebula is a modern AI Agent Platform designed for creating, managing, and interacting with specialized AI agents.",
       image: nebula,
       tags: ["React", "Node js", "Postgres"],
       demoUrl: "https://nebula-gamma-inky.vercel.app/",
@@ -69,8 +104,7 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
     {
       id: 4,
       title: "NotionCraft-ai",
-      description:
-        "NotionCraft AI: A Next.js web app mimicking Notion's rich text editor with AI-powered chat and writing features.",
+      description: "NotionCraft AI: A Next.js web app mimicking Notion's rich text editor with AI-powered chat and writing features.",
       image: notionCraft,
       tags: ["Next.js", "Supabase", "Vercel ai sdk"],
       demoUrl: "https://notioncraft-ai.vercel.app/",
@@ -79,8 +113,7 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
     {
       id: 5,
       title: "Portagen",
-      description:
-        "PortaGen is a web-based portfolio generator that allows users to create customizable desktop environments, lock screens, and interactive windows for showcasing projects and content.",
+      description: "PortaGen is a web-based portfolio generator that allows users to create customizable desktop environments, lock screens, and interactive windows for showcasing projects and content.",
       image: portagen,
       tags: ["Next.js", "Supabase", "Google Drive integration", "Spotify integration"],
       demoUrl: "https://porta-gen.vercel.app/",
@@ -88,59 +121,32 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
     },
   ]
 
-  useEffect(() => {
-    if (!carouselApi) return
-
-    const onSelect = () => {
-      setActiveProject(carouselApi.selectedScrollSnap())
-    }
-
-    onSelect()
-    carouselApi.on("select", onSelect)
-
-    return () => {
-      carouselApi.off("select", onSelect)
-    }
-  }, [carouselApi])
-
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pixel-text">
-      <AnimatedSection variant="fadeIn" duration={0.6} className="text-center">
-        <h1 className="text-3xl font-bold mb-2 pixel-title">My Projects</h1>
-        <p className="opacity-80">A showcase of my best work and side projects</p>
-      </AnimatedSection>
+    <div ref={containerRef} className="space-y-8 max-w-5xl mx-auto pixel-text">
+      <div className="text-center">
+        <h1 data-anim="text" className="text-3xl font-bold mb-2 pixel-title">My Projects</h1>
+        <p data-anim="fade" className="opacity-80">A showcase of my best work and side projects</p>
+      </div>
 
-      <AnimatedSection variant="scale" delay={0.1} duration={0.7} className="relative" threshold={0.3}>
+      <div data-anim="scale" className="relative">
         <Carousel
           setApi={setCarouselApi}
-          plugins={[
-            Autoplay({
-              delay: 2000,
-            }),
-          ]}
-          opts={{
-            align: "start",
-            loop: true,
-          }}
+          plugins={[Autoplay({ delay: 2000 })]}
+          opts={{ align: "start", loop: true }}
         >
           <div className="flex items-center gap-2">
-            {/* Previous button - hidden when narrow */}
             {!isNarrow && (
               <div className="flex items-center justify-center shrink-0">
                 <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
               </div>
             )}
-
             <CarouselContent className="-ml-4 items-stretch flex-1">
               {projects.map((project) => (
                 <CarouselItem key={project.id} className="pl-4">
                   <Card className="pixel-card border-0 shadow-lg overflow-hidden h-full flex flex-col">
                     <div
                       className="grid gap-2 px-4 flex-1"
-                      style={{
-                        gridTemplateColumns:
-                          "repeat(auto-fill, minmax(min(100%, 400px), 1fr))",
-                      }}
+                      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 400px), 1fr))" }}
                     >
                       <div className="aspect-video overflow-hidden w-full max-w-full mt-4 border-2 border-[var(--cute-text)]">
                         <img
@@ -154,9 +160,7 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
                         <p className="text-muted-foreground mb-4 opacity-80">{project.description}</p>
                         <div className="flex flex-wrap gap-2 mb-6">
                           {project.tags.map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">
-                              {tag}
-                            </Badge>
+                            <Badge key={index} variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">{tag}</Badge>
                           ))}
                         </div>
                         <div className="mt-auto flex flex-wrap gap-3">
@@ -180,14 +184,10 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
                                 <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                                  <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">
-                                    Frontend
-                                  </a>
+                                  <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">Frontend</a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                                  <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">
-                                    Backend
-                                  </a>
+                                  <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">Backend</a>
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -199,16 +199,12 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
                 </CarouselItem>
               ))}
             </CarouselContent>
-
-            {/* Next button - hidden when narrow */}
             {!isNarrow && (
               <div className="flex items-center justify-center shrink-0">
                 <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
               </div>
             )}
           </div>
-
-          {/* Buttons below carousel when narrow */}
           {isNarrow && (
             <div className="flex justify-center gap-4 mt-4">
               <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
@@ -216,7 +212,6 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
             </div>
           )}
         </Carousel>
-
         <div className="flex justify-center mt-4 gap-2">
           {projects.map((_, index) => (
             <button
@@ -226,72 +221,62 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
             />
           ))}
         </div>
-      </AnimatedSection>
+      </div>
 
-      <AnimatedSection variant="stagger" delay={0.2} staggerChildren={0.1} threshold={0.1}>
-        <div className="grid gap-6 mt-8" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-          {projects.map((project) => (
-            <AnimatedItem key={project.id}>
-              <Card className="h-full flex flex-col hover:shadow- mdtransition-shadow border-0 pixel-card">
-                <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
-                  <img
-                    src={project.image || `/placeholder.svg?height=200&width=400`}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                  />
-                </div>
-                <CardContent className="pt-6 flex-grow">
-                  <h3 className="text-xl font-bold mb-2 pixel-title">{project.title}</h3>
-                  <p className="text-sm opacity-70 mb-4 line-clamp-3">{project.description}</p>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {project.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs pixel-badge hover:bg-[var(--cute-highlight)]">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <div className="flex gap-2 w-full">
-                    {typeof project.githubUrl === "string" ? (
-                      <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]" asChild>
-                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                          <Github className="mr-2 h-4 w-4" /> Code
-                        </a>
+      <div className="grid gap-6 mt-8" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+        {projects.map((project) => (
+          <Card key={project.id} data-anim="pop" className="h-full flex flex-col hover:shadow-md transition-shadow border-0 pixel-card">
+            <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
+              <img
+                src={project.image || `/placeholder.svg?height=200&width=400`}
+                alt={project.title}
+                className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+              />
+            </div>
+            <CardContent className="pt-6 flex-grow">
+              <h3 className="text-xl font-bold mb-2 pixel-title">{project.title}</h3>
+              <p className="text-sm opacity-70 mb-4 line-clamp-3">{project.description}</p>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {project.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs pixel-badge hover:bg-[var(--cute-highlight)]">{tag}</Badge>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0">
+              <div className="flex gap-2 w-full">
+                {typeof project.githubUrl === "string" ? (
+                  <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]" asChild>
+                    <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                      <Github className="mr-2 h-4 w-4" /> Code
+                    </a>
+                  </Button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
+                        <Github className="mr-2 h-4 w-4" /> Code
                       </Button>
-                    ) : (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
-                            <Github className="mr-2 h-4 w-4" /> Code
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
-                          <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                            <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">
-                              Frontend
-                            </a>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                            <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">
-                              Backend
-                            </a>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                    <Button size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90" asChild>
-                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-4 w-4" /> Demo
-                      </a>
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            </AnimatedItem>
-          ))}
-        </div>
-      </AnimatedSection>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
+                      <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
+                        <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">Frontend</a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
+                        <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">Backend</a>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                <Button size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90" asChild>
+                  <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="mr-2 h-4 w-4" /> Demo
+                  </a>
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

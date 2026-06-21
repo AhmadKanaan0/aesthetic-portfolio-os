@@ -334,7 +334,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   
   const [volume, setVolume] = useState(() => {
     const saved = localStorage.getItem('portfolio-sound-volume')
-    return saved !== null ? JSON.parse(saved) : 0.6
+    return saved !== null ? JSON.parse(saved) : 0.1
   })
 
   // Initialize audio context on first user interaction

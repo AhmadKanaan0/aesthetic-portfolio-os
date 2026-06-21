@@ -17,13 +17,6 @@ import { useAppSound } from "./sound-context";
 import { useAchievements } from "./achievement-context";
 import { playlist, type Track } from "@/types/types";
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 interface MusicPlayerProps {
   isDesktop?: boolean;
@@ -57,6 +50,9 @@ export default function MusicPlayerWidget({
   const albumCoverRef = useRef<HTMLImageElement>(null);
   const buttonsRef = useRef<HTMLButtonElement[]>([]);
   const rotationTweenRef = useRef<gsap.core.Tween | null>(null);
+  const didMountRef = useRef(false);
+  const mobileContentRef = useRef<HTMLDivElement>(null);
+  const mobilePlaylistModalRef = useRef<HTMLDivElement>(null);
 
   // Handle album cover rotation
   const handleAlbumRotation = useCallback(() => {
@@ -143,6 +139,34 @@ export default function MusicPlayerWidget({
     handleAlbumRotation();
   }, [handleAlbumRotation, isPlaying, isLoading, isExpanded]);
 
+  // Animate in when expand/collapse state changes (skips initial render)
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    if (!playerRef.current) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    gsap.fromTo(
+      playerRef.current,
+      { opacity: 0, scale: 0.88, y: 20 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }
+    );
+    if (isExpanded) {
+      const expandedBtns = [1, 2, 3, 4, 5]
+        .map((i) => buttonsRef.current[i])
+        .filter(Boolean);
+      if (expandedBtns.length) {
+        gsap.fromTo(
+          expandedBtns,
+          { opacity: 0, scale: 0.7 },
+          { opacity: 1, scale: 1, duration: 0.3, stagger: 0.05, delay: 0.18, ease: "back.out(1.7)" }
+        );
+      }
+    }
+  }, [isExpanded]);
+
   // GSAP animations
   useGSAP(() => {
     // Initial animations
@@ -187,7 +211,7 @@ export default function MusicPlayerWidget({
     };
   }, []);
 
-  // Playlist animation
+  // Desktop playlist slide animation
   useEffect(() => {
     if (!playlistRef.current) return;
 
@@ -218,34 +242,17 @@ export default function MusicPlayerWidget({
     }
   }, [showPlaylist]);
 
+  // Mobile playlist modal entrance animation
   useEffect(() => {
-    const playAudio = async () => {
-      if (!audioRef.current) return;
-
-      try {
-        setIsLoading(true);
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current.src = currentTrack.src;
-
-        await audioRef.current.load();
-
-        const playPromise = audioRef.current.play();
-
-        if (playPromise !== undefined) {
-          await playPromise;
-          setIsPlaying(true);
-        }
-      } catch (error) {
-        console.error("Autoplay failed:", error);
-        setIsPlaying(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    playAudio();
-  }, [currentTrack]);
+    if (!showPlaylist || !mobilePlaylistModalRef.current || isDesktop) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    gsap.fromTo(
+      mobilePlaylistModalRef.current,
+      { opacity: 0, y: 16, scale: 0.97 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(1.7)" }
+    );
+  }, [showPlaylist, isDesktop]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -312,14 +319,47 @@ export default function MusicPlayerWidget({
   };
 
   const handleDesktopClose = () => {
-    setIsExpanded(false);
-    setShowPlaylist(false);
     playClickSound();
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!playerRef.current || reduced) {
+      setIsExpanded(false);
+      setShowPlaylist(false);
+      return;
+    }
+    gsap.to(playerRef.current, {
+      opacity: 0,
+      scale: 0.88,
+      y: 20,
+      duration: 0.25,
+      ease: "power2.in",
+      onComplete: () => {
+        setIsExpanded(false);
+        setShowPlaylist(false);
+      },
+    });
   };
 
   const handleExpandClick = () => {
     setIsExpanded(true);
     playMenuSound();
+  };
+
+  const handleMobilePlaylistClose = () => {
+    playClickSound();
+    if (!mobilePlaylistModalRef.current) { setShowPlaylist(false); return; }
+    gsap.to(mobilePlaylistModalRef.current, {
+      opacity: 0, y: 14, scale: 0.97, duration: 0.2, ease: "power2.in",
+      onComplete: () => setShowPlaylist(false),
+    });
+  };
+
+  const handleMobileTrackSelect = (track: Track) => {
+    changeTrack(track);
+    if (!mobilePlaylistModalRef.current) { setShowPlaylist(false); return; }
+    gsap.to(mobilePlaylistModalRef.current, {
+      opacity: 0, y: 10, duration: 0.18, ease: "power2.in",
+      onComplete: () => setShowPlaylist(false),
+    });
   };
 
   const handlePlaylistToggle = () => {
@@ -360,6 +400,26 @@ export default function MusicPlayerWidget({
   if (isDesktop && !isExpanded) {
     return (
       <div ref={playerRef} className="fixed bottom-6 right-6 z-50">
+        {/* "Click to play" hint — only shown while paused */}
+        {!isPlaying && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 flex flex-col items-center pointer-events-none animate-bounce">
+            <div className="liquidGlass-wrapper">
+              <div className="liquidGlass-effect" />
+              <div className="liquidGlass-tint" />
+              <div className="liquidGlass-shine" />
+              <div className="liquidGlass-content px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap text-white">
+                ♪ click to play
+              </div>
+            </div>
+            <span
+              className="text-[8px] leading-none mt-0.5"
+              style={{ color: 'var(--cute-border)' }}
+            >
+              ▼
+            </span>
+          </div>
+        )}
+
         <button
           ref={(el) => {
             if (el) buttonsRef.current[0] = el;
@@ -373,6 +433,7 @@ export default function MusicPlayerWidget({
           onMouseLeave={() => handleButtonLeave(0)}
           disabled={isLoading}
         >
+
           <img src={MusicPlayerImage} alt="Music Player" />
           <div
             ref={albumCoverRef}
@@ -597,31 +658,31 @@ export default function MusicPlayerWidget({
           {showPlaylist && (
             <div
               ref={playlistRef}
-              className="w-80 bg-gray-50 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4"
+              className="w-80 relative overflow-hidden p-4"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px) saturate(200%)",
+                WebkitBackdropFilter: "blur(20px) saturate(200%)",
+                borderLeft: "1px solid rgba(255,255,255,0.2)",
+                boxShadow: "inset 2px 0 1px rgba(224,242,254,0.25)",
+              }}
             >
-              <h4 className="font-bold text-gray-800 dark:text-white mb-4">
+              <h4 className="font-bold text-white mb-4">
                 Playlist
               </h4>
               <div className="space-y-2 overflow-y-scroll px-2 py-2 h-[240px]">
                 {playlist.map((track) => (
                   <div
                     key={track.id}
-                    className={cn(
-                      "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors",
-                      currentTrack.id === track.id
-                        ? "bg-blue-100 dark:bg-blue-900/30"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                    )}
+                    className="liquidGlass-wrapper cursor-pointer mb-2"
+                    style={{ borderRadius: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", transition: "none" }}
                     onClick={() => changeTrack(track)}
                     onMouseEnter={(e) => {
                       const prefersReducedMotion = window.matchMedia(
                         "(prefers-reduced-motion: reduce)"
                       ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 1.02,
-                          duration: 0.1,
-                        });
+                        gsap.to(e.currentTarget, { scale: 1.02, duration: 0.1 });
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -637,10 +698,7 @@ export default function MusicPlayerWidget({
                         "(prefers-reduced-motion: reduce)"
                       ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 0.98,
-                          duration: 0.1,
-                        });
+                        gsap.to(e.currentTarget, { scale: 0.98, duration: 0.1 });
                       }
                     }}
                     onMouseUp={(e) => {
@@ -648,29 +706,39 @@ export default function MusicPlayerWidget({
                         "(prefers-reduced-motion: reduce)"
                       ).matches;
                       if (!prefersReducedMotion) {
-                        gsap.to(e.currentTarget, {
-                          scale: 1.02,
-                          duration: 0.1,
-                        });
+                        gsap.to(e.currentTarget, { scale: 1.02, duration: 0.1 });
                       }
                     }}
                   >
-                    <img
-                      src={track.cover || "/placeholder.svg"}
-                      alt={track.title}
-                      className="w-10 h-10 rounded-lg object-cover"
+                    <div className="liquidGlass-effect" style={{ borderRadius: "0.75rem" }} />
+                    <div
+                      className="liquidGlass-tint"
+                      style={{
+                        background: currentTrack.id === track.id
+                          ? "rgba(96,165,250,0.4)"
+                          : "rgba(255,255,255,0.12)",
+                        borderRadius: "0.75rem",
+                      }}
                     />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-gray-800 dark:text-white truncate">
-                        {track.title}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                        {track.artist}
-                      </p>
+                    <div className="liquidGlass-shine" style={{ borderRadius: "0.75rem" }} />
+                    <div className="liquidGlass-content flex items-center gap-3 p-2 w-full">
+                      <img
+                        src={track.cover || "/placeholder.svg"}
+                        alt={track.title}
+                        className="w-10 h-10 rounded-lg object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-white truncate">
+                          {track.title}
+                        </p>
+                        <p className="text-xs text-white/70 truncate">
+                          {track.artist}
+                        </p>
+                      </div>
+                      <span className="text-xs text-white/60">
+                        {track.duration}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {track.duration}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -681,16 +749,83 @@ export default function MusicPlayerWidget({
     );
   }
 
-  // Mobile/Widget version with horizontal scrolling playlist
+  // Mobile/Widget version — playlist opens as a liquid glass modal above the player
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="relative flex flex-col items-center justify-center">
+      {/* Playlist modal */}
+      {showPlaylist && (
+        <div
+          ref={mobilePlaylistModalRef}
+          className="absolute bottom-full left-0 right-0 mb-3 z-50"
+        >
+          <div
+            className="liquidGlass-wrapper"
+            style={{ borderRadius: "1.25rem", flexDirection: "column", boxShadow: "0 -8px 32px rgba(0,0,0,0.35)" }}
+          >
+            <div className="liquidGlass-effect" style={{ borderRadius: "1.25rem" }} />
+            <div className="liquidGlass-tint" style={{ borderRadius: "1.25rem" }} />
+            <div className="liquidGlass-shine" style={{ borderRadius: "1.25rem" }} />
+            <div className="liquidGlass-content w-full" style={{ padding: "1rem" }}>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-white font-bold text-base">Playlist</h3>
+                <button
+                  className="w-8 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
+                  onClick={handleMobilePlaylistClose}
+                >
+                  <img src={CinamonExit} alt="Close" />
+                  <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
+                    <X className="h-3 w-3" />
+                  </div>
+                </button>
+              </div>
+              <div className="space-y-2 max-h-60 p-4 overflow-y-auto">
+                {playlist.map((track) => (
+                  <div
+                    key={track.id}
+                    className="liquidGlass-wrapper cursor-pointer"
+                    style={{ borderRadius: "0.75rem", transition: "none" }}
+                    onClick={() => handleMobileTrackSelect(track)}
+                    onMouseEnter={(e) => {
+                      const r = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!r) gsap.to(e.currentTarget, { scale: 1.02, duration: 0.1 });
+                    }}
+                    onMouseLeave={(e) => {
+                      const r = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      if (!r) gsap.to(e.currentTarget, { scale: 1, duration: 0.1 });
+                    }}
+                  >
+                    <div className="liquidGlass-effect" style={{ borderRadius: "0.75rem" }} />
+                    <div
+                      className="liquidGlass-tint"
+                      style={{
+                        background: currentTrack.id === track.id ? "rgba(96,165,250,0.4)" : "rgba(255,255,255,0.12)",
+                        borderRadius: "0.75rem",
+                      }}
+                    />
+                    <div className="liquidGlass-shine" style={{ borderRadius: "0.75rem" }} />
+                    <div className="liquidGlass-content flex items-center gap-3 p-2.5 w-full">
+                      <img src={track.cover || "/placeholder.svg"} alt={track.title} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-white truncate">{track.title}</p>
+                        <p className="text-xs text-white/70 truncate">{track.artist}</p>
+                      </div>
+                      <span className="text-xs text-white/60 shrink-0">{track.duration}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Player — always visible */}
       <div
         ref={playerRef}
         className="w-full h-[170px] rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl bg-cover bg-center"
         style={{ backgroundImage: `url(${MusicWallpaper})` }}
       >
-        {!showPlaylist ? (
-          <div className="p-4 gap-4 flex flex-row items-center h-full">
+          <div ref={mobileContentRef} className="p-4 gap-4 flex flex-row items-center h-full">
             <div
               ref={albumCoverRef}
               className={cn(
@@ -828,136 +963,6 @@ export default function MusicPlayerWidget({
               </div>
             </div>
           </div>
-        ) : (
-          <div className="p-4 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                Playlist
-              </h3>
-              <button
-                ref={(el) => {
-                  if (el) buttonsRef.current[10] = el;
-                }}
-                className="w-8 relative text-center cursor-pointer p-0 hover:bg-transparent dark:hover:bg-transparent"
-                onClick={() => {
-                  setShowPlaylist(false);
-                  playClickSound();
-                  handleButtonClick(10);
-                }}
-                onMouseEnter={() => handleButtonHover(10)}
-                onMouseLeave={() => handleButtonLeave(10)}
-              >
-                <img src={CinamonExit} alt="Cinamon Exit" />
-                <div className="absolute top-[55%] left-[46%] transform -translate-x-1/2 -translate-y-1/2 text-[#74cef7]">
-                  <X className="h-3 w-3" />
-                </div>
-              </button>
-            </div>
-
-            {/* Horizontal scrolling playlist */}
-            <div className="flex-1 overflow-hidden">
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-              >
-                <div className="flex items-center gap-1">
-                  <CarouselPrevious className="static translate-x-0 translate-y-0 shrink-0 h-8 w-8 rounded-none border-2 border-[#74cef7] bg-white/30 hover:bg-[#bae6fd] text-[#0c4a6e] shadow-[2px_2px_0px_rgba(0,0,0,0.2)]" />
-
-                  <CarouselContent className="flex-1">
-                    {playlist.map((track) => (
-                      <CarouselItem
-                        key={track.id}
-                        className="basis-full"
-                      >
-                        <div
-                          className={cn(
-                            "flex flex-row gap-2 z-99 items-center bg-white/20 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 cursor-pointer transition-all duration-200 border h-full",
-                            currentTrack.id === track.id
-                              ? "border-blue-400 bg-blue-100/30 dark:bg-blue-900/30"
-                              : "border-white/20 hover:bg-white/30 dark:hover:bg-gray-700/50"
-                          )}
-                          onClick={() => {
-                            changeTrack(track);
-                            setShowPlaylist(false);
-                          }}
-                          onMouseEnter={(e) => {
-                            const prefersReducedMotion = window.matchMedia(
-                              "(prefers-reduced-motion: reduce)"
-                            ).matches;
-                            if (!prefersReducedMotion) {
-                              gsap.to(e.currentTarget, {
-                                scale: 1.05,
-                                y: -2,
-                                duration: 0.1,
-                              });
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            const prefersReducedMotion = window.matchMedia(
-                              "(prefers-reduced-motion: reduce)"
-                            ).matches;
-                            if (!prefersReducedMotion) {
-                              gsap.to(e.currentTarget, {
-                                scale: 1,
-                                y: 0,
-                                duration: 0.1,
-                              });
-                            }
-                          }}
-                          onMouseDown={(e) => {
-                            const prefersReducedMotion = window.matchMedia(
-                              "(prefers-reduced-motion: reduce)"
-                            ).matches;
-                            if (!prefersReducedMotion) {
-                              gsap.to(e.currentTarget, {
-                                scale: 0.95,
-                                duration: 0.1,
-                              });
-                            }
-                          }}
-                          onMouseUp={(e) => {
-                            const prefersReducedMotion = window.matchMedia(
-                              "(prefers-reduced-motion: reduce)"
-                            ).matches;
-                            if (!prefersReducedMotion) {
-                              gsap.to(e.currentTarget, {
-                                scale: 1.05,
-                                duration: 0.1,
-                              });
-                            }
-                          }}
-                        >
-                          <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden">
-                            <img
-                              src={track.cover || "/placeholder.svg"}
-                              alt={track.title}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex flex-col items-start min-w-0 flex-1">
-                            <p className="font-medium text-sm text-gray-800 dark:text-white truncate w-full">
-                              {track.title}
-                            </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 truncate w-full">
-                              {track.artist}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {track.duration}
-                            </p>
-                          </div>
-                        </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-
-                  <CarouselNext className="static translate-x-0 translate-y-0 shrink-0 h-8 w-8 rounded-none border-2 border-[#74cef7] bg-white/30 hover:bg-[#bae6fd] text-[#0c4a6e] shadow-[2px_2px_0px_rgba(0,0,0,0.2)]" />
-                </div>
-              </Carousel>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

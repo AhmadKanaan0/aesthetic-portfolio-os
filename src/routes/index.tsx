@@ -29,6 +29,7 @@ function LoginScreen() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const loginCardRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     router.preloadRoute({ to: "/desktop" });
@@ -71,7 +72,17 @@ function LoginScreen() {
     e.preventDefault();
     if (password === "haru") {
       playSuccessSound();
-      navigate({ to: "/desktop" });
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (containerRef.current && !prefersReducedMotion) {
+        gsap.to(containerRef.current, {
+          opacity: 0,
+          duration: 0.5,
+          ease: "power2.inOut",
+          onComplete: () => { void navigate({ to: "/desktop" }); },
+        });
+      } else {
+        navigate({ to: "/desktop" });
+      }
     } else {
       playErrorSound();
       setIsWrongPassword(true);
@@ -184,25 +195,25 @@ function LoginScreen() {
       }
     }
 
-    // Wrong password shake animation
-    if (isWrongPassword && inputRef.current && !prefersReducedMotion) {
-      gsap.fromTo(
-        inputRef.current,
-        { x: 0 },
-        {
-          x: 8,
-          duration: 0.1,
-          ease: "power2.out",
-          yoyo: true,
-          repeat: 5,
-        }
-      );
-    }
-  }, [showLogin, isWrongPassword]);
+  }, [showLogin]);
+
+  // Isolated shake — own useEffect so it never re-triggers the entrance animations
+  useEffect(() => {
+    if (!isWrongPassword || !inputRef.current) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+    gsap.killTweensOf(inputRef.current, "x");
+    gsap.fromTo(
+      inputRef.current,
+      { x: 0 },
+      { x: 8, duration: 0.08, ease: "power2.out", yoyo: true, repeat: 5 }
+    );
+  }, [isWrongPassword]);
 
   return (
     <>
       <div
+        ref={containerRef}
         className="relative flex flex-col items-center justify-center w-full min-h-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${Wallpaper})` }}
         onClick={handleScreenClick}
@@ -227,61 +238,66 @@ function LoginScreen() {
             className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              ref={loginCardRef}
-              className="w-64 p-6 bg-white/20 backdrop-blur-lg rounded-3xl shadow-lg border border-white/30 flex flex-col items-center"
-            >
-              <Avatar className="w-20 h-20 mb-4 border-4 border-blue-200/50">
-                <AvatarImage
-                  src="/placeholder.svg?height=80&width=80"
-                  alt="User"
-                />
-                <AvatarFallback className="bg-blue-200 text-blue-700 text-xl">
-                  ME
-                </AvatarFallback>
-              </Avatar>
-
-              <form
-                onSubmit={handleSubmit}
-                className="w-full flex flex-col justify-center space-y-4"
-              >
-                <div className="flex items-center gap-2">
-                  <Input
-                    ref={inputRef}
-                    type="password"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e: any) => setPassword(e.target.value)}
-                    className={cn(
-                      "pr-12 bg-white/30 border-blue-200/50 focus:border-blue-400 rounded-xl placeholder-blue-500/70"
-                    )}
-                    autoFocus
+            <div ref={loginCardRef} className="liquidGlass-wrapper lockscreen-card w-64">
+              <div className="liquidGlass-effect" />
+              <div className="liquidGlass-tint" />
+              <div className="liquidGlass-shine" />
+              <div className="liquidGlass-content w-full flex flex-col items-center">
+                <Avatar className="w-20 h-20 mb-4 border-4 border-white/40">
+                  <AvatarImage
+                    src="/placeholder.svg?height=80&width=80"
+                    alt="User"
                   />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="h-8 w-8 cursor-pointer bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg"
-                    onClick={playClickSound}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                    <span className="sr-only">Unlock</span>
-                  </Button>
-                </div>
-                <p className="text-xs text-blue-600/80 text-center">
-                  Hint: The password is &apos;haru&apos;
-                </p>
-              </form>
+                  <AvatarFallback className="bg-white/20 text-white text-xl">
+                    ME
+                  </AvatarFallback>
+                </Avatar>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="w-full flex flex-col justify-center space-y-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <Input
+                      ref={inputRef}
+                      type="password"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e: any) => setPassword(e.target.value)}
+                      className={cn(
+                        "bg-white/20 border-white/30 focus:border-white/60 rounded-xl text-white placeholder:text-white/60"
+                      )}
+                      autoFocus
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 cursor-pointer bg-white/30 hover:bg-white/50 text-white rounded-xl border border-white/30"
+                      onClick={playClickSound}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                      <span className="sr-only">Unlock</span>
+                    </Button>
+                  </div>
+                  <p className="text-xs text-white/70 text-center">
+                    Hint: The password is &apos;haru&apos;
+                  </p>
+                </form>
+              </div>
             </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mt-4 cursor-pointer text-white bg-blue-500/30 hover:bg-blue-500/50 backdrop-blur-sm rounded-full"
+            <button
+              className="liquidGlass-wrapper lockscreen-cancel mt-4 cursor-pointer p-0"
               onClick={handleCancel}
             >
-              <X className="h-5 w-5" />
-              <span className="sr-only">Cancel</span>
-            </Button>
+              <div className="liquidGlass-effect" />
+              <div className="liquidGlass-tint" />
+              <div className="liquidGlass-shine" />
+              <div className="liquidGlass-content">
+                <X className="h-5 w-5 text-white" />
+                <span className="sr-only">Cancel</span>
+              </div>
+            </button>
           </div>
         )}
       </div>

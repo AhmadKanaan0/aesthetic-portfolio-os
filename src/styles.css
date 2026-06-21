@@ -107,6 +107,8 @@ code {
   --cute-shadow: rgba(14, 165, 233, 0.2);
   --cute-text: #0c4a6e;
   --cute-highlight: #e0f2fe;
+  /* text colour that contrasts against --cute-text backgrounds */
+  --cute-on-text: #ffffff;
 }
 
 .dark {
@@ -159,6 +161,7 @@ code {
   --cute-shadow: rgba(56, 189, 248, 0.15);
   --cute-text: #bae6fd;
   --cute-highlight: #1e293b;
+  --cute-on-text: #020617;
 }
 
 /* Custom utilities */
@@ -200,6 +203,7 @@ code {
   justify-content: space-between;
   align-items: center;
   color: var(--cute-text);
+  font-family: "Pixelify Sans", monospace;
   font-weight: 400;
   font-size: 1.4rem;
   letter-spacing: 1px;
@@ -448,6 +452,7 @@ code {
   backface-visibility: hidden;
   border: 2px solid var(--cute-text);
   box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
+  background: var(--card-bg);
 }
 
 .dark .window-container {
@@ -482,11 +487,44 @@ code {
   border-color: var(--border-color);
 }
 
+/* ── Snap Menu (pixel retro) ─────────────────────── */
+.snap-menu-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--cute-text);
+  box-shadow: 4px 4px 0 var(--cute-text);
+  padding: 0.6rem;
+  font-family: "Pixelify Sans", monospace;
+}
+
+.snap-cell {
+  background: transparent;
+  border: 1px solid var(--cute-text);
+  padding: 2px;
+  overflow: hidden;
+}
+
+.snap-zone {
+  background: var(--cute-highlight);
+  border: 1px solid var(--cute-text);
+  flex-shrink: 0;
+}
+
+.snap-zone:hover {
+  background: var(--cute-text);
+}
+
+.snap-label {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: var(--cute-text);
+  text-align: center;
+  opacity: 0.7;
+  font-family: "Pixelify Sans", monospace;
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
-  .desktop-icon {
-    width: 3rem;
-  }
 
   .desktop-icon img {
     width: 2.5rem;
@@ -696,13 +734,113 @@ code {
   letter-spacing: 1px;
 }
 
+/* Achievement card */
+.pixel-achievement-card {
+  border-radius: 0 !important;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.pixel-achievement-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--cute-text) !important;
+}
+
+/* CRT scanlines — light / dark aware */
+.pixel-achievement-screen {
+  background-color: var(--cute-bg);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.022) 3px,
+    rgba(0, 0, 0, 0.022) 4px
+  );
+}
+
+.dark .pixel-achievement-screen {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 255, 255, 0.018) 3px,
+    rgba(255, 255, 255, 0.018) 4px
+  );
+}
+
+/* Diagonal hatch for locked achievement cards */
+.pixel-hatch-locked {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.045) 0px,
+    rgba(0, 0, 0, 0.045) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+}
+
+.dark .pixel-hatch-locked {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+}
+
+/* Lockscreen card hover growth */
+.lockscreen-card .liquidGlass-content {
+  padding: 1.5rem;
+  transition: padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+.lockscreen-card:hover .liquidGlass-content {
+  padding: 1.7rem;
+}
+
+/* Lockscreen cancel button hover growth */
+.lockscreen-cancel .liquidGlass-content {
+  padding: 0.5rem;
+  transition: padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+.lockscreen-cancel:hover .liquidGlass-content {
+  padding: 0.7rem;
+}
+
+/* Mobile folder hover expansion */
+.liquidGlass-wrapper.mobile-folder {
+  height: 195px;
+}
+
+.liquidGlass-wrapper.mobile-folder:hover {
+  height: 204px;
+}
+
+/* Mobile settings bar hover expansion */
+.mobile-settings-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  transition: padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+.liquidGlass-wrapper:hover .mobile-settings-inner {
+  padding: 1.25rem;
+}
+
 /* Menubar Liquid Glass Overrides */
 .liquidGlass-wrapper.menubar {
   border-radius: 0 0 1.5rem 1.5rem;
   width: 100%;
   max-width: 100%;
-  padding: 0 1rem;
+  padding: 0.6rem 1rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.liquidGlass-wrapper.menubar:hover {
+  padding: 0.85rem 1rem;
 }
 
 .liquidGlass-wrapper.menubar .liquidGlass-effect,
@@ -768,4 +906,31 @@ code {
 .liquidGlass-wrapper.dropdown .liquidGlass-tint,
 .liquidGlass-wrapper.dropdown .liquidGlass-shine {
   border-radius: 0.75rem;
+}
+
+/* Widget image auto-animated glass overlay */
+.widget-glass-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 2px 2px 1px rgba(224, 242, 254, 0.45),
+    inset -1px -1px 1px rgba(224, 242, 254, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.06) 38%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.06) 62%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 280% 280%;
+  animation: widget-glass-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes widget-glass-shimmer {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
