@@ -141,14 +141,11 @@ function DesktopInner() {
     { id: "terminal", label: "Terminal", icon: TerminalIcon },
   ]);
 
-  // 50px icon + 8px gap = 58px per slot; ~20px dock padding; 48px viewport margin
-  const maxFit = Math.floor((viewportW - 68 + 8) / 58);
-  const taskbarVisible = maxFit >= desktopApps.length
-    ? desktopApps
-    : desktopApps.slice(0, Math.max(1, maxFit - 1));
-  const taskbarOverflow = maxFit >= desktopApps.length
-    ? []
-    : desktopApps.slice(Math.max(1, maxFit - 1));
+  // 50px icon + 8px gap = 58px/slot; ~20px dock padding + 8px safe margin = 28px overhead
+  const maxFit   = Math.floor((viewportW - 28) / 58);
+  const splitAt  = maxFit >= desktopApps.length ? desktopApps.length : Math.max(1, maxFit - 1);
+  const taskbarVisible  = desktopApps.slice(0, splitAt);
+  const taskbarOverflow = desktopApps.slice(splitAt);
 
   const [openWindows, setOpenWindows] = useState<WindowData[]>([]);
   const [activeAppId, setActiveAppId] = useState<string | null>(null);
@@ -619,8 +616,8 @@ function DesktopInner() {
                   <MusicPlayerWidget isDesktop={false} />
                 </div>
                 <Taskbar
-                  apps={desktopApps.slice(0, 6)}
-                  overflowApps={desktopApps.slice(6)}
+                  apps={taskbarVisible}
+                  overflowApps={taskbarOverflow}
                   openWindows={openWindows}
                   onAppClick={handleAppClick}
                   className="mt-auto"
