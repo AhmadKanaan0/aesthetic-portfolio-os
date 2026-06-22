@@ -480,10 +480,10 @@ function DesktopInner() {
                 />
               </div>
             ) : (
-              <div className="absolute inset-0 flex flex-col justify-between overflow-hidden gap-8 p-4 pb-24">
-                <div className="flex flex-col gap-4 justify-between h-full">
+              <div className="absolute inset-0 flex flex-col overflow-hidden p-3 pb-[82px] gap-3">
+                <div className="flex flex-col gap-3">
                   {/* Top row: 2-page folder + water CD */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     {/* Folder */}
                     <div className="liquidGlass-wrapper mobile-folder rounded-2xl">
                       <div className="liquidGlass-effect"></div>
@@ -582,7 +582,7 @@ function DesktopInner() {
                   </div>
 
                   {/* Bottom row: puppy + apps 4–5 + settings */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="flex justify-center">
                       <div className="relative overflow-hidden rounded-2xl h-[160px]">
                         <img
