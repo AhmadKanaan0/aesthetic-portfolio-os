@@ -230,13 +230,13 @@ function LoginScreen() {
           style={{ backgroundImage: `url(${MobileWallpaper})`, opacity: isDesktop ? 0 : 1 }} />
         {/* Time display */}
         <div className="flex flex-col items-center">
-          <h1 ref={timeRef} className="text-6xl font-bold text-blue-800 mb-2">
+          <h1 ref={timeRef} className="text-6xl font-bold text-white mb-2">
             {formatTime(currentTime)}
           </h1>
-          <p ref={dateRef} className="text-lg text-blue-600 mb-6">
+          <p ref={dateRef} className="text-lg text-white/80 mb-6">
             {formatDate(currentTime)}
           </p>
-          <p ref={hintRef} className="text-sm text-blue-500/80">
+          <p ref={hintRef} className="text-sm text-white/60">
             Click anywhere to unlock
           </p>
         </div>
