@@ -14,7 +14,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateScale, animateSlideUp, animateFade, animatePop, animateTextReveal } from "@/lib/animations"
+import { animateTextReveal, animateBlurText } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 
 export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -38,15 +39,10 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
     if (!containerRef.current) return
     const c = containerRef.current
     const root = scrollContainerRef?.current ?? null
-
     const ios = [
-      ...animateScale(gsap.utils.toArray('[data-anim="scale"]', c), root),
-      ...animateSlideUp(gsap.utils.toArray('[data-anim="slide"]', c), root),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
-      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.07),
+      ...animateBlurText(gsap.utils.toArray('p[data-anim="fade"]', c), root),
       ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
     ]
-
     return () => ios.forEach(io => io.disconnect())
   }, { scope: containerRef, dependencies: [] })
 
@@ -90,23 +86,25 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
     { name: "Reading",      icon: "📚", description: "Tech books and science fiction" },
   ]
 
+  const badges = ["Web Development", "Web Design", "React", "Node.js", "UI/UX"]
+
   return (
     <div ref={containerRef} className="space-y-8 max-w-4xl mx-auto pixel-text">
       <div className="text-center">
-        <div data-anim="scale" className="inline-block">
+        <AnimatedContent scale={0.82} ease="back.out(1.7)" className="inline-block">
           <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-[var(--cute-text)] rounded-none">
             <AvatarImage src="/profile-photo.jpg" alt="Profile" />
             <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">AK</AvatarFallback>
           </Avatar>
-        </div>
+        </AnimatedContent>
         <h1 data-anim="text" className="text-3xl font-bold mb-2 pixel-title">Ahmad Kanaan</h1>
         <p data-anim="fade" className="mb-4 opacity-80">Full-Stack Developer with 4 years of experience</p>
         <div className="flex flex-wrap justify-center gap-2">
-          <Badge data-anim="pop" variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">Web Development</Badge>
-          <Badge data-anim="pop" variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">Web Design</Badge>
-          <Badge data-anim="pop" variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">React</Badge>
-          <Badge data-anim="pop" variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">Node.js</Badge>
-          <Badge data-anim="pop" variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">UI/UX</Badge>
+          {badges.map((tag, i) => (
+            <AnimatedContent key={tag} delay={i * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+              <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">{tag}</Badge>
+            </AnimatedContent>
+          ))}
         </div>
       </div>
 
@@ -125,65 +123,65 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
 
       <div>
         <h2 data-anim="text" className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">Testimonials</h2>
-        <div data-anim="scale">
-        <Carousel
-          setApi={setTestimonialApi}
-          plugins={[Autoplay({ delay: 2000 })]}
-          opts={{ align: "start", loop: true }}
-        >
-          <div className="flex items-center gap-2">
-            {windowWidth && windowWidth >= 700 && (
-              <div className="flex items-center justify-center shrink-0">
-                <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
-              </div>
-            )}
-            <CarouselContent className="items-stretch flex-1">
-              {testimonials.map((testimonial, index) => (
-                <CarouselItem
-                  key={index}
-                  className={
-                    !windowWidth ? "basis-full"
-                      : windowWidth < 640 ? "basis-full"
-                      : windowWidth < 1024 ? "basis-1/2"
-                      : "basis-1/3"
-                  }
-                >
-                  <div className="p-1 h-full">
-                    <Card className="h-full pixel-card">
-                      <CardContent className="pt-6 flex-grow flex flex-col">
-                        <div className="flex items-start gap-4 mb-4">
-                          <Avatar className="shrink-0 border-2 border-[var(--cute-text)] rounded-none w-10 h-10">
-                            <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
-                            <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">
-                              {testimonial.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <p className="font-medium pixel-text truncate">{testimonial.name}</p>
-                            <p className="text-sm opacity-70 truncate">{testimonial.role}</p>
+        <AnimatedContent scale={0.82} ease="back.out(1.7)">
+          <Carousel
+            setApi={setTestimonialApi}
+            plugins={[Autoplay({ delay: 2000 })]}
+            opts={{ align: "start", loop: true }}
+          >
+            <div className="flex items-center gap-2">
+              {windowWidth && windowWidth >= 700 && (
+                <div className="flex items-center justify-center shrink-0">
+                  <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+                </div>
+              )}
+              <CarouselContent className="items-stretch flex-1">
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem
+                    key={index}
+                    className={
+                      !windowWidth ? "basis-full"
+                        : windowWidth < 640 ? "basis-full"
+                        : windowWidth < 1024 ? "basis-1/2"
+                        : "basis-1/3"
+                    }
+                  >
+                    <div className="p-1 h-full">
+                      <Card className="h-full pixel-card">
+                        <CardContent className="pt-6 flex-grow flex flex-col">
+                          <div className="flex items-start gap-4 mb-4">
+                            <Avatar className="shrink-0 border-2 border-[var(--cute-text)] rounded-none w-10 h-10">
+                              <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
+                              <AvatarFallback className="rounded-none bg-[var(--cute-highlight)] text-[var(--cute-text)]">
+                                {testimonial.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="font-medium pixel-text truncate">{testimonial.name}</p>
+                              <p className="text-sm opacity-70 truncate">{testimonial.role}</p>
+                            </div>
                           </div>
-                        </div>
-                        <p className="italic flex-grow opacity-90">"{testimonial.content}"</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {windowWidth && windowWidth >= 700 && (
-              <div className="flex items-center justify-center shrink-0">
+                          <p className="italic flex-grow opacity-90">"{testimonial.content}"</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {windowWidth && windowWidth >= 700 && (
+                <div className="flex items-center justify-center shrink-0">
+                  <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
+                </div>
+              )}
+            </div>
+            {(!windowWidth || windowWidth < 700) && (
+              <div className="flex justify-center gap-4 mt-4">
+                <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
                 <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
               </div>
             )}
-          </div>
-          {(!windowWidth || windowWidth < 700) && (
-            <div className="flex justify-center gap-4 mt-4">
-              <CarouselPrevious className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
-              <CarouselNext className="static translate-x-0 translate-y-0 border-2 border-[var(--cute-text)] rounded-none text-[var(--cute-text)] hover:bg-[var(--cute-highlight)]" />
-            </div>
-          )}
-        </Carousel>
-        </div>
+          </Carousel>
+        </AnimatedContent>
       </div>
 
       <div>
@@ -192,13 +190,15 @@ export default function AboutMe({ windowWidth }: { windowWidth?: number }) {
         </h2>
         <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
           {hobbies.map((hobby, index) => (
-            <Card key={index} data-anim="pop" className="h-full pixel-card hover:shadow-md transition-shadow">
-              <CardContent className="pt-6 text-center">
-                <div className="text-4xl mb-2">{hobby.icon}</div>
-                <h3 className="font-bold mb-1 pixel-text">{hobby.name}</h3>
-                <p className="text-sm opacity-70">{hobby.description}</p>
-              </CardContent>
-            </Card>
+            <AnimatedContent key={index} delay={index * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+              <Card className="h-full pixel-card hover:shadow-md transition-shadow">
+                <CardContent className="pt-6 text-center">
+                  <div className="text-4xl mb-2">{hobby.icon}</div>
+                  <h3 className="font-bold mb-1 pixel-text">{hobby.name}</h3>
+                  <p className="text-sm opacity-70">{hobby.description}</p>
+                </CardContent>
+              </Card>
+            </AnimatedContent>
           ))}
         </div>
       </div>

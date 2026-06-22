@@ -20,7 +20,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Github, ExternalLink } from "lucide-react"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateFade, animateScale, animatePop, animateTextReveal } from "@/lib/animations"
+import { animateTextReveal, animateBlurText } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 import facilify from "@/assets/Facilify.png"
 import awqafRashaya from "@/assets/AwqadRashaya.png"
 import nebula from "@/assets/Nebula.png"
@@ -40,14 +41,10 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
     if (!containerRef.current) return
     const c = containerRef.current
     const root = scrollContainerRef?.current ?? null
-
     const ios = [
-      ...animateScale(gsap.utils.toArray('[data-anim="scale"]', c), root),
-      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.07),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
+      ...animateBlurText(gsap.utils.toArray('p[data-anim="fade"]', c), root),
       ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
     ]
-
     return () => ios.forEach(io => io.disconnect())
   }, { scope: containerRef, dependencies: [] })
 
@@ -128,7 +125,7 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
         <p data-anim="fade" className="opacity-80">A showcase of my best work and side projects</p>
       </div>
 
-      <div data-anim="scale" className="relative">
+      <AnimatedContent scale={0.82} ease="back.out(1.7)" className="relative">
         <Carousel
           setApi={setCarouselApi}
           plugins={[Autoplay({ delay: 2000 })]}
@@ -221,60 +218,62 @@ export default function Projects({ windowWidth }: { windowWidth?: number }) {
             />
           ))}
         </div>
-      </div>
+      </AnimatedContent>
 
       <div className="grid gap-6 mt-8" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-        {projects.map((project) => (
-          <Card key={project.id} data-anim="pop" className="h-full flex flex-col hover:shadow-md transition-shadow border-0 pixel-card">
-            <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
-              <img
-                src={project.image || `/placeholder.svg?height=200&width=400`}
-                alt={project.title}
-                className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-              />
-            </div>
-            <CardContent className="pt-6 flex-grow">
-              <h3 className="text-xl font-bold mb-2 pixel-title">{project.title}</h3>
-              <p className="text-sm opacity-70 mb-4 line-clamp-3">{project.description}</p>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {project.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs pixel-badge hover:bg-[var(--cute-highlight)]">{tag}</Badge>
-                ))}
+        {projects.map((project, index) => (
+          <AnimatedContent key={project.id} delay={index * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow border-0 pixel-card">
+              <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
+                <img
+                  src={project.image || `/placeholder.svg?height=200&width=400`}
+                  alt={project.title}
+                  className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+                />
               </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <div className="flex gap-2 w-full">
-                {typeof project.githubUrl === "string" ? (
-                  <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]" asChild>
-                    <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                      <Github className="mr-2 h-4 w-4" /> Code
+              <CardContent className="pt-6 flex-grow">
+                <h3 className="text-xl font-bold mb-2 pixel-title">{project.title}</h3>
+                <p className="text-sm opacity-70 mb-4 line-clamp-3">{project.description}</p>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {project.tags.map((tag, i) => (
+                    <Badge key={i} variant="secondary" className="text-xs pixel-badge hover:bg-[var(--cute-highlight)]">{tag}</Badge>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <div className="flex gap-2 w-full">
+                  {typeof project.githubUrl === "string" ? (
+                    <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]" asChild>
+                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                        <Github className="mr-2 h-4 w-4" /> Code
+                      </a>
+                    </Button>
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
+                          <Github className="mr-2 h-4 w-4" /> Code
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
+                        <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
+                          <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">Frontend</a>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
+                          <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">Backend</a>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <Button size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90" asChild>
+                    <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="mr-2 h-4 w-4" /> Demo
                     </a>
                   </Button>
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
-                        <Github className="mr-2 h-4 w-4" /> Code
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="z-[9999] border-2 border-[var(--cute-text)] bg-[var(--card-bg)] rounded-none">
-                      <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                        <a href={project.githubUrl.frontend} target="_blank" rel="noopener noreferrer">Frontend</a>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-none focus:bg-[var(--cute-highlight)] cursor-pointer">
-                        <a href={project.githubUrl.backend} target="_blank" rel="noopener noreferrer">Backend</a>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-                <Button size="sm" className="flex-1 border-2 border-[var(--cute-text)] rounded-none bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90" asChild>
-                  <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" /> Demo
-                  </a>
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
+                </div>
+              </CardFooter>
+            </Card>
+          </AnimatedContent>
         ))}
       </div>
     </div>

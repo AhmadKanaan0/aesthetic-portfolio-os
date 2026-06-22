@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateSlideUp, animatePop, animateFade, animateTextReveal } from "@/lib/animations"
+import { animateTextReveal, animateBlurText } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 import { useQuery } from "@tanstack/react-query"
 import { fetchBlogPosts, type PostNode } from "@/lib/hashnode"
 import { format } from "date-fns"
@@ -32,14 +33,10 @@ export default function Blog() {
     if (!containerRef.current) return
     const c = containerRef.current
     const root = scrollContainerRef?.current ?? null
-
     const ios = [
-      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.07),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
-      ...animateSlideUp(gsap.utils.toArray('[data-anim="slide"]', c), root),
+      ...animateBlurText(gsap.utils.toArray('p[data-anim="fade"]', c), root),
       ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
     ]
-
     return () => ios.forEach(io => io.disconnect())
   }, { scope: containerRef, dependencies: [] })
 
@@ -117,36 +114,38 @@ export default function Blog() {
       </div>
 
       <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-        {blogPosts.map((post) => (
-          <Card key={post.id} data-anim="pop" className="h-full flex flex-col hover:shadow-md transition-shadow border-0 pixel-card">
-            <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
-              <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform hover:scale-105 duration-300" />
-            </div>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-center mb-1 flex-wrap gap-2">
-                <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">{post.category}</Badge>
-                <span className="text-xs opacity-60">{post.date}</span>
+        {blogPosts.map((post, index) => (
+          <AnimatedContent key={post.id} delay={index * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow border-0 pixel-card">
+              <div className="aspect-video overflow-hidden border-b-2 border-[var(--cute-text)]">
+                <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform hover:scale-105 duration-300" />
               </div>
-              <CardTitle className="text-xl line-clamp-2 pixel-title">{post.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-2 flex-grow">
-              <p className="text-sm opacity-80 line-clamp-3">{post.excerpt}</p>
-            </CardContent>
-            <CardFooter className="flex justify-between items-center pt-0">
-              <span className="text-xs opacity-60">{post.readTime}</span>
-              <Button variant="ghost" size="sm" asChild className="hover:bg-[var(--cute-highlight)] rounded-none">
-                <a href={post.url} target="_blank" rel="noopener noreferrer">Read More</a>
-              </Button>
-            </CardFooter>
-          </Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center mb-1 flex-wrap gap-2">
+                  <Badge variant="secondary" className="pixel-badge hover:bg-[var(--cute-highlight)]">{post.category}</Badge>
+                  <span className="text-xs opacity-60">{post.date}</span>
+                </div>
+                <CardTitle className="text-xl line-clamp-2 pixel-title">{post.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-2 flex-grow">
+                <p className="text-sm opacity-80 line-clamp-3">{post.excerpt}</p>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center pt-0">
+                <span className="text-xs opacity-60">{post.readTime}</span>
+                <Button variant="ghost" size="sm" asChild className="hover:bg-[var(--cute-highlight)] rounded-none">
+                  <a href={post.url} target="_blank" rel="noopener noreferrer">Read More</a>
+                </Button>
+              </CardFooter>
+            </Card>
+          </AnimatedContent>
         ))}
       </div>
 
-      <div data-anim="fade" className="flex justify-center">
+      <AnimatedContent distance={0} className="flex justify-center">
         <Button variant="outline" className="border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
           Load More Articles
         </Button>
-      </div>
+      </AnimatedContent>
     </div>
   )
 }

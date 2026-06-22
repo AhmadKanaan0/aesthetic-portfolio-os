@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateFade, animateSlideUp, animatePop, animateTextReveal } from "@/lib/animations"
+import { animateTextReveal } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 
 export default function Resume() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -16,14 +17,9 @@ export default function Resume() {
     if (!containerRef.current) return
     const c = containerRef.current
     const root = scrollContainerRef?.current ?? null
-
     const ios = [
-      ...animateSlideUp(gsap.utils.toArray('[data-anim="slide"]', c), root, 0.09),
-      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.07),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
       ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
     ]
-
     return () => ios.forEach(io => io.disconnect())
   }, { scope: containerRef, dependencies: [] })
 
@@ -96,29 +92,31 @@ export default function Resume() {
     <div ref={containerRef} className="space-y-8 max-w-4xl mx-auto pixel-text">
       <div className="flex justify-between items-center">
         <h1 data-anim="text" className="text-3xl font-bold pixel-title">Resume</h1>
-        <div data-anim="fade">
+        <AnimatedContent distance={0}>
           <Button variant="outline" size="sm" className="border-2 border-[var(--cute-text)] rounded-none hover:bg-[var(--cute-highlight)] text-[var(--cute-text)]">
             <Download className="mr-2 h-4 w-4" /> Download PDF
           </Button>
-        </div>
+        </AnimatedContent>
       </div>
 
       <div>
         <h2 data-anim="text" className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">Education</h2>
         <div className="space-y-4 mt-4">
           {education.map((edu, index) => (
-            <Card key={index} data-anim="slide" className="pixel-card border-0">
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
-                  <div>
-                    <h3 className="font-bold text-lg pixel-text">{edu.degree}</h3>
-                    <p className="opacity-70">{edu.institution}</p>
+            <AnimatedContent key={index} delay={index * 0.09} distance={55} ease="back.out(1.4)">
+              <Card className="pixel-card border-0">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
+                    <div>
+                      <h3 className="font-bold text-lg pixel-text">{edu.degree}</h3>
+                      <p className="opacity-70">{edu.institution}</p>
+                    </div>
+                    <Badge variant="outline" className="mt-1 sm:mt-0 pixel-badge">{edu.year}</Badge>
                   </div>
-                  <Badge variant="outline" className="mt-1 sm:mt-0 pixel-badge">{edu.year}</Badge>
-                </div>
-                <p className="text-sm opacity-70">{edu.description}</p>
-              </CardContent>
-            </Card>
+                  <p className="text-sm opacity-70">{edu.description}</p>
+                </CardContent>
+              </Card>
+            </AnimatedContent>
           ))}
         </div>
       </div>
@@ -127,20 +125,22 @@ export default function Resume() {
         <h2 data-anim="text" className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">Work Experience</h2>
         <div className="space-y-4 mt-4">
           {experience.map((exp, index) => (
-            <Card key={index} data-anim="slide" className="pixel-card border-0">
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
-                  <div>
-                    <h3 className="font-bold text-lg pixel-text">{exp.role}</h3>
-                    <p className="opacity-70">{exp.company}</p>
+            <AnimatedContent key={index} delay={index * 0.09} distance={55} ease="back.out(1.4)">
+              <Card className="pixel-card border-0">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
+                    <div>
+                      <h3 className="font-bold text-lg pixel-text">{exp.role}</h3>
+                      <p className="opacity-70">{exp.company}</p>
+                    </div>
+                    <Badge variant="outline" className="mt-1 sm:mt-0 pixel-badge">{exp.period}</Badge>
                   </div>
-                  <Badge variant="outline" className="mt-1 sm:mt-0 pixel-badge">{exp.period}</Badge>
-                </div>
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  {exp.achievements.map((a, i) => <li key={i} className="text-sm opacity-70">{a}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
+                  <ul className="list-disc pl-5 mt-2 space-y-1">
+                    {exp.achievements.map((a, i) => <li key={i} className="text-sm opacity-70">{a}</li>)}
+                  </ul>
+                </CardContent>
+              </Card>
+            </AnimatedContent>
           ))}
         </div>
       </div>
@@ -149,20 +149,22 @@ export default function Resume() {
         <h2 data-anim="text" className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">Leadership Experience</h2>
         <div className="space-y-4 mt-4">
           {leadership.map((lead, index) => (
-            <Card key={index} data-anim="slide" className="pixel-card border-0">
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
-                  <div>
-                    <h3 className="font-bold text-lg pixel-text">{lead.role}</h3>
-                    <p className="opacity-70">{lead.company}</p>
+            <AnimatedContent key={index} delay={index * 0.09} distance={55} ease="back.out(1.4)">
+              <Card className="pixel-card border-0">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
+                    <div>
+                      <h3 className="font-bold text-lg pixel-text">{lead.role}</h3>
+                      <p className="opacity-70">{lead.company}</p>
+                    </div>
+                    <Badge variant="outline" className="mt-1 sm:mt-0 pixel-badge">{lead.period}</Badge>
                   </div>
-                  <Badge variant="outline" className="mt-1 sm:mt-0 pixel-badge">{lead.period}</Badge>
-                </div>
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  {lead.achievements.map((a, i) => <li key={i} className="text-sm opacity-70">{a}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
+                  <ul className="list-disc pl-5 mt-2 space-y-1">
+                    {lead.achievements.map((a, i) => <li key={i} className="text-sm opacity-70">{a}</li>)}
+                  </ul>
+                </CardContent>
+              </Card>
+            </AnimatedContent>
           ))}
         </div>
       </div>
@@ -171,26 +173,28 @@ export default function Resume() {
         <h2 data-anim="text" className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">Skills</h2>
         <div className="grid gap-6 mt-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
           {skillCategories.map((cat, index) => (
-            <Card key={index} data-anim="pop" className="h-full pixel-card border-0">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="text-2xl">{cat.icon}</div>
-                  <h3 className="text-xl font-bold pixel-text">{cat.name}</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {cat.skills.map((skill, i) => (
-                    <Badge key={i} variant="secondary" className="text-sm py-1 pixel-badge hover:bg-[var(--cute-highlight)]">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <AnimatedContent key={index} delay={index * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+              <Card className="h-full pixel-card border-0">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="text-2xl">{cat.icon}</div>
+                    <h3 className="text-xl font-bold pixel-text">{cat.name}</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {cat.skills.map((skill, i) => (
+                      <Badge key={i} variant="secondary" className="text-sm py-1 pixel-badge hover:bg-[var(--cute-highlight)]">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedContent>
           ))}
         </div>
       </div>
 
-      <div data-anim="slide">
+      <AnimatedContent distance={55} ease="back.out(1.4)">
         <h2 className="text-2xl font-bold mb-4 pixel-title border-b-2 border-[var(--cute-text)] inline-block">Interests</h2>
         <Card className="pixel-card border-0">
           <CardContent className="pt-6">
@@ -204,7 +208,7 @@ export default function Resume() {
             </ul>
           </CardContent>
         </Card>
-      </div>
+      </AnimatedContent>
     </div>
   )
 }

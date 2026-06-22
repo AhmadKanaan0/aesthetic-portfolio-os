@@ -119,33 +119,67 @@ export function animateSlideLeft(els: Element[], root: Root): IntersectionObserv
   ))
 }
 
+function splitWords(el: Element, cls: string) {
+  const text = el.textContent?.trim() || ""
+  const words = text.split(/\s+/).filter(Boolean)
+  if (!words.length) return []
+  el.innerHTML = words
+    .map(w => `<span class="${cls}" style="display:inline-block;will-change:transform,filter,opacity">${w}</span>`)
+    .join(" ")
+  return Array.from(el.querySelectorAll<HTMLElement>(`.${cls}`))
+}
+
 export function animateTextReveal(els: Element[], root: Root): IntersectionObserver[] {
-  if (reduced()) { els.forEach(el => gsap.set(el, { opacity: 1 })); return [] }
+  if (reduced()) { els.forEach(el => gsap.set(el, { opacity: 1, filter: "blur(0px)" })); return [] }
 
   const ios: IntersectionObserver[] = []
 
   for (const el of els) {
-    const text = el.textContent?.trim() || ""
-    const words = text.split(/\s+/).filter(Boolean)
-    if (!words.length) continue
+    const spans = splitWords(el, "tw")
+    if (!spans.length) continue
 
-    el.innerHTML = words
-      .map(w => `<span style="display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:0.05em"><span class="tw" style="display:inline-block">${w}</span></span>`)
-      .join(" ")
-
-    const spans = Array.from(el.querySelectorAll<HTMLElement>(".tw"))
-    gsap.set(spans, { y: "110%", opacity: 0 })
+    gsap.set(spans, { filter: "blur(10px)", opacity: 0, y: -18 })
 
     const io = observe(
       el, root,
-      () => gsap.to(spans, { y: "0%", opacity: 1, duration: 0.6, stagger: 0.06,  ease: "power3.out", overwrite: true }),
-      (wentAbove) => {
-        if (wentAbove) {
-          gsap.to(spans, { y: "-110%", opacity: 0, duration: 0.25, stagger: -0.03, ease: "power2.in", overwrite: true })
-        } else {
-          gsap.to(spans, { y: "110%",  opacity: 0, duration: 0.25, stagger: 0.03,  ease: "power2.in", overwrite: true })
-        }
-      },
+      () => gsap.to(spans, {
+        filter: "blur(0px)", opacity: 1, y: 0,
+        duration: 0.65, stagger: 0.07, ease: "power3.out", overwrite: true,
+      }),
+      (wentAbove) => gsap.to(spans, {
+        filter: "blur(8px)", opacity: 0,
+        y: wentAbove ? -18 : 18,
+        duration: 0.25, stagger: wentAbove ? -0.03 : 0.03, ease: "power2.in", overwrite: true,
+      }),
+    )
+    ios.push(io)
+  }
+
+  return ios
+}
+
+export function animateBlurText(els: Element[], root: Root, stagger = 0): IntersectionObserver[] {
+  if (reduced()) { els.forEach(el => gsap.set(el, { opacity: 1, filter: "blur(0px)" })); return [] }
+
+  const ios: IntersectionObserver[] = []
+
+  for (const el of els) {
+    const spans = splitWords(el, "btw")
+    if (!spans.length) continue
+
+    gsap.set(spans, { filter: "blur(8px)", opacity: 0, y: 12 })
+
+    const io = observe(
+      el, root,
+      () => gsap.to(spans, {
+        filter: "blur(0px)", opacity: 1, y: 0,
+        duration: 0.55, stagger: 0.045, delay: stagger, ease: "power2.out", overwrite: true,
+      }),
+      (wentAbove) => gsap.to(spans, {
+        filter: "blur(6px)", opacity: 0,
+        y: wentAbove ? -12 : 12,
+        duration: 0.22, stagger: wentAbove ? -0.02 : 0.02, ease: "power2.in", overwrite: true,
+      }),
     )
     ios.push(io)
   }

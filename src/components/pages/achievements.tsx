@@ -1,41 +1,22 @@
-import { useRef, useContext } from "react"
-import { useGSAP } from "@gsap/react"
-import { gsap } from "gsap"
+import { useContext } from "react"
 import HappyCat from "@/assets/happy-cat.gif"
 import { useAchievements, ACHIEVEMENTS } from "@/components/achievement-context"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateScale, animateSlideUp, animatePop, animateFade, animateTextReveal } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 
 export default function Achievements() {
-  const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useContext(ScrollContainerContext)
-
-  useGSAP(() => {
-    if (!containerRef.current) return
-    const c = containerRef.current
-    const root = scrollContainerRef?.current ?? null
-
-    const ios = [
-      ...animateScale(gsap.utils.toArray('[data-anim="scale"]', c), root),
-      ...animateSlideUp(gsap.utils.toArray('[data-anim="slide"]', c), root),
-      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.05),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
-      ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
-    ]
-
-    return () => ios.forEach(io => io.disconnect())
-  }, { scope: containerRef, dependencies: [] })
-
   const { unlocked } = useAchievements()
   const total = ACHIEVEMENTS.length
   const count = unlocked.size
   const pct = Math.round((count / total) * 100)
 
   return (
-    <div ref={containerRef} className="pixel-achievement-screen min-h-full p-4 space-y-5">
+    <div className="pixel-achievement-screen min-h-full p-4 space-y-5">
 
-      <div
-        data-anim="scale"
+      <AnimatedContent
+        scale={0.82}
+        ease="back.out(1.7)"
         className="relative p-5 text-center"
         style={{ border: "4px solid var(--cute-text)", boxShadow: "7px 7px 0 var(--cute-text)", background: "var(--card-bg)" }}
       >
@@ -58,9 +39,9 @@ export default function Achievements() {
             {pct}% COMPLETE
           </div>
         </div>
-      </div>
+      </AnimatedContent>
 
-      <div data-anim="slide">
+      <AnimatedContent distance={55} ease="back.out(1.4)">
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-[11px] font-bold tracking-widest" style={{ color: "var(--cute-text)" }}>▸ EXP POINTS</span>
           <span className="text-[11px] font-bold opacity-50">{count} / {total}</span>
@@ -72,24 +53,30 @@ export default function Achievements() {
               style={{ background: i < count ? "var(--cute-text)" : "var(--cute-highlight)", transition: `background-color 0.35s ease ${i * 35}ms` }} />
           ))}
         </div>
-      </div>
+      </AnimatedContent>
 
       <div className="space-y-3">
-        <div data-anim="slide"
+        <AnimatedContent
+          distance={55}
+          ease="back.out(1.4)"
           className="flex items-center gap-2 px-3 py-2 text-xs font-bold tracking-widest"
-          style={{ border: "2px solid var(--cute-text)", background: "var(--cute-text)", color: "var(--cute-on-text)", boxShadow: "3px 3px 0 rgba(0,0,0,0.25)" }}>
+          style={{ border: "2px solid var(--cute-text)", background: "var(--cute-text)", color: "var(--cute-on-text)", boxShadow: "3px 3px 0 rgba(0,0,0,0.25)" }}
+        >
           <span>🏆</span>
           <span>TROPHY CASE</span>
           <span className="ml-auto opacity-60">▾</span>
-        </div>
+        </AnimatedContent>
 
         <div className="grid grid-cols-2 gap-3">
-          {ACHIEVEMENTS.map((a) => {
+          {ACHIEVEMENTS.map((a, index) => {
             const isUnlocked = unlocked.has(a.id)
             return (
-              <div
+              <AnimatedContent
                 key={a.id}
-                data-anim="pop"
+                delay={index * 0.05}
+                distance={18}
+                scale={0.78}
+                ease="back.out(1.7)"
                 className="pixel-achievement-card relative h-full"
                 style={{
                   border: "3px solid var(--cute-text)",
@@ -119,16 +106,19 @@ export default function Achievements() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </AnimatedContent>
             )
           })}
         </div>
       </div>
 
-      <div data-anim="fade" className="text-center py-2 text-[9px] tracking-[0.35em] uppercase opacity-35"
-        style={{ borderTop: "2px solid var(--cute-text)" }}>
+      <AnimatedContent
+        distance={0}
+        className="text-center py-2 text-[9px] tracking-[0.35em] uppercase opacity-35"
+        style={{ borderTop: "2px solid var(--cute-text)" }}
+      >
         © AHMAD KANAAN — ALL RIGHTS RESERVED
-      </div>
+      </AnimatedContent>
     </div>
   )
 }

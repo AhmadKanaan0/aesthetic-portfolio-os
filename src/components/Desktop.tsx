@@ -17,8 +17,9 @@ import { MobileIcon } from "./MobileIcon";
 import { Taskbar } from "./Taskbar";
 import MenuBar from "./MenuBar";
 import MusicPlayerWidget from "./MusicPlayerWidget";
-import AchievementToast from "./AchievementToast";
+import { Toaster } from "@/components/ui/sonner";
 import Wallpaper from "../assets/wallpaper.jpg";
+import MobileWallpaper from "../assets/MobileWallpaper.jpg";
 import Project from "../assets/project.png";
 import LinkIcon from "../assets/Links.png";
 import Phone from "../assets/phone.png";
@@ -63,6 +64,7 @@ function DesktopInner() {
   };
 
   const isDesktop = useMediaQuery("(min-width: 650px)");
+  const [viewportW, setViewportW] = useState(() => window.innerWidth);
   const [greeting, setGreeting] = useState("Good morning");
   const greetingRef = useRef<HTMLDivElement>(null);
   const greetingImageRef = useRef<HTMLImageElement>(null);
@@ -122,6 +124,12 @@ function DesktopInner() {
     else setGreeting("Good evening");
   }, []);
 
+  useEffect(() => {
+    const onResize = () => setViewportW(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const [desktopApps, setDesktopApps] = useState([
     { id: "about", label: "About me", icon: About },
     { id: "resume", label: "Resume", icon: ResumeIcon },
@@ -132,6 +140,15 @@ function DesktopInner() {
     { id: "achievements", label: "Achievements", icon: JellyfishIcon },
     { id: "terminal", label: "Terminal", icon: TerminalIcon },
   ]);
+
+  // 50px icon + 8px gap = 58px per slot; ~20px dock padding; 48px viewport margin
+  const maxFit = Math.floor((viewportW - 68 + 8) / 58);
+  const taskbarVisible = maxFit >= desktopApps.length
+    ? desktopApps
+    : desktopApps.slice(0, Math.max(1, maxFit - 1));
+  const taskbarOverflow = maxFit >= desktopApps.length
+    ? []
+    : desktopApps.slice(Math.max(1, maxFit - 1));
 
   const [openWindows, setOpenWindows] = useState<WindowData[]>([]);
   const [activeAppId, setActiveAppId] = useState<string | null>(null);
@@ -392,10 +409,11 @@ function DesktopInner() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div
-            className="w-screen h-screen overflow-hidden bg-cover bg-center"
-            style={{ backgroundImage: `url(${Wallpaper})` }}
-          >
+          <div className="w-screen h-screen overflow-hidden relative">
+            <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
+              style={{ backgroundImage: `url(${Wallpaper})`, opacity: isDesktop ? 1 : 0 }} />
+            <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
+              style={{ backgroundImage: `url(${MobileWallpaper})`, opacity: isDesktop ? 0 : 1 }} />
             {/* Page transition overlay — fades out on mount */}
             <div
               ref={pageOverlayRef}
@@ -458,7 +476,8 @@ function DesktopInner() {
                 </div>
                 <MusicPlayerWidget isDesktop={true} />
                 <Taskbar
-                  apps={desktopApps}
+                  apps={taskbarVisible}
+                  overflowApps={taskbarOverflow}
                   openWindows={openWindows}
                   onAppClick={handleAppClick}
                 />
@@ -622,7 +641,7 @@ function DesktopInner() {
               </AppWindow>
             ))}
 
-            <AchievementToast />
+            <Toaster position="top-right" richColors />
           </div>
 
           <DragOverlay dropAnimation={{ duration: 180, easing: "ease" }}>

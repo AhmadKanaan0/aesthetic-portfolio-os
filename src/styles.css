@@ -934,3 +934,12 @@ code {
   50%  { background-position: 100% 100%; }
   100% { background-position: 0% 0%; }
 }
+
+/* Disable sonner's built-in animation on custom toasts — GSAP handles it */
+[data-sonner-toast][data-styled="false"] {
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+}

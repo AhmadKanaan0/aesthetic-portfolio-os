@@ -1,4 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { gsap } from 'gsap'
+import HappyCat from '@/assets/happy-cat.gif'
 
 export type AchievementId =
   | 'first_window' | 'about_me' | 'resume' | 'projects' | 'blog' | 'links' | 'contact'
@@ -30,14 +33,57 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'hire_me', name: 'Bold Move!', description: 'You ran sudo hire-ahmad 👀 nice.', icon: '💼' },
 ]
 
+function AchievementToastContent({ toastId, achievement }: { toastId: string | number, achievement: Achievement }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    gsap.fromTo(el,
+      { x: 140, opacity: 0, scale: 0.88 },
+      { x: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }
+    )
+
+    const timer = setTimeout(() => {
+      if (!ref.current) { toast.dismiss(toastId); return }
+      gsap.to(ref.current, {
+        x: 140, opacity: 0, scale: 0.88,
+        duration: 0.4, ease: 'back.in(1.7)',
+        onComplete: () => { toast.dismiss(toastId) },
+      })
+    }, 3500)
+
+    return () => clearTimeout(timer)
+  }, [toastId])
+
+  return (
+    <div ref={ref} className="w-72" style={{ willChange: 'transform, opacity' }}>
+      <div className="liquidGlass-wrapper" style={{ borderRadius: '1rem' }}>
+        <div className="liquidGlass-effect" style={{ borderRadius: '1rem' }} />
+        <div className="liquidGlass-tint" style={{ borderRadius: '1rem' }} />
+        <div className="liquidGlass-shine" style={{ borderRadius: '1rem' }} />
+        <div className="liquidGlass-content p-3 flex items-center gap-3">
+          <img src={HappyCat} alt="happy cat" className="w-12 h-12 rounded-xl flex-shrink-0 object-cover" />
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-[#74defc] uppercase tracking-widest mb-0.5">
+              ✨ Achievement Unlocked!
+            </p>
+            <p className="font-bold text-sm text-white leading-tight">{achievement.name}</p>
+            <p className="text-xs text-white/70 leading-snug line-clamp-2">{achievement.description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const STORAGE_KEY = 'portfolio-achievements'
 
 type AchievementContextType = {
   achievements: Achievement[]
   unlocked: Set<AchievementId>
   unlock: (id: AchievementId) => void
-  toastQueue: Achievement[]
-  dismissToast: () => void
 }
 
 const AchievementContext = createContext<AchievementContextType | undefined>(undefined)
@@ -52,7 +98,6 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     }
   })
 
-  const [toastQueue, setToastQueue] = useState<Achievement[]>([])
   const prevUnlockedRef = useRef<Set<AchievementId>>(new Set(unlocked))
 
   const unlock = useCallback((id: AchievementId) => {
@@ -67,21 +112,18 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     const newlyUnlocked = [...unlocked].filter(id => !prevUnlockedRef.current.has(id))
-    if (newlyUnlocked.length > 0) {
-      const newAchievements = newlyUnlocked
-        .map(id => ACHIEVEMENTS.find(a => a.id === id))
-        .filter((a): a is Achievement => !!a)
-      setToastQueue(q => [...q, ...newAchievements])
-    }
+    newlyUnlocked.forEach(id => {
+      const a = ACHIEVEMENTS.find(x => x.id === id)
+      if (!a) return
+      toast.custom(toastId => (
+        <AchievementToastContent toastId={toastId} achievement={a} />
+      ), { duration: Infinity })
+    })
     prevUnlockedRef.current = new Set(unlocked)
   }, [unlocked])
 
-  const dismissToast = useCallback(() => {
-    setToastQueue(q => q.slice(1))
-  }, [])
-
   return (
-    <AchievementContext.Provider value={{ achievements: ACHIEVEMENTS, unlocked, unlock, toastQueue, dismissToast }}>
+    <AchievementContext.Provider value={{ achievements: ACHIEVEMENTS, unlocked, unlock }}>
       {children}
     </AchievementContext.Provider>
   )

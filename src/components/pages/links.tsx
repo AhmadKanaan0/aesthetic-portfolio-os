@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Github, Linkedin, Twitter, Instagram, Youtube, Globe, Mail, FileText, Bookmark } from "lucide-react"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateScale, animateSlideUp, animatePop, animateFade, animateTextReveal } from "@/lib/animations"
+import { animateTextReveal, animateBlurText } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 
 export default function Links() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -15,15 +16,10 @@ export default function Links() {
     if (!containerRef.current) return
     const c = containerRef.current
     const root = scrollContainerRef?.current ?? null
-
     const ios = [
-      ...animateScale(gsap.utils.toArray('[data-anim="scale"]', c), root),
-      ...animateSlideUp(gsap.utils.toArray('[data-anim="slide"]', c), root),
-      ...animatePop(gsap.utils.toArray('[data-anim="pop"]', c), root, 0.07),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
+      ...animateBlurText(gsap.utils.toArray('p[data-anim="fade"]', c), root),
       ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
     ]
-
     return () => ios.forEach(io => io.disconnect())
   }, { scope: containerRef, dependencies: [] })
 
@@ -54,12 +50,14 @@ export default function Links() {
         </h2>
         <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}>
           {socialLinks.map((link, index) => (
-            <a key={index} data-anim="pop" href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-              <Button variant="default" className={`w-full ${link.color} text-white rounded-none border-2 border-black shadow-[2px_2px_0px_rgba(0,0,0,0.2)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_rgba(0,0,0,0.2)] transition-all`}>
-                {link.icon}
-                <span className="ml-2">{link.name}</span>
-              </Button>
-            </a>
+            <AnimatedContent key={index} delay={index * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+              <a href={link.url} target="_blank" rel="noopener noreferrer" className="block">
+                <Button variant="default" className={`w-full ${link.color} text-white rounded-none border-2 border-black shadow-[2px_2px_0px_rgba(0,0,0,0.2)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_rgba(0,0,0,0.2)] transition-all`}>
+                  {link.icon}
+                  <span className="ml-2">{link.name}</span>
+                </Button>
+              </a>
+            </AnimatedContent>
           ))}
         </div>
       </div>
@@ -70,22 +68,24 @@ export default function Links() {
         </h2>
         <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
           {projectLinks.map((link, index) => (
-            <Card key={index} data-anim="pop" className="h-full hover:shadow-md transition-shadow pixel-card border-0">
-              <CardContent className="p-4">
-                <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3">
-                  <div className="bg-[var(--cute-highlight)] p-2 rounded-none shrink-0 border-2 border-[var(--cute-text)] text-[var(--cute-text)]">{link.icon}</div>
-                  <div>
-                    <h3 className="font-medium pixel-text">{link.name}</h3>
-                    <p className="text-sm opacity-70">{link.description}</p>
-                  </div>
-                </a>
-              </CardContent>
-            </Card>
+            <AnimatedContent key={index} delay={index * 0.07} distance={18} scale={0.78} ease="back.out(1.7)">
+              <Card className="h-full hover:shadow-md transition-shadow pixel-card border-0">
+                <CardContent className="p-4">
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3">
+                    <div className="bg-[var(--cute-highlight)] p-2 rounded-none shrink-0 border-2 border-[var(--cute-text)] text-[var(--cute-text)]">{link.icon}</div>
+                    <div>
+                      <h3 className="font-medium pixel-text">{link.name}</h3>
+                      <p className="text-sm opacity-70">{link.description}</p>
+                    </div>
+                  </a>
+                </CardContent>
+              </Card>
+            </AnimatedContent>
           ))}
         </div>
       </div>
 
-      <div data-anim="fade" className="text-center">
+      <AnimatedContent distance={0} className="text-center">
         <Card className="bg-[var(--cute-bg)] border-2 border-dashed border-[var(--cute-text)] rounded-none shadow-none">
           <CardContent className="p-6">
             <Mail className="h-8 w-8 mx-auto mb-2 text-[var(--cute-text)]" />
@@ -96,7 +96,7 @@ export default function Links() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </AnimatedContent>
     </div>
   )
 }

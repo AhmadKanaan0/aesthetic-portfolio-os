@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Send, Linkedin, Github, Twitter } from "lucide-react"
 import { ScrollContainerContext } from "@/components/animated-section"
-import { animateScale, animateSlideRight, animateSlideLeft, animateFade, animateTextReveal } from "@/lib/animations"
+import { animateTextReveal, animateBlurText } from "@/lib/animations"
+import AnimatedContent from "@/components/AnimatedContent"
 import { useAppSound } from "@/components/sound-context"
 import emailjs from "@emailjs/browser"
 
@@ -21,15 +22,10 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
     if (!containerRef.current) return
     const c = containerRef.current
     const root = scrollContainerRef?.current ?? null
-
     const ios = [
-      ...animateScale(gsap.utils.toArray('[data-anim="scale"]', c), root),
-      ...animateSlideRight(gsap.utils.toArray('[data-anim="right"]', c), root),
-      ...animateSlideLeft(gsap.utils.toArray('[data-anim="left"]', c), root),
-      ...animateFade(gsap.utils.toArray('[data-anim="fade"]', c), root),
+      ...animateBlurText(gsap.utils.toArray('p[data-anim="fade"]', c), root),
       ...animateTextReveal(gsap.utils.toArray('[data-anim="text"]', c), root),
     ]
-
     return () => ios.forEach(io => io.disconnect())
   }, { scope: containerRef, dependencies: [] })
 
@@ -89,7 +85,7 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
       </div>
 
       <div className={`grid ${isMultiColumn ? "grid-cols-3" : "grid-cols-1"} gap-8`}>
-        <div data-anim="right" className={`${isMultiColumn ? "col-span-1" : ""} space-y-6`}>
+        <AnimatedContent direction="horizontal" reverse distance={55} ease="back.out(1.4)" className={`${isMultiColumn ? "col-span-1" : ""} space-y-6`}>
           {contactInfo.map((info, index) => (
             <Card key={index} className="hover:shadow-md transition-shadow border-0 pixel-card">
               <CardContent className="p-4 flex items-center gap-4">
@@ -127,9 +123,9 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
               ))}
             </div>
           </div>
-        </div>
+        </AnimatedContent>
 
-        <div data-anim="left" className={isMultiColumn ? "col-span-2" : ""}>
+        <AnimatedContent direction="horizontal" distance={55} ease="back.out(1.4)" className={isMultiColumn ? "col-span-2" : ""}>
           <Card className="border-0 pixel-card">
             <CardContent className="p-6">
               {isSubmitted ? (
@@ -176,16 +172,16 @@ export default function Contact({ windowWidth }: { windowWidth?: number }) {
               )}
             </CardContent>
           </Card>
-        </div>
+        </AnimatedContent>
       </div>
 
-      <div data-anim="fade" className="mt-8 rounded-none overflow-hidden h-64 border-2 border-[var(--cute-text)]">
+      <AnimatedContent distance={0} className="mt-8 rounded-none overflow-hidden h-64 border-2 border-[var(--cute-text)]">
         <iframe
           title="Map"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d100939.98555098464!2d-122.50764017948551!3d37.75781499657633!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80859a6d00690021%3A0x4a501367f076adff!2sSan%20Francisco%2C%20CA!5e0!3m2!1sen!2sus!4v1652813309840!5m2!1sen!2sus"
           width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
         />
-      </div>
+      </AnimatedContent>
     </div>
   )
 }
