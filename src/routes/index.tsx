@@ -9,6 +9,8 @@ import { SoundProvider, useAppSound } from "@/components/sound-context";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import Wallpaper from "../assets/lockscreen.jpg";
+import MobileWallpaper from "../assets/MobileLockscreen.jpg";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -23,11 +25,14 @@ function LoginScreen() {
   const router = useRouter();
   const { playClickSound, playErrorSound, playSuccessSound } = useAppSound();
 
+  const isDesktop = useMediaQuery("(min-width: 650px)");
+
   const timeRef = useRef<HTMLHeadingElement>(null);
   const dateRef = useRef<HTMLParagraphElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const loginCardRef = useRef<HTMLDivElement>(null);
+  const xButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -174,23 +179,25 @@ function LoginScreen() {
     // Login card animation
     if (showLogin && loginCardRef.current) {
       if (prefersReducedMotion) {
-        gsap.fromTo(
-          loginCardRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.3, delay: 0.2 }
-        );
+        gsap.fromTo(loginCardRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.2 });
       } else {
         gsap.fromTo(
           loginCardRef.current,
           { opacity: 0, scale: 0.8, y: 20 },
-          {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.5,
-            delay: 0.2,
-            ease: "back.out(1.7)",
-          }
+          { opacity: 1, scale: 1, y: 0, duration: 0.5, delay: 0.2, ease: "back.out(1.7)" }
+        );
+      }
+    }
+
+    // X button animation
+    if (showLogin && xButtonRef.current) {
+      if (prefersReducedMotion) {
+        gsap.fromTo(xButtonRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.35 });
+      } else {
+        gsap.fromTo(
+          xButtonRef.current,
+          { opacity: 0, scale: 0, rotate: -90 },
+          { opacity: 1, scale: 1, rotate: 0, duration: 0.45, delay: 0.35, ease: "back.out(2)" }
         );
       }
     }
@@ -214,10 +221,13 @@ function LoginScreen() {
     <>
       <div
         ref={containerRef}
-        className="relative flex flex-col items-center justify-center w-full min-h-screen overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url(${Wallpaper})` }}
+        className="relative flex flex-col items-center justify-center w-full min-h-screen overflow-hidden"
         onClick={handleScreenClick}
       >
+        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
+          style={{ backgroundImage: `url(${Wallpaper})`, opacity: isDesktop ? 1 : 0 }} />
+        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
+          style={{ backgroundImage: `url(${MobileWallpaper})`, opacity: isDesktop ? 0 : 1 }} />
         {/* Time display */}
         <div className="flex flex-col items-center">
           <h1 ref={timeRef} className="text-6xl font-bold text-blue-800 mb-2">
@@ -238,7 +248,7 @@ function LoginScreen() {
             className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div ref={loginCardRef} className="liquidGlass-wrapper lockscreen-card w-64">
+            <div ref={loginCardRef} className="liquidGlass-wrapper lockscreen-card w-64" style={{ opacity: 0 }}>
               <div className="liquidGlass-effect" />
               <div className="liquidGlass-tint" />
               <div className="liquidGlass-shine" />
@@ -287,7 +297,9 @@ function LoginScreen() {
             </div>
 
             <button
+              ref={xButtonRef}
               className="liquidGlass-wrapper lockscreen-cancel mt-4 cursor-pointer p-0"
+              style={{ opacity: 0 }}
               onClick={handleCancel}
             >
               <div className="liquidGlass-effect" />
