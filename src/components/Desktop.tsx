@@ -638,7 +638,7 @@ function DesktopInner() {
               </AppWindow>
             ))}
 
-            <Toaster position="top-right" richColors />
+            <Toaster position={isDesktop ? "top-right" : "top-center"} />
           </div>
 
           <DragOverlay dropAnimation={{ duration: 180, easing: "ease" }}>

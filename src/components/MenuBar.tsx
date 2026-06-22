@@ -25,13 +25,13 @@ export default function MenuBar() {
           <div className="flex items-center gap-4">
             <div className="font-bold flex items-center">
               <img src={HalloGif} alt="Logo" className="h-7 w-8 mr-2" />
-              <p>Ahmad kanaan</p>
+              <p className="text-slate-200">Ahmad kanaan</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <SoundSettings />
             <ModeToggle />
-            <span>{format(currentTime, "EEE d MMM h:mm a")}</span>
+            <span className="text-slate-200">{format(currentTime, "EEE d MMM h:mm a")}</span>
           </div>
         </div>
       </div>

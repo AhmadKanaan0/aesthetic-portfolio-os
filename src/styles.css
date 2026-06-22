@@ -941,4 +941,9 @@ code {
   transform: none !important;
   opacity: 1 !important;
   transition: none !important;
+  width: fit-content !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }

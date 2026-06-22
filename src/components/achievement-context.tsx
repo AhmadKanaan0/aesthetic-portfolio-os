@@ -33,7 +33,9 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'hire_me', name: 'Bold Move!', description: 'You ran sudo hire-ahmad 👀 nice.', icon: '💼' },
 ]
 
-function AchievementToastContent({ toastId, achievement }: { toastId: string | number, achievement: Achievement }) {
+// ── Desktop toast (liquid glass, slides from right) ─────────────────────────
+
+function DesktopToastContent({ toastId, achievement }: { toastId: string | number, achievement: Achievement }) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -66,9 +68,7 @@ function AchievementToastContent({ toastId, achievement }: { toastId: string | n
         <div className="liquidGlass-content p-3 flex items-center gap-3">
           <img src={HappyCat} alt="happy cat" className="w-12 h-12 rounded-xl flex-shrink-0 object-cover" />
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-[#74defc] uppercase tracking-widest mb-0.5">
-              ✨ Achievement Unlocked!
-            </p>
+            <p className="text-[10px] font-bold text-[#74defc] uppercase tracking-widest mb-0.5">✨ Achievement Unlocked!</p>
             <p className="font-bold text-sm text-white leading-tight">{achievement.name}</p>
             <p className="text-xs text-white/70 leading-snug line-clamp-2">{achievement.description}</p>
           </div>
@@ -77,6 +77,74 @@ function AchievementToastContent({ toastId, achievement }: { toastId: string | n
     </div>
   )
 }
+
+// ── Mobile toast (Dynamic Island pill, fixed-centered at top) ────────────────
+
+function MobileDynamicToast({ achievement, onDone }: { achievement: Achievement, onDone: () => void }) {
+  const pillRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const pill = pillRef.current
+    const content = contentRef.current
+    if (!pill || !content) return
+
+    const expandedWidth = Math.min(300, window.innerWidth - 32)
+
+    gsap.set(pill, { width: 110, height: 34, borderRadius: 100 })
+    gsap.set(content, { opacity: 0 })
+
+    const tl = gsap.timeline()
+    tl.to(pill, { width: expandedWidth, height: 78, borderRadius: 22, duration: 0.55, ease: 'back.out(1.7)' })
+      .to(content, { opacity: 1, duration: 0.25, ease: 'power2.out' }, '-=0.1')
+
+    const timer = setTimeout(() => {
+      gsap.timeline()
+        .to(content, { opacity: 0, duration: 0.2 })
+        .to(pill, { width: 110, height: 34, borderRadius: 100, duration: 0.4, ease: 'back.in(1.7)' })
+        .to(pill, { y: -60, opacity: 0, duration: 0.3, ease: 'power2.in', onComplete: onDone })
+    }, 3500)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  const expandedWidth = Math.min(300, window.innerWidth - 32)
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 12,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 99999,
+        display: 'flex',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        ref={pillRef}
+        className="liquidGlass-wrapper"
+        style={{ willChange: 'width, height, border-radius, opacity, transform' }}
+      >
+        <div className="liquidGlass-effect" style={{ borderRadius: 'inherit' }} />
+        <div className="liquidGlass-tint" style={{ borderRadius: 'inherit' }} />
+        <div className="liquidGlass-shine" style={{ borderRadius: 'inherit' }} />
+        <div ref={contentRef} className="liquidGlass-content flex items-center gap-3 px-4" style={{ width: expandedWidth, minHeight: 78 }}>
+          <span className="text-2xl flex-shrink-0">{achievement.icon}</span>
+          <div className="min-w-0">
+            <p className="text-[9px] font-bold text-[#74defc] uppercase tracking-widest mb-0.5">✨ Achievement Unlocked!</p>
+            <p className="font-bold text-sm text-white leading-tight">{achievement.name}</p>
+            <p className="text-[11px] text-white/60 leading-snug line-clamp-1">{achievement.description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Context ──────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'portfolio-achievements'
 
@@ -98,6 +166,7 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     }
   })
 
+  const [mobileQueue, setMobileQueue] = useState<Achievement[]>([])
   const prevUnlockedRef = useRef<Set<AchievementId>>(new Set(unlocked))
 
   const unlock = useCallback((id: AchievementId) => {
@@ -115,16 +184,29 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     newlyUnlocked.forEach(id => {
       const a = ACHIEVEMENTS.find(x => x.id === id)
       if (!a) return
-      toast.custom(toastId => (
-        <AchievementToastContent toastId={toastId} achievement={a} />
-      ), { duration: Infinity })
+      if (window.innerWidth < 650) {
+        setMobileQueue(q => [...q, a])
+      } else {
+        toast.custom(toastId => (
+          <DesktopToastContent toastId={toastId} achievement={a} />
+        ), { duration: Infinity })
+      }
     })
     prevUnlockedRef.current = new Set(unlocked)
   }, [unlocked])
 
+  const current = mobileQueue[0]
+
   return (
     <AchievementContext.Provider value={{ achievements: ACHIEVEMENTS, unlocked, unlock }}>
       {children}
+      {current && (
+        <MobileDynamicToast
+          key={current.id}
+          achievement={current}
+          onDone={() => setMobileQueue(q => q.slice(1))}
+        />
+      )}
     </AchievementContext.Provider>
   )
 }

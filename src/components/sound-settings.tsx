@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Volume2, VolumeX, Gamepad2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -14,45 +14,23 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from "@/components/ui/drawer"
-import SliderIcon from "../assets/SliderIcon.png";
+import SliderIcon from "../assets/SliderIcon.png"
 
-export function SoundSettings() {
-  const {
-    isSoundEnabled,
-    setSoundEnabled,
-    volume,
-    setVolume,
-    playClickSound,
-    playPowerUpSound,
-    playMenuSound
-  } = useAppSound()
+interface SoundContentProps {
+  isSoundEnabled: boolean
+  volume: number
+  onToggle: () => void
+  onVolumeChange: (value: number[]) => void
+  onVolumeCommit: () => void
+  onTest: () => void
+}
 
-  const [open, setOpen] = useState(false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
-
-  const handleToggleSound = () => {
-    setSoundEnabled(!isSoundEnabled)
-    if (!isSoundEnabled) {
-      setTimeout(() => playPowerUpSound(), 100)
-    }
-  }
-
-  const handleVolumeChange = (value: number[]) => {
-    setVolume(value[0])
-    playClickSound()
-  }
-
-  const handleTestSounds = () => {
-    playMenuSound()
-    setTimeout(() => playClickSound(), 200)
-    setTimeout(() => playPowerUpSound(), 400)
-  }
-
-  const SoundContent = () => (
+function SoundContent({ isSoundEnabled, volume, onToggle, onVolumeChange, onVolumeCommit, onTest }: SoundContentProps) {
+  return (
     <div className="liquidGlass-wrapper dropdown">
-      <div className="liquidGlass-effect"></div>
-      <div className="liquidGlass-tint"></div>
-      <div className="liquidGlass-shine"></div>
+      <div className="liquidGlass-effect" />
+      <div className="liquidGlass-tint" />
+      <div className="liquidGlass-shine" />
       <div className="liquidGlass-content p-4">
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-3">
@@ -65,7 +43,7 @@ export function SoundSettings() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleToggleSound}
+              onClick={onToggle}
               className="h-8 text-slate-900 border-white/20 bg-sky-500/20 hover:bg-sky-500/30 hover:text-slate-900"
             >
               {isSoundEnabled ? 'On' : 'Off'}
@@ -77,33 +55,28 @@ export function SoundSettings() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-900">Volume</span>
-                  <span className="text-xs text-slate-700">
-                    {Math.round(volume * 100)}%
-                  </span>
+                  <span className="text-xs text-slate-700">{Math.round(volume * 100)}%</span>
                 </div>
                 <Slider
                   value={[volume]}
                   max={1}
                   min={0}
-                  step={0.1}
+                  step={0.01}
                   className="cursor-pointer w-full"
-                  onValueChange={handleVolumeChange}
+                  onValueChange={onVolumeChange}
+                  onValueCommit={onVolumeCommit}
                   trackClassName="bg-[#ccf2fc]"
                   rangeClassName="bg-[#74defc]"
                   thumbClassName="h-8 w-8 flex items-center justify-center rounded-full"
                   thumb={
-                    <img
-                      src={SliderIcon}
-                      className="w-full h-full object-cover rounded-full"
-                      alt={"sliderIcon"}
-                    />
+                    <img src={SliderIcon} className="w-full h-full object-cover rounded-full" alt="sliderIcon" />
                   }
                 />
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleTestSounds}
+                onClick={onTest}
                 className="w-full text-xs text-slate-900 border-white/20 bg-sky-500/20 hover:bg-sky-500/30 hover:text-slate-900"
               >
                 🎮 Test Retro Sounds
@@ -118,33 +91,53 @@ export function SoundSettings() {
       </div>
     </div>
   )
+}
+
+export function SoundSettings() {
+  const { isSoundEnabled, setSoundEnabled, volume, setVolume, playClickSound, playPowerUpSound, playMenuSound } = useAppSound()
+  const [open, setOpen] = useState(false)
+  const isDesktop = useMediaQuery("(min-width: 768px)")
+
+  const handleToggle = () => {
+    setSoundEnabled(!isSoundEnabled)
+    if (!isSoundEnabled) setTimeout(() => playPowerUpSound(), 100)
+  }
+
+  const handleVolumeChange = (value: number[]) => setVolume(value[0])
+  const handleVolumeCommit = () => playClickSound()
+
+  const handleTest = () => {
+    playMenuSound()
+    setTimeout(() => playClickSound(), 200)
+    setTimeout(() => playPowerUpSound(), 400)
+  }
 
   const TriggerButton = (
     <Button
       variant="ghost"
       size="icon"
-      className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors"
+      className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-200 transition-colors"
     >
-      {isSoundEnabled ? (
-        <Volume2 className="h-5 w-5" />
-      ) : (
-        <VolumeX className="h-5 w-5" />
-      )}
+      {isSoundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
       <span className="sr-only">Retro sound settings</span>
     </Button>
   )
 
+  const contentProps = {
+    isSoundEnabled,
+    volume,
+    onToggle: handleToggle,
+    onVolumeChange: handleVolumeChange,
+    onVolumeCommit: handleVolumeCommit,
+    onTest: handleTest,
+  }
+
   if (isDesktop) {
     return (
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          {TriggerButton}
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="w-72 p-0 bg-transparent border-none shadow-none z-50"
-        >
-          <SoundContent />
+        <DropdownMenuTrigger asChild>{TriggerButton}</DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-72 p-0 bg-transparent border-none shadow-none z-50">
+          <SoundContent {...contentProps} />
         </DropdownMenuContent>
       </DropdownMenu>
     )
@@ -152,12 +145,10 @@ export function SoundSettings() {
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        {TriggerButton}
-      </DrawerTrigger>
+      <DrawerTrigger asChild>{TriggerButton}</DrawerTrigger>
       <DrawerContent className="bg-transparent border-none shadow-none">
         <div className="mx-auto w-full max-w-sm p-4">
-          <SoundContent />
+          <SoundContent {...contentProps} />
         </div>
       </DrawerContent>
     </Drawer>
