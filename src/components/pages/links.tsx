@@ -24,14 +24,14 @@ export default function Links() {
   }, { scope: containerRef, dependencies: [] })
 
   const socialLinks = [
-    { name: "GitHub",    url: "https://github.com/username",          icon: <Github    className="h-5 w-5" />, color: "bg-gray-900 hover:bg-gray-800"  },
-    { name: "LinkedIn",  url: "https://linkedin.com/in/username",     icon: <Linkedin  className="h-5 w-5" />, color: "bg-blue-600 hover:bg-blue-700"  },
+    { name: "GitHub",    url: "https://github.com/AhmadKanaan0",          icon: <Github    className="h-5 w-5" />, color: "bg-gray-900 hover:bg-gray-800"  },
+    { name: "LinkedIn",  url: "https://linkedin.com/in/ahmad-kanaan",     icon: <Linkedin  className="h-5 w-5" />, color: "bg-blue-600 hover:bg-blue-700"  },
     { name: "Twitter",   url: "https://twitter.com/username",         icon: <Twitter   className="h-5 w-5" />, color: "bg-sky-500 hover:bg-sky-600"    },
     { name: "Instagram", url: "https://instagram.com/username",       icon: <Instagram className="h-5 w-5" />, color: "bg-pink-600 hover:bg-pink-700"  },
   ]
 
   const projectLinks = [
-    { name: "Personal Blog",    url: "https://blog.example.com",         icon: <FileText  className="h-5 w-5" />, description: "Articles about web development and design"  },
+    { name: "Personal Blog",    url: "https://ahmadkanaan.hashnode.dev/",         icon: <FileText  className="h-5 w-5" />, description: "Articles about web development and design"  },
     { name: "Portfolio",        url: "https://portfolio.example.com",    icon: <Globe     className="h-5 w-5" />, description: "Showcase of my best work and projects"       },
     { name: "YouTube Channel",  url: "https://youtube.com/c/username",   icon: <Youtube   className="h-5 w-5" />, description: "Tutorials and coding livestreams"            },
     { name: "Bookmarks",        url: "https://links.example.com",        icon: <Bookmark  className="h-5 w-5" />, description: "Curated resources for developers"            },
@@ -84,19 +84,6 @@ export default function Links() {
           ))}
         </div>
       </div>
-
-      <AnimatedContent distance={0} className="text-center">
-        <Card className="bg-[var(--cute-bg)] border-2 border-dashed border-[var(--cute-text)] rounded-none shadow-none">
-          <CardContent className="p-6">
-            <Mail className="h-8 w-8 mx-auto mb-2 text-[var(--cute-text)]" />
-            <h2 className="text-xl font-bold mb-1 pixel-title">Get in Touch</h2>
-            <p className="opacity-80 mb-4">Have a project in mind or just want to say hello?</p>
-            <Button variant="default" className="rounded-none border-2 border-[var(--cute-text)] bg-[var(--cute-text)] text-white hover:bg-[var(--cute-text)]/90">
-              <Mail className="mr-2 h-4 w-4" /> Contact Me
-            </Button>
-          </CardContent>
-        </Card>
-      </AnimatedContent>
     </div>
   )
 }
