@@ -10,12 +10,19 @@ export function DesktopIcon({
   label,
   icon,
   onDoubleClick,
+  onSelect,
+  isSelected = false,
   isBeingDragged = false,
-}: { id: string; label: string; icon: string; onDoubleClick: () => void; isBeingDragged?: boolean }) {
+}: { id: string; label: string; icon: string; onDoubleClick: () => void; onSelect?: () => void; isSelected?: boolean; isBeingDragged?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
   const iconRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
   const { playClickSound, playHoverSound } = useAppSound()
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onSelect?.()
+  }
 
   const handleDoubleClick = () => {
     playClickSound()
@@ -114,6 +121,7 @@ export function DesktopIcon({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -124,7 +132,7 @@ export function DesktopIcon({
         transition,
         opacity: isBeingDragged ? 0.3 : 1,
       }}
-      className="liquidGlass-icon desktop-icon w-20 sm:w-24 md:w-28 h-full p-2 cursor-grab active:cursor-grabbing select-none pointer-events-auto"
+      className={`liquidGlass-icon desktop-icon w-20 sm:w-24 md:w-28 min-h-24 p-2 cursor-grab active:cursor-grabbing select-none pointer-events-auto ${isSelected ? "desktop-icon-selected" : ""}`}
     >
       <div className="liquidGlass-effect"></div>
       <div className="liquidGlass-tint"></div>
@@ -146,7 +154,7 @@ export function DesktopIcon({
         </div>
         <span
           ref={textRef}
-          className="desktop-icon-text"
+          className={`desktop-icon-text${isSelected ? " desktop-icon-text-selected" : ""}`}
         >
           {label}
         </span>

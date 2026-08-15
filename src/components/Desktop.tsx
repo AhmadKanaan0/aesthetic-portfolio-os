@@ -149,6 +149,7 @@ function DesktopInner() {
 
   const [openWindows, setOpenWindows] = useState<WindowData[]>([]);
   const [activeAppId, setActiveAppId] = useState<string | null>(null);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -406,7 +407,7 @@ function DesktopInner() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="w-screen h-screen overflow-hidden relative">
+          <div className="w-screen h-screen overflow-hidden relative" onClick={() => setSelectedAppId(null)}>
             <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
               style={{ backgroundImage: `url(${Wallpaper})`, opacity: isDesktop ? 1 : 0 }} />
             <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
@@ -454,7 +455,7 @@ function DesktopInner() {
                       {desktopApps.map((app, index) => (
                         <div
                           key={app.id}
-                          className="h-28"
+                          className="min-h-28"
                           ref={(el) => {
                             if (el) desktopIconsRef.current[index] = el;
                           }}
@@ -464,6 +465,8 @@ function DesktopInner() {
                             label={app.label}
                             icon={app.icon}
                             onDoubleClick={() => openWindow(app.label)}
+                            onSelect={() => setSelectedAppId(app.id)}
+                            isSelected={selectedAppId === app.id}
                             isBeingDragged={activeAppId === app.id}
                           />
                         </div>
